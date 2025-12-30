@@ -1,0 +1,63 @@
+-- D1 schema for Ax Festas
+
+CREATE TABLE IF NOT EXISTS items (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  slug TEXT UNIQUE NOT NULL,
+  description TEXT,
+  quantity_total INTEGER DEFAULT 1,
+  quantity_available INTEGER DEFAULT 1,
+  images TEXT, -- JSON array stored as TEXT
+  category_id INTEGER,
+  created_at TEXT DEFAULT (CURRENT_TIMESTAMP),
+  updated_at TEXT DEFAULT (CURRENT_TIMESTAMP)
+);
+
+CREATE TABLE IF NOT EXISTS reservations (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  item_id INTEGER NOT NULL,
+  user_name TEXT,
+  start_date TEXT,
+  end_date TEXT,
+  status TEXT DEFAULT 'PENDING',
+  total REAL DEFAULT 0,
+  payment_status TEXT DEFAULT 'PENDING',
+  created_at TEXT DEFAULT (CURRENT_TIMESTAMP)
+);
+
+CREATE TABLE IF NOT EXISTS maintenances (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  item_id INTEGER NOT NULL,
+  description TEXT,
+  start_date TEXT,
+  end_date TEXT,
+  cost REAL DEFAULT 0,
+  status TEXT DEFAULT 'SCHEDULED',
+  created_at TEXT DEFAULT (CURRENT_TIMESTAMP)
+);
+
+CREATE TABLE IF NOT EXISTS transactions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  type TEXT,
+  amount REAL,
+  reference TEXT,
+  date TEXT DEFAULT (CURRENT_TIMESTAMP),
+  created_at TEXT DEFAULT (CURRENT_TIMESTAMP)
+);
+
+CREATE TABLE IF NOT EXISTS stock_movements (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  item_id INTEGER NOT NULL,
+  delta INTEGER,
+  reason TEXT,
+  created_at TEXT DEFAULT (CURRENT_TIMESTAMP)
+);
+
+CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  email TEXT UNIQUE,
+  name TEXT,
+  password TEXT,
+  role TEXT DEFAULT 'CLIENT',
+  created_at TEXT DEFAULT (CURRENT_TIMESTAMP)
+);
