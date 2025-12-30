@@ -1,0 +1,15 @@
+name = "axfestas-items-worker"
+main = "workers/items/index.js"
+compatibility_date = "2025-12-30"
+
+# account_id: configure seu CF_ACCOUNT_ID nas variáveis do CI/Secrets
+# account_id = ""
+
+# Se for usar KV namespaces para persistência (reservas), adicione abaixo e depois preencha o "id" no painel Cloudflare
+# [[kv_namespaces]]
+# binding = "RESERVATIONS"
+# id = ""
+
+[build]
+  command = "npm install"
+  upload_format = "modules"
