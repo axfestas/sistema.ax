@@ -1,0 +1,18 @@
+/* Design tokens for Ax Festas */
+:root {
+  --font-logo-ax: 'Lucky Bones', cursive;
+  --font-logo-festas: 'Open Sans', sans-serif;
+  --font-title: 'Autun', serif;
+  --font-body: 'Open Sans', sans-serif;
+
+  --color-gold: #FFC107;
+  --color-graphite: #4A4A4A;
+  --color-sereno: #88A9C3;
+  --color-pink: #EF3A5D;
+  --color-white: #FFFFFF;
+}
+
+/* Utility example */
+.body-text { font-family: var(--font-body); color: var(--color-graphite); }
+.title { font-family: var(--font-title); color: var(--color-graphite); }
+.btn-primary { background: var(--color-gold); color: var(--color-white); }

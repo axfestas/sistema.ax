@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int           @id @default(autoincrement())
+  email        String        @unique
+  name         String?
+  password     String
+  role         Role          @default(CLIENT)
+  reservations Reservation[]
+  transactions Transaction[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+enum Role {
+  ADMIN
+  CLIENT
+}
+
+model Category {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  slug  String @unique
+  items Item[]
+}
+
+model Item {
+  id                Int          @id @default(autoincrement())
+  name              String
+  slug              String       @unique
+  description       String?
+  quantityTotal     Int          @default(1)
+  quantityAvailable Int          @default(1)
+  images            String[]     @default([])
+  category          Category?    @relation(fields: [categoryId], references: [id])
+  categoryId        Int?
+  reservations      Reservation[]
+  maintenances      Maintenance[]
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+}
+
+model Reservation {
+  id            Int               @id @default(autoincrement())
+  user          User              @relation(fields: [userId], references: [id])
+  userId        Int
+  item          Item              @relation(fields: [itemId], references: [id])
+  itemId        Int
+  startDate     DateTime
+  endDate       DateTime
+  status        ReservationStatus @default(PENDING)
+  total         Decimal           @db.Decimal(10, 2)
+  paymentStatus PaymentStatus     @default(PENDING)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  REFUNDED
+}
+
+model Maintenance {
+  id        Int               @id @default(autoincrement())
+  item      Item              @relation(fields: [itemId], references: [id])
+  itemId    Int
+  description String
+  startDate DateTime
+  endDate   DateTime?
+  cost      Decimal           @db.Decimal(10, 2) @default(0)
+  status    MaintenanceStatus @default(SCHEDULED)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+}
+
+enum MaintenanceStatus {
+  SCHEDULED
+  IN_PROGRESS
+  DONE
+}
+
+model Transaction {
+  id        Int             @id @default(autoincrement())
+  type      TransactionType
+  amount    Decimal         @db.Decimal(10, 2)
+  reference String?
+  date      DateTime        @default(now())
+  createdAt DateTime        @default(now())
+}
+
+enum TransactionType {
+  REVENUE
+  EXPENSE
+}
+
+model StockMovement {
+  id        Int      @id @default(autoincrement())
+  item      Item     @relation(fields: [itemId], references: [id])
+  itemId    Int
+  delta     Int
+  reason    String?
+  createdAt DateTime @default(now())
+}

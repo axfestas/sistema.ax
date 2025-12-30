@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "name": "Conjunto de Balões Ouro",
+    "slug": "conjunto-baloes-ouro",
+    "description": "Pacote com 20 balões dourados metálicos.",
+    "quantityTotal": 20,
+    "quantityAvailable": 20,
+    "images": []
+  },
+  {
+    "id": 2,
+    "name": "Mesa Infantil Rosa",
+    "slug": "mesa-infantil-rosa",
+    "description": "Mesa para 6 crianças, cor rosa vibrante.",
+    "quantityTotal": 5,
+    "quantityAvailable": 5,
+    "images": []
+  }
+]
