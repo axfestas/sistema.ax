@@ -1,0 +1,62 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Item {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  category    String
+  quantity    Int      @default(0)
+  rentalPrice Float
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  reservations Reservation[]
+  maintenances Maintenance[]
+}
+
+model Reservation {
+  id        Int      @id @default(autoincrement())
+  itemId    Int
+  item      Item     @relation(fields: [itemId], references: [id])
+  customerName String
+  customerEmail String
+  startDate DateTime
+  endDate   DateTime
+  status    String   @default("pending") // pending, confirmed, completed, cancelled
+  totalPrice Float
+  createdAt DateTime @default(now())
+
+  @@index([itemId])
+}
+
+model Maintenance {
+  id          Int      @id @default(autoincrement())
+  itemId      Int
+  item        Item     @relation(fields: [itemId], references: [id])
+  description String
+  cost        Float?
+  date        DateTime
+  createdAt   DateTime @default(now())
+
+  @@index([itemId])
+}
+
+model FinancialRecord {
+  id          Int      @id @default(autoincrement())
+  type        String   // income, expense
+  description String
+  amount      Float
+  date        DateTime
+  createdAt   DateTime @default(now())
+}
