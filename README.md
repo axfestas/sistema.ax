@@ -42,7 +42,9 @@ O build estático será gerado na pasta `out/`
 
 ## 🌐 Deploy no Cloudflare Pages
 
-### Método 1: Via Cloudflare Dashboard
+> **⚠️ Problema com API Token?** Veja o [Guia Rápido de Configuração](./CLOUDFLARE_TOKEN_SETUP.md) para resolver erros de autenticação.
+
+### Método 1: Via Cloudflare Dashboard (Recomendado)
 
 1. Acesse o [Cloudflare Dashboard](https://dash.cloudflare.com)
 2. Vá para **Pages** > **Create a project**
@@ -55,16 +57,21 @@ O build estático será gerado na pasta `out/`
 
 ### Método 2: Via Wrangler CLI
 
+**Importante**: Você precisa de um API Token com permissão "Cloudflare Pages - Edit". [Veja como configurar →](./CLOUDFLARE_TOKEN_SETUP.md)
+
 ```bash
 # Instalar Wrangler (se ainda não tiver)
 npm install -g wrangler
 
-# Login no Cloudflare
-wrangler login
+# Configurar API Token
+export CLOUDFLARE_API_TOKEN="seu-token-aqui"
+export CLOUDFLARE_ACCOUNT_ID="a39b043a2df362f77fc72e76b286e00c"
 
 # Deploy
 npm run pages:deploy
 ```
+
+**Documentação Completa**: Veja [DEPLOY.md](./DEPLOY.md) para instruções detalhadas.
 
 ## 📁 Estrutura do Projeto
 
