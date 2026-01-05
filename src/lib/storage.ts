@@ -16,7 +16,8 @@ export async function uploadFile(key: string, file: Blob | ArrayBuffer | string)
     console.warn('Storage not available in static export');
     return;
   }
-  await storage.put(key, file as any);
+  // Type assertion needed due to incompatibility between browser and Cloudflare Blob types
+  await storage.put(key, file as unknown as ArrayBuffer);
 }
 
 // Função para download

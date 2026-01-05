@@ -5,7 +5,6 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "pages:build": "npx @cloudflare/next-on-pages",
     "pages:deploy": "npm run build && wrangler pages deploy out",
     "start": "next start",
     "lint": "next lint"
