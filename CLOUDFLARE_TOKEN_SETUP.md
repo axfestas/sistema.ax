@@ -128,20 +128,20 @@ Adicione às variáveis de ambiente do sistema:
 ## ❌ Erros Comuns
 
 ### "Authentication error [code: 10000]"
-- ✅ Token não tem permissão "Cloudflare Pages - Edit"
-- 🔧 Crie um novo token com a permissão correta
+- **Causa**: Token não tem permissão "Cloudflare Pages - Edit"
+- **Solução**: Crie um novo token com a permissão correta
 
 ### "wrangler: command not found"
-- ✅ Wrangler não está instalado
-- 🔧 `npm install -g wrangler`
+- **Causa**: Wrangler não está instalado
+- **Solução**: `npm install -g wrangler`
 
 ### "Project not found"
-- ✅ Projeto não existe na conta
-- 🔧 Crie o projeto primeiro via Dashboard ou use `--project-name`
+- **Causa**: Projeto não existe na conta
+- **Solução**: Crie o projeto primeiro via Dashboard ou use `--project-name`
 
 ### Token expirado
-- ✅ Token passou do TTL (Time to Live)
-- 🔧 Crie um novo token
+- **Causa**: Token passou do TTL (Time to Live)
+- **Solução**: Crie um novo token
 
 ## 📚 Mais Informações
 
