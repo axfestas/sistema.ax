@@ -52,11 +52,57 @@ NODE_VERSION = 18
 npm install -g wrangler
 ```
 
-### Login no Cloudflare
+### Configuração do API Token (IMPORTANTE)
+
+Para usar o Wrangler CLI ou CI/CD, você precisa criar um API Token com as permissões corretas.
+
+#### Passo 1: Criar API Token
+
+1. Acesse [https://dash.cloudflare.com/profile/api-tokens](https://dash.cloudflare.com/profile/api-tokens)
+2. Clique em **Create Token**
+3. Clique em **Use template** ao lado de **Custom token** (ou role até o final e clique em **Create Custom Token**)
+
+#### Passo 2: Configurar Permissões
+
+Configure as seguintes permissões:
+
+**Permissions:**
+- **Account** → **Cloudflare Pages** → **Edit**
+
+**Account Resources:**
+- Include → **Specific account** → Selecione sua conta (ex: Ax Festas)
+
+#### Passo 3: Finalizar
+
+1. Clique em **Continue to summary**
+2. Revise as permissões
+3. Clique em **Create Token**
+4. **IMPORTANTE**: Copie o token imediatamente e guarde em um local seguro (você não poderá vê-lo novamente!)
+
+#### Passo 4: Configurar o Token
+
+**Opção A: Variável de Ambiente (Recomendado)**
+
+```bash
+export CLOUDFLARE_API_TOKEN="seu-token-aqui"
+export CLOUDFLARE_ACCOUNT_ID="a39b043a2df362f77fc72e76b286e00c"
+```
+
+Adicione ao seu `.bashrc` ou `.zshrc` para tornar permanente:
+
+```bash
+echo 'export CLOUDFLARE_API_TOKEN="seu-token-aqui"' >> ~/.bashrc
+echo 'export CLOUDFLARE_ACCOUNT_ID="a39b043a2df362f77fc72e76b286e00c"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+**Opção B: Login Interativo**
 
 ```bash
 wrangler login
 ```
+
+**Nota**: O login interativo pode não funcionar em ambientes de CI/CD. Use a Opção A para automação.
 
 ### Build Local
 
@@ -174,7 +220,9 @@ NEXT_PUBLIC_API_URL = "https://api.sistema.ax"
 
 ## 🔄 Deploys Automáticos
 
-O Cloudflare Pages faz deploy automático quando você:
+### Via Cloudflare Dashboard (Recomendado)
+
+O Cloudflare Pages faz deploy automático quando você conecta seu repositório GitHub:
 
 - Faz push para a branch principal → Deploy em produção
 - Abre um Pull Request → Deploy de preview
@@ -182,6 +230,75 @@ O Cloudflare Pages faz deploy automático quando você:
 
 Cada PR terá uma URL única tipo:
 `https://abc123.sistema-ax-festas.pages.dev`
+
+### Via GitHub Actions (Opcional)
+
+Para ter mais controle sobre o processo de deploy, você pode usar GitHub Actions com Wrangler.
+
+#### Passo 1: Adicionar Secrets ao GitHub
+
+1. Vá para seu repositório no GitHub
+2. Clique em **Settings** → **Secrets and variables** → **Actions**
+3. Clique em **New repository secret**
+4. Adicione os seguintes secrets:
+
+   - **Nome**: `CLOUDFLARE_API_TOKEN`
+   - **Valor**: Seu API token com permissão "Cloudflare Pages - Edit"
+   
+   - **Nome**: `CLOUDFLARE_ACCOUNT_ID`
+   - **Valor**: `a39b043a2df362f77fc72e76b286e00c`
+
+#### Passo 2: Criar Workflow
+
+Crie o arquivo `.github/workflows/deploy.yml`:
+
+```yaml
+name: Deploy to Cloudflare Pages
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    name: Deploy to Cloudflare Pages
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy out --project-name=sistema-ax-festas
+```
+
+#### Verificar Permissões do Token
+
+Se você encontrar erros de autenticação no GitHub Actions, verifique:
+
+1. Os secrets estão configurados corretamente
+2. O API token tem a permissão "Cloudflare Pages - Edit"
+3. O Account ID está correto
+4. O nome do projeto (`sistema-ax-festas`) está correto
 
 ## 📊 Monitoramento
 
@@ -193,6 +310,51 @@ Cada PR terá uma URL única tipo:
 4. Aba **Functions** - logs de API (se usar)
 
 ## ⚠️ Troubleshooting
+
+### Erro de Autenticação (Authentication error [code: 10000])
+
+Este é o erro mais comum ao tentar fazer deploy com o Wrangler. Acontece quando o API Token não tem as permissões corretas.
+
+**Erro completo:**
+```
+✘ [ERROR] A request to the Cloudflare API (/accounts/.../pages/projects/...) failed.
+Authentication error [code: 10000]
+```
+
+**Causa**: O API Token não possui a permissão "Cloudflare Pages - Edit"
+
+**Solução**:
+
+1. **Verifique o Token Atual**
+   ```bash
+   wrangler whoami
+   ```
+   Isso mostrará suas permissões. Você deve ver "Cloudflare Pages - Edit" na lista.
+
+2. **Crie um Novo Token com Permissões Corretas**
+   - Acesse: [https://dash.cloudflare.com/profile/api-tokens](https://dash.cloudflare.com/profile/api-tokens)
+   - Clique em **Create Token** → **Custom token**
+   - Adicione permissão: **Account** → **Cloudflare Pages** → **Edit**
+   - Em **Account Resources**: Selecione sua conta específica
+   - Clique em **Create Token** e copie o token
+
+3. **Configure o Novo Token**
+   ```bash
+   export CLOUDFLARE_API_TOKEN="seu-novo-token-aqui"
+   export CLOUDFLARE_ACCOUNT_ID="a39b043a2df362f77fc72e76b286e00c"
+   ```
+
+4. **Teste o Deploy Novamente**
+   ```bash
+   npm run build
+   wrangler pages deploy out --project-name=sistema-ax-festas
+   ```
+
+**Importante**: 
+- ❌ Não use o "Global API Key" - ele não é adequado para Wrangler
+- ❌ Não use tokens com apenas "Workers - Edit" - Pages precisa de permissão específica
+- ✅ Use "Cloudflare Pages - Edit" ao nível da conta
+- ✅ Para CI/CD, armazene como secrets: `CLOUDFLARE_API_TOKEN` e `CLOUDFLARE_ACCOUNT_ID`
 
 ### Build Falha
 
