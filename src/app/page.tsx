@@ -1,92 +1,151 @@
-import Link from 'next/link'
+'use client'
+
+import { useCart } from '@/components/CartContext'
+
+// Sample data - in production this would come from a database/API
+const portfolioItems = [
+  {
+    id: '1',
+    name: 'Mesa Decorada Infantil',
+    description: 'Mesa completa com decoração temática para festa infantil',
+    price: 150.00,
+    image: '/placeholder-1.jpg'
+  },
+  {
+    id: '2',
+    name: 'Kit Festa Completo',
+    description: 'Inclui mesas, cadeiras, toalhas e decoração',
+    price: 350.00,
+    image: '/placeholder-2.jpg'
+  },
+  {
+    id: '3',
+    name: 'Decoração Balões Premium',
+    description: 'Arco de balões personalizados para eventos',
+    price: 200.00,
+    image: '/placeholder-3.jpg'
+  },
+  {
+    id: '4',
+    name: 'Toalhas de Mesa Luxo',
+    description: 'Toalhas de alta qualidade em diversas cores',
+    price: 50.00,
+    image: '/placeholder-4.jpg'
+  },
+  {
+    id: '5',
+    name: 'Conjunto de Louças',
+    description: 'Pratos, copos e talheres para 50 pessoas',
+    price: 120.00,
+    image: '/placeholder-5.jpg'
+  },
+  {
+    id: '6',
+    name: 'Iluminação LED Decorativa',
+    description: 'Sistema de iluminação LED para ambientes',
+    price: 180.00,
+    image: '/placeholder-6.jpg'
+  },
+]
 
 export default function Home() {
+  const { addItem } = useCart()
+
+  const handleAddToCart = (item: typeof portfolioItems[0]) => {
+    addItem({
+      id: item.id,
+      name: item.name,
+      description: item.description,
+      price: item.price,
+      image: item.image
+    })
+  }
+
   return (
-    <main className="min-h-screen bg-gradient-to-b from-green-50 to-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-gray-900 mb-4">
-            Sistema Ax Festas
+    <div className="min-h-screen bg-white">
+      {/* Hero Section */}
+      <section className="relative bg-gradient-to-r from-brand-yellow via-brand-blue to-brand-purple py-20 px-4">
+        <div className="max-w-7xl mx-auto text-center">
+          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 drop-shadow-lg">
+            Transforme sua Festa em Momentos Inesquecíveis
           </h1>
-          <p className="text-xl text-gray-600 mb-2">
-            Sistema de controle de estoque, reservas e manutenção
+          <p className="text-xl md:text-2xl text-white/90 mb-8 drop-shadow">
+            Aluguel de itens para festas e eventos com qualidade e excelência
           </p>
-          <p className="text-lg text-gray-500">
-            Aluguel de Itens para Festas
-          </p>
-        </div>
-
-        {/* Navigation Cards */}
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          {/* Catalog Card */}
-          <Link 
-            href="/catalog"
-            className="block bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 p-8 border-2 border-transparent hover:border-green-500"
+          <a 
+            href="#portfolio" 
+            className="inline-block bg-white text-brand-gray font-bold py-4 px-8 rounded-full hover:bg-brand-yellow hover:text-white transition-all duration-300 shadow-lg"
           >
-            <div className="text-center">
-              <div className="text-5xl mb-4">🎉</div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-3">
-                Catálogo de Itens
-              </h2>
-              <p className="text-gray-600 mb-4">
-                Explore nossos itens disponíveis para aluguel e faça suas reservas
-              </p>
-              <span className="inline-block bg-green-500 text-white font-semibold px-6 py-2 rounded-lg hover:bg-green-600 transition-colors">
-                Ver Catálogo
-              </span>
-            </div>
-          </Link>
-
-          {/* Admin Card */}
-          <Link 
-            href="/admin"
-            className="block bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 p-8 border-2 border-transparent hover:border-blue-500"
-          >
-            <div className="text-center">
-              <div className="text-5xl mb-4">⚙️</div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-3">
-                Painel Administrativo
-              </h2>
-              <p className="text-gray-600 mb-4">
-                Gerencie estoque, reservas, manutenção e finanças
-              </p>
-              <span className="inline-block bg-blue-500 text-white font-semibold px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors">
-                Acessar Painel
-              </span>
-            </div>
-          </Link>
+            Ver Nosso Portfólio
+          </a>
         </div>
+      </section>
 
-        {/* Features */}
-        <div className="mt-16 max-w-5xl mx-auto">
-          <h3 className="text-2xl font-bold text-center text-gray-900 mb-8">
-            Funcionalidades do Sistema
-          </h3>
-          <div className="grid md:grid-cols-4 gap-6">
-            <div className="bg-white rounded-lg shadow p-6 text-center">
-              <div className="text-3xl mb-2">📦</div>
-              <h4 className="font-semibold text-gray-900 mb-1">Estoque</h4>
-              <p className="text-sm text-gray-600">Controle completo de inventário</p>
-            </div>
-            <div className="bg-white rounded-lg shadow p-6 text-center">
-              <div className="text-3xl mb-2">📅</div>
-              <h4 className="font-semibold text-gray-900 mb-1">Reservas</h4>
-              <p className="text-sm text-gray-600">Gestão de reservas e agendamentos</p>
-            </div>
-            <div className="bg-white rounded-lg shadow p-6 text-center">
-              <div className="text-3xl mb-2">🔧</div>
-              <h4 className="font-semibold text-gray-900 mb-1">Manutenção</h4>
-              <p className="text-sm text-gray-600">Controle de manutenções</p>
-            </div>
-            <div className="bg-white rounded-lg shadow p-6 text-center">
-              <div className="text-3xl mb-2">💰</div>
-              <h4 className="font-semibold text-gray-900 mb-1">Financeiro</h4>
-              <p className="text-sm text-gray-600">Gestão financeira integrada</p>
-            </div>
+      {/* Portfolio Section */}
+      <section id="portfolio" className="py-16 px-4 bg-gray-50">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-brand-gray mb-4">
+              Nosso Portfólio
+            </h2>
+            <p className="text-lg text-gray-600">
+              Confira nossos itens disponíveis para aluguel
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {portfolioItems.map((item) => (
+              <div 
+                key={item.id} 
+                className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300"
+              >
+                {/* Placeholder Image */}
+                <div className="h-64 bg-gradient-to-br from-brand-blue to-brand-purple flex items-center justify-center">
+                  <span className="text-white text-6xl">📸</span>
+                </div>
+                
+                <div className="p-6">
+                  <h3 className="text-xl font-bold text-brand-gray mb-2">
+                    {item.name}
+                  </h3>
+                  <p className="text-gray-600 mb-4 text-sm">
+                    {item.description}
+                  </p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-2xl font-bold text-brand-yellow">
+                      R$ {item.price.toFixed(2)}
+                    </span>
+                    <button
+                      onClick={() => handleAddToCart(item)}
+                      className="bg-brand-yellow hover:bg-brand-yellow/90 text-white font-bold py-2 px-6 rounded-full transition-colors duration-300"
+                    >
+                      Adicionar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-      </div>
-    </main>
+      </section>
+
+      {/* Call to Action Section */}
+      <section className="py-16 px-4 bg-brand-gray text-white">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            Pronto para fazer sua reserva?
+          </h2>
+          <p className="text-xl mb-8 text-gray-300">
+            Adicione os itens ao carrinho e solicite seu orçamento personalizado
+          </p>
+          <a 
+            href="/cart" 
+            className="inline-block bg-brand-yellow hover:bg-brand-yellow/90 text-brand-gray font-bold py-4 px-8 rounded-full transition-all duration-300"
+          >
+            Ver Carrinho e Solicitar Orçamento
+          </a>
+        </div>
+      </section>
+    </div>
   )
 }
