@@ -29,8 +29,8 @@ jobs:
       - name: Deploy Worker
         working-directory: workers
         env:
-          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
         run: |
-          # deploy usando account_id + api-token (só para CI não interativo)
-          npx wrangler deploy --account-id $CF_ACCOUNT_ID --api-token $CF_API_TOKEN --verbose
+          # deploy usando variáveis de ambiente (mais seguro para CI)
+          npx wrangler deploy
