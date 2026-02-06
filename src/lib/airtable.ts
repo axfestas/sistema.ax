@@ -29,6 +29,9 @@ let currentConfigKey: string | null = null;
 
 /**
  * Configura as credenciais do Airtable globalmente
+ * 
+ * Nota: Chamar esta função invalida o cache do cliente Airtable.
+ * Use quando precisar trocar de credenciais ou base durante a execução.
  */
 export function configureAirtable(config: AirtableConfig): void {
   globalConfig = config;
@@ -39,6 +42,9 @@ export function configureAirtable(config: AirtableConfig): void {
 
 /**
  * Obtém a configuração atual (global ou padrão)
+ * 
+ * @throws {Error} Se nenhuma configuração global foi definida
+ * @private
  */
 function getConfig(): AirtableConfig {
   if (!globalConfig) {
@@ -64,6 +70,9 @@ export function getTableNames(config?: AirtableConfig) {
 
 /**
  * Inicializa e retorna o cliente Airtable
+ * 
+ * @param config - Configuração opcional. Se não fornecida, usa a configuração global.
+ * @throws {Error} Se as credenciais não estiverem configuradas
  */
 export function getAirtableBase(config?: AirtableConfig): Airtable.Base {
   const cfg = config || getConfig();
@@ -74,8 +83,8 @@ export function getAirtableBase(config?: AirtableConfig): Airtable.Base {
     );
   }
 
-  // Criar chave única para esta configuração
-  const configKey = `${cfg.apiKey}:${cfg.baseId}`;
+  // Criar chave única para esta configuração (hash simples para evitar expor credenciais)
+  const configKey = `${cfg.baseId}:${cfg.apiKey.substring(0, 8)}`;
   
   // Recriar base se configuração mudou
   if (!airtableBase || currentConfigKey !== configKey) {
