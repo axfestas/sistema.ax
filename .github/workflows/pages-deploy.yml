@@ -18,13 +18,11 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install frontend deps
-        working-directory: ./apps/frontend
+      - name: Install dependencies
         run: npm ci
 
-      - name: Build frontend
-        working-directory: ./apps/frontend
-        run: npm run build && npm run export
+      - name: Build
+        run: npm run build
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/pages-action@v1
@@ -32,4 +30,4 @@ jobs:
           apiToken: ${{ secrets.CF_PAGES_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
           projectName: ${{ secrets.CF_PAGES_PROJECT_NAME }}
-          directory: ./apps/frontend/out
+          directory: ./out
