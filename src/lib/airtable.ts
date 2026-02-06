@@ -526,7 +526,8 @@ export async function getUsers(options?: {
  */
 export async function getUserByUsername(username: string, config?: AirtableConfig): Promise<AirtableRecord<User> | null> {
   // Sanitize username to prevent formula injection
-  const sanitizedUsername = username.replace(/'/g, "\\'");
+  // Escape backslashes first, then single quotes
+  const sanitizedUsername = username.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
   
   const users = await getUsers({
     filterByFormula: `{username} = '${sanitizedUsername}'`,
