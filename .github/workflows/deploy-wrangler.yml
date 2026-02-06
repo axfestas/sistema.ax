@@ -25,8 +25,8 @@ jobs:
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
         run: |
-          if [ -z "${CF_ACCOUNT_ID}" ]; then echo "Missing CF_ACCOUNT_ID secret" && exit 1; fi
-          if [ -z "${CF_API_TOKEN}" ]; then echo "Missing CF_API_TOKEN secret" && exit 1; fi
+          if [ -z "${CF_ACCOUNT_ID}" ]; then echo "Missing CF_ACCOUNT_ID secret" >&2 && exit 1; fi
+          if [ -z "${CF_API_TOKEN}" ]; then echo "Missing CF_API_TOKEN secret" >&2 && exit 1; fi
 
       - name: Deploy Worker
         working-directory: workers
