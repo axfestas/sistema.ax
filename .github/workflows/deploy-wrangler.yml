@@ -32,5 +32,5 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
         run: |
-          # deploy usando variáveis de ambiente (mais seguro para CI)
+          # deploy using environment variables (more secure for CI)
           npx wrangler deploy
