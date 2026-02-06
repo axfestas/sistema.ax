@@ -1,0 +1,19 @@
+name: Deploy Workers (Cloudflare)
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'workers/**'
+
+jobs:
+  deploy-worker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Publish Worker via Wrangler
+        uses: cloudflare/wrangler-action@v1
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          workingDirectory: ./workers

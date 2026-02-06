@@ -1,0 +1,39 @@
+name: Deploy Cloudflare Workers
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy worker to Cloudflare
+    runs-on: ubuntu-latest
+    env:
+      CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+      CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Validate Cloudflare secrets
+        run: |
+          if [ -z "${CF_ACCOUNT_ID}" ]; then echo "Missing CF_ACCOUNT_ID secret" && exit 1; fi
+          if [ -z "${CF_API_TOKEN}" ]; then echo "Missing CF_API_TOKEN secret" && exit 1; fi
+
+      - name: Install Wrangler
+        run: npm i -g @cloudflare/wrangler
+
+      - name: Publish Worker
+        working-directory: workers
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+        run: |
+          # publica usando account_id + api-token (só para CI não interativo)
+          npx wrangler publish --account-id $CF_ACCOUNT_ID --api-token $CF_API_TOKEN --verbose
