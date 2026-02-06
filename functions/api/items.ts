@@ -9,7 +9,7 @@
  * - GET /api/items?maxRecords=10 - Limita a 10 registros
  */
 
-import { getItems, getItemById } from '../../src/lib/airtable';
+import { getItems, getItemById, AirtableConfig } from '../../src/lib/airtable';
 
 interface Env {
   AIRTABLE_API_KEY: string;
@@ -19,19 +19,21 @@ interface Env {
 
 export async function onRequestGet(context: { request: Request; env: Env }) {
   try {
-    // Configurar variáveis de ambiente para o módulo airtable
-    process.env.AIRTABLE_API_KEY = context.env.AIRTABLE_API_KEY;
-    process.env.AIRTABLE_BASE_ID = context.env.AIRTABLE_BASE_ID;
-    if (context.env.AIRTABLE_ITEMS_TABLE) {
-      process.env.AIRTABLE_ITEMS_TABLE = context.env.AIRTABLE_ITEMS_TABLE;
-    }
+    // Criar configuração do Airtable a partir das variáveis de ambiente
+    const config: AirtableConfig = {
+      apiKey: context.env.AIRTABLE_API_KEY,
+      baseId: context.env.AIRTABLE_BASE_ID,
+      tables: {
+        items: context.env.AIRTABLE_ITEMS_TABLE,
+      },
+    };
 
     const url = new URL(context.request.url);
     const itemId = url.searchParams.get('id');
 
     // Se um ID foi fornecido, buscar item específico
     if (itemId) {
-      const item = await getItemById(itemId);
+      const item = await getItemById(itemId, config);
       
       if (!item) {
         return new Response(JSON.stringify({ error: 'Item not found' }), {
@@ -51,7 +53,7 @@ export async function onRequestGet(context: { request: Request; env: Env }) {
     }
 
     // Construir opções de filtro
-    const options: any = {};
+    const options: any = { config };
     
     const maxRecords = url.searchParams.get('maxRecords');
     if (maxRecords) {

@@ -9,7 +9,7 @@
  * - GET /api/reservations?maxRecords=20 - Limita a 20 registros
  */
 
-import { getReservations } from '../../src/lib/airtable';
+import { getReservations, AirtableConfig } from '../../src/lib/airtable';
 
 interface Env {
   AIRTABLE_API_KEY: string;
@@ -19,15 +19,17 @@ interface Env {
 
 export async function onRequestGet(context: { request: Request; env: Env }) {
   try {
-    // Configurar variáveis de ambiente
-    process.env.AIRTABLE_API_KEY = context.env.AIRTABLE_API_KEY;
-    process.env.AIRTABLE_BASE_ID = context.env.AIRTABLE_BASE_ID;
-    if (context.env.AIRTABLE_RESERVATIONS_TABLE) {
-      process.env.AIRTABLE_RESERVATIONS_TABLE = context.env.AIRTABLE_RESERVATIONS_TABLE;
-    }
+    // Criar configuração do Airtable a partir das variáveis de ambiente
+    const config: AirtableConfig = {
+      apiKey: context.env.AIRTABLE_API_KEY,
+      baseId: context.env.AIRTABLE_BASE_ID,
+      tables: {
+        reservations: context.env.AIRTABLE_RESERVATIONS_TABLE,
+      },
+    };
 
     const url = new URL(context.request.url);
-    const options: any = {};
+    const options: any = { config };
     
     const maxRecords = url.searchParams.get('maxRecords');
     if (maxRecords) {
