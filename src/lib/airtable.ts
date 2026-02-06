@@ -9,6 +9,7 @@ export interface AirtableConfig {
     reservations?: string;
     maintenance?: string;
     finance?: string;
+    users?: string;
   };
 }
 
@@ -21,6 +22,7 @@ const DEFAULT_TABLE_NAMES = {
   RESERVATIONS: 'Reservations',
   MAINTENANCE: 'Maintenance',
   FINANCE: 'Finance',
+  USERS: 'Users',
 };
 
 // Cache do cliente Airtable
@@ -65,6 +67,7 @@ export function getTableNames(config?: AirtableConfig) {
     RESERVATIONS: cfg.tables?.reservations || DEFAULT_TABLE_NAMES.RESERVATIONS,
     MAINTENANCE: cfg.tables?.maintenance || DEFAULT_TABLE_NAMES.MAINTENANCE,
     FINANCE: cfg.tables?.finance || DEFAULT_TABLE_NAMES.FINANCE,
+    USERS: cfg.tables?.users || DEFAULT_TABLE_NAMES.USERS,
   };
 }
 
@@ -152,6 +155,16 @@ export interface Finance {
   paymentMethod?: string;
   relatedReservation?: string;
   notes?: string;
+  [key: string]: any; // Allow additional fields from Airtable
+}
+
+export interface User {
+  username: string;
+  password: string; // hashed password
+  role: 'admin' | 'user';
+  name?: string;
+  email?: string;
+  createdAt?: string;
   [key: string]: any; // Allow additional fields from Airtable
 }
 
@@ -471,4 +484,102 @@ export async function getFinanceSummary(startDate?: string, endDate?: string, co
   summary.balance = summary.totalIncome - summary.totalExpense;
 
   return summary;
+}
+
+// ==================== FUNÇÕES PARA USUÁRIOS ====================
+
+/**
+ * Buscar todos os usuários
+ */
+export async function getUsers(options?: {
+  maxRecords?: number;
+  view?: string;
+  filterByFormula?: string;
+  config?: AirtableConfig;
+}): Promise<AirtableRecord<User>[]> {
+  const base = getAirtableBase(options?.config);
+  const tables = getTableNames(options?.config);
+  const records: AirtableRecord<User>[] = [];
+
+  await base(tables.USERS)
+    .select({
+      maxRecords: options?.maxRecords,
+      view: options?.view,
+      filterByFormula: options?.filterByFormula,
+    })
+    .eachPage((pageRecords, fetchNextPage) => {
+      pageRecords.forEach((record) => {
+        records.push({
+          id: record.id,
+          fields: record.fields as unknown as User,
+          createdTime: record.get('createdTime') as string,
+        });
+      });
+      fetchNextPage();
+    });
+
+  return records;
+}
+
+/**
+ * Buscar usuário por username
+ */
+export async function getUserByUsername(username: string, config?: AirtableConfig): Promise<AirtableRecord<User> | null> {
+  const users = await getUsers({
+    filterByFormula: `{username} = '${username}'`,
+    maxRecords: 1,
+    config,
+  });
+  
+  return users.length > 0 ? users[0] : null;
+}
+
+/**
+ * Criar novo usuário
+ */
+export async function createUser(user: User, config?: AirtableConfig): Promise<AirtableRecord<User>> {
+  const base = getAirtableBase(config);
+  const tables = getTableNames(config);
+  
+  const records = await base(tables.USERS).create([user] as any);
+  const record = records[0];
+  
+  return {
+    id: record.id,
+    fields: record.fields as unknown as User,
+    createdTime: record.get('createdTime') as string,
+  };
+}
+
+/**
+ * Atualizar usuário
+ */
+export async function updateUser(id: string, updates: Partial<User>, config?: AirtableConfig): Promise<AirtableRecord<User>> {
+  const base = getAirtableBase(config);
+  const tables = getTableNames(config);
+  
+  const records = await base(tables.USERS).update([{ id, fields: updates as any }]);
+  const record = records[0];
+  
+  return {
+    id: record.id,
+    fields: record.fields as unknown as User,
+    createdTime: record.get('createdTime') as string,
+  };
+}
+
+/**
+ * Deletar usuário
+ */
+export async function deleteUser(id: string, config?: AirtableConfig): Promise<boolean> {
+  const base = getAirtableBase(config);
+  const tables = getTableNames(config);
+  
+  try {
+    await base(tables.USERS).destroy(id);
+    return true;
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    return false;
+  }
 }

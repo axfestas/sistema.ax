@@ -155,18 +155,38 @@ bucket_name = "sistema-ax-festas"
 - ✅ Página inicial
 - ✅ Catálogo de itens
 - ✅ Painel administrativo
+- ✅ **Sistema de autenticação com login**
+- ✅ **Gerenciamento de usuários (admin)**
 - ✅ Controle de estoque
 - ✅ Gerenciamento de reservas
 - ✅ Controle de manutenção
 - ✅ Controle financeiro
+- ✅ **Integração com Airtable para exibição de dados**
+
+## 🔐 Autenticação
+
+O sistema agora possui autenticação para proteger as áreas administrativas.
+
+**Para configurar a autenticação e criar sua conta de admin, veja:**
+
+👉 **[AUTHENTICATION_SETUP.md](./AUTHENTICATION_SETUP.md)** - Guia completo de configuração
+
+**Resumo rápido:**
+
+1. Crie a tabela "Users" no Airtable
+2. Execute `node scripts/create-admin.js` para gerar a senha hasheada
+3. Adicione o admin no Airtable
+4. Configure as variáveis de ambiente no Cloudflare Pages
+5. Acesse `/login` para entrar no sistema
 
 ## 🔧 Próximos Passos
 
-1. Implementar Pages Functions para APIs
-2. Conectar com D1 Database
-3. Implementar upload de imagens no R2
-4. Adicionar autenticação
+1. ~~Implementar autenticação~~ ✅
+2. ~~Adicionar gerenciamento de usuários~~ ✅
+3. ~~Conectar com Airtable para exibição de dados~~ ✅
+4. Implementar upload de imagens no R2
 5. Implementar CRUD completo para todas as entidades
+6. Melhorar sistema de autenticação com JWT/sessions
 
 ## 📄 Licença
 
