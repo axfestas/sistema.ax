@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        node-version: [18.x]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check if package.json exists
+        id: check_package
+        run: |
+          if [ -f "package.json" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Use Node.js ${{ matrix.node-version }}
+        if: steps.check_package.outputs.exists == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install dependencies
+        if: steps.check_package.outputs.exists == 'true'
+        run: npm ci
+      - name: Build
+        if: steps.check_package.outputs.exists == 'true'
+        run: npm run build --if-present
+      - name: Test
+        if: steps.check_package.outputs.exists == 'true'
+        run: npm test --if-present

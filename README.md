@@ -8,6 +8,7 @@ Sistema de controle de estoque, reservas e manutenção para Ax Festas - Aluguel
 - **TypeScript** - Tipagem estática
 - **Tailwind CSS** - Estilização
 - **Cloudflare Pages** - Hospedagem e deployment
+- **Airtable** - Banco de dados e gestão de conteúdo
 
 ## 📋 Pré-requisitos
 
@@ -97,9 +98,26 @@ sistema.ax/
 └── package.json
 ```
 
-## 🗄️ Banco de Dados (D1)
+## 🗄️ Banco de Dados
 
-O projeto está configurado para usar Cloudflare D1 (SQLite serverless). Para usar o banco:
+### Opção 1: Airtable (Recomendado)
+
+O projeto agora suporta integração com Airtable! Para configurar:
+
+1. **Veja o guia completo**: [AIRTABLE_SETUP.md](./AIRTABLE_SETUP.md)
+2. Configure suas credenciais no `.env.local`
+3. Use as APIs em `/functions/api/` para acessar os dados
+
+**Vantagens do Airtable:**
+- ✅ Interface visual para gerenciar dados
+- ✅ Fácil de configurar e usar
+- ✅ Colaboração em tempo real
+- ✅ Views, filtros e ordenação nativos
+- ✅ Não precisa de SQL
+
+### Opção 2: Cloudflare D1 (SQLite serverless)
+
+Alternativa para usar banco de dados SQL:
 
 1. Crie um banco D1 no Cloudflare Dashboard
 2. Execute o schema SQL:
