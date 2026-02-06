@@ -75,7 +75,7 @@ export default function CatalogPage() {
         <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
           <p className="text-blue-800">Nenhum item disponível no momento.</p>
           <p className="text-sm text-blue-700 mt-2">
-            Adicione itens na tabela "Items" do Airtable para vê-los aqui.
+            Adicione itens na tabela &quot;Items&quot; do Airtable para vê-los aqui.
           </p>
         </div>
       ) : (
@@ -83,6 +83,7 @@ export default function CatalogPage() {
           {items.map((item) => (
             <div key={item.id} className="bg-white shadow rounded-lg p-6">
               {item.fields.imageUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img 
                   src={item.fields.imageUrl} 
                   alt={item.fields.name}

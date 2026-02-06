@@ -75,7 +75,7 @@ export default function InventoryPage() {
         <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-4">
           <p className="text-blue-800">Nenhum item encontrado.</p>
           <p className="text-sm text-blue-700 mt-2">
-            Adicione itens na tabela "Items" do Airtable para vê-los aqui.
+            Adicione itens na tabela &quot;Items&quot; do Airtable para vê-los aqui.
           </p>
         </div>
       ) : (
@@ -87,6 +87,7 @@ export default function InventoryPage() {
                   <div className="flex-1">
                     <div className="flex items-center gap-3">
                       {item.fields.imageUrl && (
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img 
                           src={item.fields.imageUrl} 
                           alt={item.fields.name}
