@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 export default function Home() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-green-50 to-white">
@@ -18,7 +20,7 @@ export default function Home() {
         {/* Navigation Cards */}
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           {/* Catalog Card */}
-          <a 
+          <Link 
             href="/catalog"
             className="block bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 p-8 border-2 border-transparent hover:border-green-500"
           >
@@ -34,10 +36,10 @@ export default function Home() {
                 Ver Catálogo
               </span>
             </div>
-          </a>
+          </Link>
 
           {/* Admin Card */}
-          <a 
+          <Link 
             href="/admin"
             className="block bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 p-8 border-2 border-transparent hover:border-blue-500"
           >
@@ -53,7 +55,7 @@ export default function Home() {
                 Acessar Painel
               </span>
             </div>
-          </a>
+          </Link>
         </div>
 
         {/* Features */}
