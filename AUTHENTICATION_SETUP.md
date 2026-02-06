@@ -131,11 +131,21 @@ Após fazer login como admin:
 ⚠️ **Importante:**
 
 - A senha é armazenada de forma hasheada (criptografada) no Airtable
-- Use senhas fortes e únicas
+- Use senhas fortes e únicas (mínimo 12 caracteres, com letras, números e símbolos)
 - Nunca compartilhe suas credenciais
 - O sistema usa bcrypt para hash de senhas
-- A autenticação é baseada em localStorage (client-side)
-- Para produção, considere implementar JWT ou sessions mais seguras
+- **Limitação atual**: A autenticação é baseada em localStorage (client-side), o que significa que não há validação server-side. Isto é adequado para um sistema interno/privado, mas para ambientes de produção expostos publicamente, considere implementar JWT ou sessions com validação server-side.
+
+### Recomendações para Produção
+
+Para maior segurança em ambiente de produção:
+
+1. **Implementar autenticação server-side**: Use JWT (JSON Web Tokens) ou sessions com validação no backend
+2. **HTTPS obrigatório**: Sempre use HTTPS para proteger credenciais em trânsito
+3. **Rate limiting**: Implemente proteção contra ataques de força bruta
+4. **Logs de auditoria**: Registre tentativas de login e ações administrativas
+5. **2FA (Two-Factor Authentication)**: Adicione autenticação de dois fatores para contas admin
+6. **Sessões com timeout**: Implemente timeout automático após inatividade
 
 ## Exemplo Rápido: Criar Hash de Senha
 

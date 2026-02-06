@@ -9,7 +9,7 @@
  * DELETE /api/users?id=xxx - Deleta usuário (apenas admin)
  */
 
-import { getUsers, createUser, updateUser, deleteUser, AirtableConfig } from '../../src/lib/airtable';
+import { getUsers, createUser, updateUser, deleteUser, getUserByUsername, AirtableConfig } from '../../src/lib/airtable';
 import { hashPassword } from '../../src/lib/auth';
 
 interface Env {
@@ -35,14 +35,14 @@ export async function onRequestGet(context: { request: Request; env: Env }) {
     const users = await getUsers({ config });
     
     // Remover senhas dos resultados
-    const usersWithoutPasswords = users.map(user => ({
-      id: user.id,
-      fields: {
-        ...user.fields,
-        password: undefined,
-      },
-      createdTime: user.createdTime,
-    }));
+    const usersWithoutPasswords = users.map(user => {
+      const { password, ...fieldsWithoutPassword } = user.fields;
+      return {
+        id: user.id,
+        fields: fieldsWithoutPassword,
+        createdTime: user.createdTime,
+      };
+    });
 
     return new Response(JSON.stringify(usersWithoutPasswords), {
       headers: {
@@ -88,6 +88,19 @@ export async function onRequestPost(context: { request: Request; env: Env }) {
     }
 
     const config = getConfig(context.env);
+    
+    // Verificar se o usuário já existe
+    const existingUser = await getUserByUsername(body.username, config);
+    if (existingUser) {
+      return new Response(JSON.stringify({ 
+        error: 'Username already exists' 
+      }), {
+        status: 409,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+    }
     
     // Hash da senha
     const hashedPassword = await hashPassword(body.password);

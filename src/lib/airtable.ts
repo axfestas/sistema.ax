@@ -525,8 +525,11 @@ export async function getUsers(options?: {
  * Buscar usuário por username
  */
 export async function getUserByUsername(username: string, config?: AirtableConfig): Promise<AirtableRecord<User> | null> {
+  // Sanitize username to prevent formula injection
+  const sanitizedUsername = username.replace(/'/g, "\\'");
+  
   const users = await getUsers({
-    filterByFormula: `{username} = '${username}'`,
+    filterByFormula: `{username} = '${sanitizedUsername}'`,
     maxRecords: 1,
     config,
   });

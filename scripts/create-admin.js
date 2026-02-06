@@ -2,9 +2,14 @@ const bcrypt = require('bcryptjs');
 
 async function generateAdminPassword() {
   // ALTERE A SENHA AQUI para a senha que você deseja usar
-  const password = 'admin123';
+  // IMPORTANTE: Use uma senha forte com letras maiúsculas, minúsculas, números e símbolos
+  const password = 'Admin@2024!Secure';
   
-  console.log('\n⚠️  ATENÇÃO: Altere a senha no arquivo scripts/create-admin.js antes de usar!\n');
+  console.log('\n⚠️  ATENÇÃO: Altere a senha no arquivo scripts/create-admin.js antes de usar!');
+  console.log('⚠️  Use uma senha forte com pelo menos 12 caracteres, incluindo:');
+  console.log('    - Letras maiúsculas e minúsculas');
+  console.log('    - Números');
+  console.log('    - Símbolos especiais (!@#$%^&*)\n');
   
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
