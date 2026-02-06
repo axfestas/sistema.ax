@@ -1,33 +1,89 @@
 import Airtable from 'airtable';
 
 // Configuração do Airtable
-// Para usar em produção no Cloudflare Pages, configure as variáveis de ambiente
-const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY || '';
-const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID || '';
+export interface AirtableConfig {
+  apiKey: string;
+  baseId: string;
+  tables?: {
+    items?: string;
+    reservations?: string;
+    maintenance?: string;
+    finance?: string;
+  };
+}
 
-// Nomes das tabelas (configuráveis via env vars)
-export const TABLES = {
-  ITEMS: process.env.AIRTABLE_ITEMS_TABLE || 'Items',
-  RESERVATIONS: process.env.AIRTABLE_RESERVATIONS_TABLE || 'Reservations',
-  MAINTENANCE: process.env.AIRTABLE_MAINTENANCE_TABLE || 'Maintenance',
-  FINANCE: process.env.AIRTABLE_FINANCE_TABLE || 'Finance',
+// Configuração global (pode ser sobrescrita por funções individuais)
+let globalConfig: AirtableConfig | null = null;
+
+// Nomes padrão das tabelas
+const DEFAULT_TABLE_NAMES = {
+  ITEMS: 'Items',
+  RESERVATIONS: 'Reservations',
+  MAINTENANCE: 'Maintenance',
+  FINANCE: 'Finance',
 };
 
-// Inicializar cliente Airtable
+// Cache do cliente Airtable
 let airtableBase: Airtable.Base | null = null;
+let currentConfigKey: string | null = null;
 
-export function getAirtableBase(): Airtable.Base {
-  if (!AIRTABLE_API_KEY || !AIRTABLE_BASE_ID) {
+/**
+ * Configura as credenciais do Airtable globalmente
+ */
+export function configureAirtable(config: AirtableConfig): void {
+  globalConfig = config;
+  // Limpar cache quando configuração muda
+  airtableBase = null;
+  currentConfigKey = null;
+}
+
+/**
+ * Obtém a configuração atual (global ou padrão)
+ */
+function getConfig(): AirtableConfig {
+  if (!globalConfig) {
     throw new Error(
-      'Airtable credentials not configured. Please set AIRTABLE_API_KEY and AIRTABLE_BASE_ID environment variables.'
+      'Airtable not configured. Call configureAirtable() first or pass config to individual functions.'
+    );
+  }
+  return globalConfig;
+}
+
+/**
+ * Obtém os nomes das tabelas baseado na configuração
+ */
+export function getTableNames(config?: AirtableConfig) {
+  const cfg = config || getConfig();
+  return {
+    ITEMS: cfg.tables?.items || DEFAULT_TABLE_NAMES.ITEMS,
+    RESERVATIONS: cfg.tables?.reservations || DEFAULT_TABLE_NAMES.RESERVATIONS,
+    MAINTENANCE: cfg.tables?.maintenance || DEFAULT_TABLE_NAMES.MAINTENANCE,
+    FINANCE: cfg.tables?.finance || DEFAULT_TABLE_NAMES.FINANCE,
+  };
+}
+
+/**
+ * Inicializa e retorna o cliente Airtable
+ */
+export function getAirtableBase(config?: AirtableConfig): Airtable.Base {
+  const cfg = config || getConfig();
+  
+  if (!cfg.apiKey || !cfg.baseId) {
+    throw new Error(
+      'Airtable credentials not configured. Please provide apiKey and baseId.'
     );
   }
 
-  if (!airtableBase) {
+  // Criar chave única para esta configuração
+  const configKey = `${cfg.apiKey}:${cfg.baseId}`;
+  
+  // Recriar base se configuração mudou
+  if (!airtableBase || currentConfigKey !== configKey) {
     Airtable.configure({
-      apiKey: AIRTABLE_API_KEY,
+      apiKey: cfg.apiKey,
     });
-    airtableBase = Airtable.base(AIRTABLE_BASE_ID);
+    airtableBase = Airtable.base(cfg.baseId);
+    currentConfigKey = configKey;
   }
 
   return airtableBase;
@@ -99,11 +155,13 @@ export async function getItems(options?: {
   maxRecords?: number;
   view?: string;
   filterByFormula?: string;
+  config?: AirtableConfig;
 }): Promise<AirtableRecord<Item>[]> {
-  const base = getAirtableBase();
+  const base = getAirtableBase(options?.config);
+  const tables = getTableNames(options?.config);
   const records: AirtableRecord<Item>[] = [];
 
-  await base(TABLES.ITEMS)
+  await base(tables.ITEMS)
     .select({
       maxRecords: options?.maxRecords,
       view: options?.view,
@@ -126,11 +184,12 @@ export async function getItems(options?: {
 /**
  * Buscar item por ID
  */
-export async function getItemById(id: string): Promise<AirtableRecord<Item> | null> {
-  const base = getAirtableBase();
+export async function getItemById(id: string, config?: AirtableConfig): Promise<AirtableRecord<Item> | null> {
+  const base = getAirtableBase(config);
+  const tables = getTableNames(config);
   
   try {
-    const record = await base(TABLES.ITEMS).find(id);
+    const record = await base(tables.ITEMS).find(id);
     return {
       id: record.id,
       fields: record.fields as unknown as Item,
@@ -145,10 +204,11 @@ export async function getItemById(id: string): Promise<AirtableRecord<Item> | nu
 /**
  * Criar novo item
  */
-export async function createItem(item: Item): Promise<AirtableRecord<Item>> {
-  const base = getAirtableBase();
+export async function createItem(item: Item, config?: AirtableConfig): Promise<AirtableRecord<Item>> {
+  const base = getAirtableBase(config);
+  const tables = getTableNames(config);
   
-  const records = await base(TABLES.ITEMS).create([item] as any);
+  const records = await base(tables.ITEMS).create([item] as any);
   const record = records[0];
   
   return {
@@ -161,10 +221,11 @@ export async function createItem(item: Item): Promise<AirtableRecord<Item>> {
 /**
  * Atualizar item
  */
-export async function updateItem(id: string, updates: Partial<Item>): Promise<AirtableRecord<Item>> {
-  const base = getAirtableBase();
+export async function updateItem(id: string, updates: Partial<Item>, config?: AirtableConfig): Promise<AirtableRecord<Item>> {
+  const base = getAirtableBase(config);
+  const tables = getTableNames(config);
   
-  const records = await base(TABLES.ITEMS).update([{ id, fields: updates as any }]);
+  const records = await base(tables.ITEMS).update([{ id, fields: updates as any }]);
   const record = records[0];
   
   return {
@@ -177,11 +238,12 @@ export async function updateItem(id: string, updates: Partial<Item>): Promise<Ai
 /**
  * Deletar item
  */
-export async function deleteItem(id: string): Promise<boolean> {
-  const base = getAirtableBase();
+export async function deleteItem(id: string, config?: AirtableConfig): Promise<boolean> {
+  const base = getAirtableBase(config);
+  const tables = getTableNames(config);
   
   try {
-    await base(TABLES.ITEMS).destroy(id);
+    await base(tables.ITEMS).destroy(id);
     return true;
   } catch (error) {
     console.error('Error deleting item:', error);
@@ -198,11 +260,13 @@ export async function getReservations(options?: {
   maxRecords?: number;
   view?: string;
   filterByFormula?: string;
+  config?: AirtableConfig;
 }): Promise<AirtableRecord<Reservation>[]> {
-  const base = getAirtableBase();
+  const base = getAirtableBase(options?.config);
+  const tables = getTableNames(options?.config);
   const records: AirtableRecord<Reservation>[] = [];
 
-  await base(TABLES.RESERVATIONS)
+  await base(tables.RESERVATIONS)
     .select({
       maxRecords: options?.maxRecords,
       view: options?.view,
@@ -225,10 +289,11 @@ export async function getReservations(options?: {
 /**
  * Criar nova reserva
  */
-export async function createReservation(reservation: Reservation): Promise<AirtableRecord<Reservation>> {
-  const base = getAirtableBase();
+export async function createReservation(reservation: Reservation, config?: AirtableConfig): Promise<AirtableRecord<Reservation>> {
+  const base = getAirtableBase(config);
+  const tables = getTableNames(config);
   
-  const records = await base(TABLES.RESERVATIONS).create([reservation] as any);
+  const records = await base(tables.RESERVATIONS).create([reservation] as any);
   const record = records[0];
   
   return {
@@ -241,10 +306,11 @@ export async function createReservation(reservation: Reservation): Promise<Airta
 /**
  * Atualizar reserva
  */
-export async function updateReservation(id: string, updates: Partial<Reservation>): Promise<AirtableRecord<Reservation>> {
-  const base = getAirtableBase();
+export async function updateReservation(id: string, updates: Partial<Reservation>, config?: AirtableConfig): Promise<AirtableRecord<Reservation>> {
+  const base = getAirtableBase(config);
+  const tables = getTableNames(config);
   
-  const records = await base(TABLES.RESERVATIONS).update([{ id, fields: updates as any }]);
+  const records = await base(tables.RESERVATIONS).update([{ id, fields: updates as any }]);
   const record = records[0];
   
   return {
@@ -263,11 +329,13 @@ export async function getMaintenance(options?: {
   maxRecords?: number;
   view?: string;
   filterByFormula?: string;
+  config?: AirtableConfig;
 }): Promise<AirtableRecord<Maintenance>[]> {
-  const base = getAirtableBase();
+  const base = getAirtableBase(options?.config);
+  const tables = getTableNames(options?.config);
   const records: AirtableRecord<Maintenance>[] = [];
 
-  await base(TABLES.MAINTENANCE)
+  await base(tables.MAINTENANCE)
     .select({
       maxRecords: options?.maxRecords,
       view: options?.view,
@@ -290,10 +358,11 @@ export async function getMaintenance(options?: {
 /**
  * Criar registro de manutenção
  */
-export async function createMaintenance(maintenance: Maintenance): Promise<AirtableRecord<Maintenance>> {
-  const base = getAirtableBase();
+export async function createMaintenance(maintenance: Maintenance, config?: AirtableConfig): Promise<AirtableRecord<Maintenance>> {
+  const base = getAirtableBase(config);
+  const tables = getTableNames(config);
   
-  const records = await base(TABLES.MAINTENANCE).create([maintenance] as any);
+  const records = await base(tables.MAINTENANCE).create([maintenance] as any);
   const record = records[0];
   
   return {
@@ -312,11 +381,13 @@ export async function getFinance(options?: {
   maxRecords?: number;
   view?: string;
   filterByFormula?: string;
+  config?: AirtableConfig;
 }): Promise<AirtableRecord<Finance>[]> {
-  const base = getAirtableBase();
+  const base = getAirtableBase(options?.config);
+  const tables = getTableNames(options?.config);
   const records: AirtableRecord<Finance>[] = [];
 
-  await base(TABLES.FINANCE)
+  await base(tables.FINANCE)
     .select({
       maxRecords: options?.maxRecords,
       view: options?.view,
@@ -339,10 +410,11 @@ export async function getFinance(options?: {
 /**
  * Criar registro financeiro
  */
-export async function createFinance(finance: Finance): Promise<AirtableRecord<Finance>> {
-  const base = getAirtableBase();
+export async function createFinance(finance: Finance, config?: AirtableConfig): Promise<AirtableRecord<Finance>> {
+  const base = getAirtableBase(config);
+  const tables = getTableNames(config);
   
-  const records = await base(TABLES.FINANCE).create([finance] as any);
+  const records = await base(tables.FINANCE).create([finance] as any);
   const record = records[0];
   
   return {
@@ -355,7 +427,7 @@ export async function createFinance(finance: Finance): Promise<AirtableRecord<Fi
 /**
  * Calcular totais financeiros
  */
-export async function getFinanceSummary(startDate?: string, endDate?: string) {
+export async function getFinanceSummary(startDate?: string, endDate?: string, config?: AirtableConfig) {
   let filterFormula = '';
   
   if (startDate && endDate) {
@@ -368,6 +440,7 @@ export async function getFinanceSummary(startDate?: string, endDate?: string) {
 
   const records = await getFinance({
     filterByFormula: filterFormula || undefined,
+    config,
   });
 
   const summary = {
