@@ -27,13 +27,13 @@ jobs:
           if [ -z "${CF_API_TOKEN}" ]; then echo "Missing CF_API_TOKEN secret" && exit 1; fi
 
       - name: Install Wrangler
-        run: npm i -g @cloudflare/wrangler
+        run: npm i -g wrangler
 
-      - name: Publish Worker
+      - name: Deploy Worker
         working-directory: workers
         env:
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
         run: |
-          # publica usando account_id + api-token (só para CI não interativo)
-          npx wrangler publish --account-id $CF_ACCOUNT_ID --api-token $CF_API_TOKEN --verbose
+          # deploy usando account_id + api-token (só para CI não interativo)
+          npx wrangler deploy --account-id $CF_ACCOUNT_ID --api-token $CF_API_TOKEN --verbose
