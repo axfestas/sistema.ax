@@ -1,7 +1,22 @@
+# Cloudflare Pages Configuration
+# IMPORTANT: Do NOT add a [build] section here!
+# Pages projects don't support [build] in wrangler.toml
+# Build commands must be configured in:
+# - Cloudflare Dashboard (Settings > Builds & deployments)
+#   Use: npm install && npm run build
+# - GitHub Actions (see .github/workflows/pages-deploy.yml)
+#
+# The 'npm install' is required BEFORE building to ensure Pages Functions
+# can resolve npm packages like 'airtable'
+
 name = "sistema-ax-festas"
 compatibility_date = "2024-01-01"
 
 pages_build_output_dir = "out"
+
+# Enable Node.js compatibility for Pages Functions
+# This allows using Node.js APIs and npm packages like 'airtable'
+compatibility_flags = ["nodejs_compat"]
 
 # Environment variables
 [vars]

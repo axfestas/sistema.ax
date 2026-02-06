@@ -27,8 +27,10 @@ Configure as seguintes opções:
 - **Project name**: `sistema-ax-festas` (ou nome de sua preferência)
 - **Production branch**: `main` (ou sua branch principal)
 - **Framework preset**: `Next.js (Static HTML Export)`
-- **Build command**: `npm run build`
+- **Build command**: `npm install && npm run build`
 - **Build output directory**: `out`
+
+⚠️ **IMPORTANTE**: O comando `npm install && npm run build` é necessário para que as Pages Functions possam usar pacotes npm como 'airtable'. Se você usar apenas `npm run build`, as Functions não conseguirão resolver as dependências.
 
 ### Passo 3: Variáveis de Ambiente
 
@@ -363,6 +365,49 @@ Se você encontrar erros de autenticação no GitHub Actions, verifique:
    - **Build output directory**: `out`
 
 **Importante**: A seção `[build]` é exclusiva para **Workers**, não para **Pages**. Pages usa configuração via Dashboard ou GitHub Actions.
+
+### Erro: "Could not resolve 'airtable'" (Pages Functions)
+
+**Erro completo:**
+```
+✘ [ERROR] Build failed with 1 error:
+✘ [ERROR] Could not resolve "airtable"
+    ../src/lib/airtable.ts:1:21:
+    1 │ import Airtable from 'airtable';
+```
+
+**Causa**: As Pages Functions estão tentando usar pacotes npm (como 'airtable'), mas o processo de build não instalou as dependências antes de fazer o bundle das Functions.
+
+**Solução**:
+
+1. **Configure o build command correto no Dashboard do Cloudflare**
+   
+   Vá para **Settings** → **Builds & deployments** e configure:
+   - **Build command**: `npm install && npm run build`
+   - **Build output directory**: `out`
+   
+   ⚠️ **IMPORTANTE**: Use `npm install && npm run build` (não apenas `npm run build`). O `npm install` é necessário para que as Pages Functions possam resolver pacotes npm durante o bundle.
+
+2. **Verifique o wrangler.toml**
+   
+   Certifique-se de que o arquivo contém a flag de compatibilidade Node.js:
+   ```toml
+   compatibility_flags = ["nodejs_compat"]
+   ```
+   
+   Esta flag permite que as Pages Functions usem APIs e pacotes Node.js.
+
+3. **Para deploy via GitHub Actions**
+   
+   O workflow já está configurado corretamente em `.github/workflows/pages-deploy.yml`:
+   ```yaml
+   - name: Install dependencies
+     run: npm ci
+   - name: Build
+     run: npm run build
+   ```
+
+**Nota**: Este erro aparece apenas quando você faz deploy direto via Dashboard do Cloudflare. Deploys via GitHub Actions funcionam corretamente pois o workflow já inclui a instalação de dependências.
 
 ### Erro de Autenticação (Authentication error [code: 10000])
 
