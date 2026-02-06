@@ -44,6 +44,27 @@ NODE_VERSION = 18
 2. Aguarde o build completar (leva ~2-3 minutos)
 3. Seu site estará disponível em `https://sistema-ax-festas.pages.dev`
 
+### ⚠️ Importante: Configuração do wrangler.toml
+
+O arquivo `wrangler.toml` **NÃO** deve conter uma seção `[build]` para projetos Pages. Essa seção é apenas para Workers.
+
+**❌ Incorreto (causa erro):**
+```toml
+[build]
+command = "npm run build"
+```
+
+**✅ Correto:**
+```toml
+name = "sistema-ax-festas"
+pages_build_output_dir = "out"
+
+[vars]
+NODE_VERSION = "18"
+```
+
+O comando de build deve ser configurado **apenas no Dashboard do Cloudflare** (conforme Passo 2 acima) ou via GitHub Actions (ver mais abaixo).
+
 ## 🔧 Método 2: Deploy via Wrangler CLI
 
 ### Instalação do Wrangler
@@ -310,6 +331,38 @@ Se você encontrar erros de autenticação no GitHub Actions, verifique:
 4. Aba **Functions** - logs de API (se usar)
 
 ## ⚠️ Troubleshooting
+
+### Erro: "Configuration file does not support 'build'"
+
+**Erro completo:**
+```
+✘ [ERROR] Running configuration file validation for Pages:
+    - Configuration file for Pages projects does not support "build"
+```
+
+**Causa**: O arquivo `wrangler.toml` contém uma seção `[build]` que não é suportada para projetos Pages.
+
+**Solução**:
+
+1. **Remova a seção `[build]` do wrangler.toml**
+   
+   O `wrangler.toml` deve conter apenas:
+   ```toml
+   name = "sistema-ax-festas"
+   compatibility_date = "2024-01-01"
+   pages_build_output_dir = "out"
+   
+   [vars]
+   NODE_VERSION = "18"
+   ```
+
+2. **Configure o build no Dashboard do Cloudflare**
+   
+   Vá para **Settings** → **Builds & deployments** e configure:
+   - **Build command**: `npm run build`
+   - **Build output directory**: `out`
+
+**Importante**: A seção `[build]` é exclusiva para **Workers**, não para **Pages**. Pages usa configuração via Dashboard ou GitHub Actions.
 
 ### Erro de Autenticação (Authentication error [code: 10000])
 
