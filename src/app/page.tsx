@@ -73,10 +73,10 @@ export default function Home() {
             Aluguel de itens para festas e eventos com qualidade e excelência
           </p>
           <a 
-            href="#portfolio" 
+            href="/catalog" 
             className="inline-block bg-white text-brand-gray font-bold py-4 px-8 rounded-full hover:bg-brand-yellow hover:text-white transition-all duration-300 shadow-lg"
           >
-            Ver Nosso Portfólio
+            Ver Nosso Catálogo
           </a>
         </div>
       </section>
