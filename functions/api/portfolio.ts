@@ -55,7 +55,7 @@ export async function onRequestGet(context: {
     const maxRecords = url.searchParams.get('maxRecords');
 
     const images = await getPortfolioImages(db, {
-      activeOnly: activeOnly ? true : undefined,
+      activeOnly: activeOnly || undefined,
       maxRecords: maxRecords ? Number(maxRecords) : undefined,
     });
 
@@ -65,12 +65,13 @@ export async function onRequestGet(context: {
         'Cache-Control': 'public, max-age=60',
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching portfolio images:', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
       JSON.stringify({
         error: 'Failed to fetch portfolio images',
-        message: error.message,
+        message: message,
       }),
       {
         status: 500,
@@ -106,12 +107,13 @@ export async function onRequestPost(context: {
       status: 201,
       headers: { 'Content-Type': 'application/json' },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating portfolio image:', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
       JSON.stringify({
         error: 'Failed to create portfolio image',
-        message: error.message,
+        message: message,
       }),
       {
         status: 500,
@@ -153,12 +155,13 @@ export async function onRequestPut(context: {
     return new Response(JSON.stringify(updatedImage), {
       headers: { 'Content-Type': 'application/json' },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating portfolio image:', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
       JSON.stringify({
         error: 'Failed to update portfolio image',
-        message: error.message,
+        message: message,
       }),
       {
         status: 500,
@@ -200,12 +203,13 @@ export async function onRequestDelete(context: {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error deleting portfolio image:', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
       JSON.stringify({
         error: 'Failed to delete portfolio image',
-        message: error.message,
+        message: message,
       }),
       {
         status: 500,
