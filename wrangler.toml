@@ -13,6 +13,11 @@ binding = "DB"
 database_name = "sistema"
 database_id = "a11b14f5-5d31-482f-ac32-4caf446944dd"
 
+# R2 Storage Binding
+[[r2_buckets]]
+binding = "STORAGE"
+bucket_name = "sistema-ax-festas"
+
 # Environment variables
 [vars]
 NODE_VERSION = "18"

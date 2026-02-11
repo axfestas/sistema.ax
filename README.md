@@ -157,13 +157,19 @@ wrangler d1 execute sistema-ax-festas --command="INSERT INTO users (email, passw
 
 Para armazenar imagens e arquivos:
 
+**Guia Completo:** [R2_SETUP.md](./R2_SETUP.md)
+
+**Resumo:**
+
 1. Crie um bucket R2 no Cloudflare Dashboard
-2. Configure a binding no `wrangler.toml`:
+2. Configure a binding no `wrangler.toml` (já configurado):
 ```toml
 [[r2_buckets]]
 binding = "STORAGE"
 bucket_name = "sistema-ax-festas"
 ```
+3. Use a API `/api/upload` para upload de imagens
+4. Veja exemplos de uso no [guia completo](./R2_SETUP.md)
 
 ## ⚠️ Importante
 
