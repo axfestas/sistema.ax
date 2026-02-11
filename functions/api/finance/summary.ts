@@ -1,56 +1,95 @@
 /**
  * Cloudflare Pages Function para resumo financeiro
  * 
- * Endpoint: /api/finance/summary
- * 
- * Exemplos:
+ * Endpoints:
  * - GET /api/finance/summary - Resumo de todas as transações
  * - GET /api/finance/summary?startDate=2026-01-01&endDate=2026-12-31 - Período específico
  */
 
-import { getFinanceSummary, AirtableConfig } from '../../../src/lib/airtable';
+import { getFinancialSummary } from '../../../src/lib/db';
 
 interface Env {
-  AIRTABLE_API_KEY: string;
-  AIRTABLE_BASE_ID: string;
-  AIRTABLE_FINANCE_TABLE?: string;
+  DB: D1Database;
 }
 
-export async function onRequestGet(context: { request: Request; env: Env }) {
+export async function onRequestGet(context: {
+  request: Request;
+  env: Env;
+}) {
   try {
-    // Criar configuração do Airtable a partir das variáveis de ambiente
-    const config: AirtableConfig = {
-      apiKey: context.env.AIRTABLE_API_KEY,
-      baseId: context.env.AIRTABLE_BASE_ID,
-      tables: {
-        finance: context.env.AIRTABLE_FINANCE_TABLE,
-      },
-    };
-
     const url = new URL(context.request.url);
+    const db = context.env.DB;
+
     const startDate = url.searchParams.get('startDate') || undefined;
     const endDate = url.searchParams.get('endDate') || undefined;
 
-    const summary = await getFinanceSummary(startDate, endDate, config);
+    const summary = await getFinancialSummary(db, startDate, endDate);
 
     return new Response(JSON.stringify(summary), {
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=300', // Cache por 5 minutos
+        'Cache-Control': 'public, max-age=300',
       },
     });
-
   } catch (error: any) {
     console.error('Error fetching finance summary:', error);
-    
-    return new Response(JSON.stringify({ 
-      error: 'Failed to fetch finance summary',
-      message: error.message 
-    }), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json',
-      },
+    return new Response(
+      JSON.stringify({
+        error: 'Failed to fetch finance summary',
+        message: error.message,
+      }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+  }
+}
+
+export async function onRequestPost(context: {
+  request: Request;
+  env: Env;
+}) {
+  try {
+    const db = context.env.DB;
+    const body = (await context.request.json()) as {
+      type: 'income' | 'expense';
+      description: string;
+      amount: number;
+      date: string;
+    };
+
+    if (!body.type || !body.description || !body.amount || !body.date) {
+      return new Response(
+        JSON.stringify({
+          error: 'Missing required fields: type, description, amount, date',
+        }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    // Importar createFinancial apenas quando necessário
+    const { createFinancial } = await import('../../../src/lib/db');
+    const newRecord = await createFinancial(db, body);
+
+    return new Response(JSON.stringify(newRecord), {
+      status: 201,
+      headers: { 'Content-Type': 'application/json' },
     });
+  } catch (error: any) {
+    console.error('Error creating financial record:', error);
+    return new Response(
+      JSON.stringify({
+        error: 'Failed to create financial record',
+        message: error.message,
+      }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
   }
 }
