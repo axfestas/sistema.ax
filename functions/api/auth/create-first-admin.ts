@@ -103,7 +103,7 @@ export async function onRequestPost(context: {
       );
     }
 
-    // Criar o usuário admin
+    // Criar usuárie admin
     const result = await registerUser(db, {
       email: body.email,
       password: body.password,
@@ -123,7 +123,7 @@ export async function onRequestPost(context: {
       .bind('admin', result.user.id)
       .run();
 
-    // Buscar usuário atualizado
+    // Buscar usuárie atualizade
     const adminUser = await getUserByEmail(db, body.email);
 
     return new Response(

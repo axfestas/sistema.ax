@@ -1,6 +1,6 @@
 /**
  * POST /api/auth/register
- * Registra novo usuário (APENAS ADMIN)
+ * Registra novo usuárie (APENAS ADMIN)
  */
 
 import type { D1Database, R2Bucket } from '@cloudflare/workers-types';
