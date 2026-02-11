@@ -53,7 +53,7 @@ export async function onRequestPost(context: {
     }
 
     // Validar tipo de arquivo (apenas imagens)
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
       return new Response(
         JSON.stringify({ 
@@ -68,8 +68,11 @@ export async function onRequestPost(context: {
 
     // Gerar nome único para o arquivo
     const timestamp = Date.now();
-    const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-    const key = `${folder}/${timestamp}-${sanitizedName}`;
+    // Extrair extensão de forma segura
+    const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+    // Sanitizar apenas o nome base (sem extensão)
+    const baseName = file.name.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9-]/g, '_');
+    const key = `${folder}/${timestamp}-${baseName}.${extension}`;
 
     // Upload para R2
     const arrayBuffer = await file.arrayBuffer();
@@ -161,6 +164,8 @@ export async function onRequestGet(context: {
     const headers = new Headers();
     object.writeHttpMetadata(headers);
     headers.set('etag', object.httpEtag);
+    // Cache for 1 year - files use timestamp in key for cache busting
+    // Note: Keys include timestamp, so each upload creates a unique URL
     headers.set('cache-control', 'public, max-age=31536000, immutable');
 
     return new Response(object.body, {

@@ -185,8 +185,8 @@ function PortfolioImage({ imageKey }: { imageKey: string }) {
 
 1. **Autenticação:** Upload e delete requerem autenticação de admin
 2. **Tipos de arquivo:** Apenas imagens são permitidas (JPEG, PNG, GIF, WEBP)
-3. **Nomes únicos:** Cada arquivo recebe um timestamp para evitar conflitos
-4. **Sanitização:** Nomes de arquivo são sanitizados para evitar caracteres especiais
+3. **Nomes únicos:** Cada arquivo recebe um timestamp único para evitar conflitos e cache busting
+4. **Sanitização:** Nomes de arquivo são sanitizados removendo caracteres especiais e separando extensão
 
 ### Recomendações
 
