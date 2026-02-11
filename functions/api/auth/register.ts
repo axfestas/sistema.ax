@@ -24,7 +24,7 @@ export async function onRequestPost(context: {
     } catch (error) {
       return new Response(
         JSON.stringify({
-          error: 'Acesso negado. Apenas administradores podem criar usuários.',
+          error: 'Acesso negado. Apenas administradories podem criar usuáries.',
         }),
         {
           status: 403,
@@ -62,7 +62,7 @@ export async function onRequestPost(context: {
 
     return new Response(
       JSON.stringify({
-        message: 'Usuário registrado com sucesso',
+        message: 'Usuárie registrade com sucesso',
         user: result.user,
       }),
       {

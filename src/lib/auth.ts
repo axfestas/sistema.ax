@@ -108,7 +108,7 @@ export async function registerUser(
   // Verificar se email já existe
   const existingUser = await getUserByEmail(db, input.email);
   if (existingUser) {
-    return { error: 'Email já cadastrado' };
+    return { error: 'Email já cadastrade' };
   }
 
   // Hash da senha
@@ -125,7 +125,7 @@ export async function registerUser(
 
     return { user: result as unknown as User };
   } catch (error: any) {
-    return { error: 'Erro ao criar usuário' };
+    return { error: 'Erro ao criar usuárie' };
   }
 }
 

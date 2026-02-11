@@ -39,7 +39,7 @@ export default function AdminPage() {
 
       <div className="bg-white p-6 rounded-lg shadow mb-8">
         <p className="text-lg">
-          Bem-vindo, <strong>{user.name}</strong>! ({user.email})
+          Bem-vinde, <strong>{user.name}</strong>! ({user.email})
         </p>
         <p className="text-sm text-gray-600 mt-2">
           Cargo: <strong>{user.role}</strong>

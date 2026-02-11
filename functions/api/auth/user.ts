@@ -1,6 +1,6 @@
 /**
  * GET /api/auth/user
- * Retorna dados do usuário autenticado
+ * Retorna dados de usuárie autenticade
  */
 
 import type { D1Database, R2Bucket } from '@cloudflare/workers-types';

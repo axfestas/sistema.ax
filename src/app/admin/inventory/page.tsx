@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useToast } from '@/hooks/useToast';
 
 interface Item {
   id: number;
@@ -21,6 +22,7 @@ export default function InventoryPage() {
     price: '',
     quantity: '',
   });
+  const { showSuccess, showError } = useToast();
 
   useEffect(() => {
     loadItems();
@@ -67,13 +69,14 @@ export default function InventoryPage() {
         setShowForm(false);
         setEditingItem(null);
         setFormData({ name: '', description: '', price: '', quantity: '' });
+        showSuccess(editingItem ? 'Item atualizado com sucesso!' : 'Item salve com sucesso!');
       } else {
         const error: any = await response.json();
-        alert('Erro: ' + (error.error || 'Falha ao salvar item'));
+        showError(error.error || 'Erro ao salvar item');
       }
     } catch (error) {
       console.error('Error saving item:', error);
-      alert('Erro ao salvar item');
+      showError('Erro ao salvar item');
     }
   };
 
@@ -98,12 +101,13 @@ export default function InventoryPage() {
 
       if (response.ok) {
         await loadItems();
+        showSuccess('Item deletade com sucesso!');
       } else {
-        alert('Erro ao deletar item');
+        showError('Erro ao deletar item');
       }
     } catch (error) {
       console.error('Error deleting item:', error);
-      alert('Erro ao deletar item');
+      showError('Erro ao deletar item');
     }
   };
 
@@ -200,7 +204,7 @@ export default function InventoryPage() {
       <div className="bg-white shadow overflow-hidden sm:rounded-md">
         {items.length === 0 ? (
           <div className="px-6 py-4">
-            <p className="text-gray-500">Nenhum item cadastrado</p>
+            <p className="text-gray-500">Nenhum item cadastrade</p>
           </div>
         ) : (
           <ul role="list" className="divide-y divide-gray-200">
