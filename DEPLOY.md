@@ -142,22 +142,65 @@ wrangler pages deploy out --project-name=sistema-ax-festas
 
 ## 🗄️ Configuração do Banco de Dados D1
 
+### ⚠️ CRÍTICO: Este passo é OBRIGATÓRIO antes do primeiro uso!
+
+**Sem executar estes passos, o sistema vai falhar com erro "no such table: users"**
+
 ### 1. Criar Banco D1
 
 ```bash
 # Via CLI
-wrangler d1 create sistema-ax-festas
+wrangler d1 create sistema
 
 # Anote o database_id retornado
 ```
 
-### 2. Executar Schema
+### 2. Executar Schema (OBRIGATÓRIO!)
+
+**Opção A: Usando script automatizado (Recomendado)**
 
 ```bash
-wrangler d1 execute sistema-ax-festas --file=./schema.sql
+npm run db:init
 ```
 
-### 3. Configurar Binding
+Este script irá:
+- ✅ Verificar se o banco existe
+- ✅ Aplicar o schema completo
+- ✅ Criar todas as tabelas necessárias
+- ✅ Criar usuário admin padrão
+- ✅ Inserir dados iniciais
+
+**Opção B: Manualmente**
+
+```bash
+wrangler d1 execute sistema --file=./schema.sql
+```
+
+### 3. Verificar Inicialização
+
+Confirme que as tabelas foram criadas:
+
+```bash
+npm run db:check
+```
+
+Ou manualmente:
+
+```bash
+wrangler d1 execute sistema --command="SELECT name FROM sqlite_master WHERE type='table';"
+```
+
+Você deve ver 8 tabelas:
+- users
+- sessions
+- items
+- reservations
+- maintenance
+- financial_records
+- portfolio_images
+- site_settings
+
+### 4. Configurar Binding
 
 No arquivo `wrangler.toml`, adicione:
 
@@ -476,6 +519,47 @@ Authentication error [code: 10000]
 - Verifique se todas as rotas foram exportadas corretamente
 - Rode `npm run build` localmente e verifique pasta `out/`
 - Certifique-se que `pages_build_output_dir = "out"` no `wrangler.toml`
+
+### 🚨 Erro: "D1_ERROR: no such table: users"
+
+**Este é o erro mais comum em produção!**
+
+**Causa:** O banco de dados D1 existe mas o schema nunca foi aplicado.
+
+**Solução Rápida:**
+
+```bash
+# Inicializar banco automaticamente
+npm run db:init
+```
+
+Ou manualmente:
+
+```bash
+# Aplicar schema
+wrangler d1 execute sistema --file=./schema.sql
+
+# Verificar tabelas
+wrangler d1 execute sistema --command="SELECT name FROM sqlite_master WHERE type='table';"
+```
+
+**Verificação:**
+- Você deve ver 8 tabelas (users, sessions, items, etc.)
+- Usuário admin deve existir: alex.fraga@axfestas.com.br
+
+**Documentação completa:** Veja [DATABASE_INIT_FIX.md](./DATABASE_INIT_FIX.md)
+
+### Erro: "Wrangler not found"
+
+Instale globalmente:
+```bash
+npm install -g wrangler
+```
+
+Ou use npx:
+```bash
+npx wrangler d1 execute sistema --file=./schema.sql
+```
 
 ## 🎯 Próximos Passos
 

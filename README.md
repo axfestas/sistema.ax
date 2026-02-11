@@ -119,18 +119,41 @@ O projeto agora suporta integração com Airtable! Para configurar:
 
 Alternativa para usar banco de dados SQL:
 
-1. Crie um banco D1 no Cloudflare Dashboard
-2. Execute o schema SQL:
+#### ⚠️ IMPORTANTE: Inicialização Obrigatória
+
+**Antes de usar o sistema, você DEVE inicializar o banco de dados!**
+
+Sem isso, você verá o erro: `D1_ERROR: no such table: users`
+
+**Inicialização Rápida:**
+
 ```bash
-wrangler d1 execute YOUR_DATABASE_NAME --file=./schema.sql
+# 1. Criar banco D1 (se ainda não existir)
+wrangler d1 create sistema
+
+# 2. Inicializar com schema (OBRIGATÓRIO!)
+npm run db:init
+
+# Ou manualmente:
+wrangler d1 execute sistema --file=./schema.sql
+
+# 3. Verificar que funcionou
+npm run db:check
 ```
+
+**Configuração:**
+
+1. Crie um banco D1 no Cloudflare Dashboard (ou via CLI acima)
+2. Execute o schema SQL (comando acima)
 3. Configure a binding no `wrangler.toml`:
 ```toml
 [[d1_databases]]
 binding = "DB"
-database_name = "sistema-ax-festas"
+database_name = "sistema"
 database_id = "seu-database-id"
 ```
+
+**🚨 Erro de Produção?** Se o sistema já está no ar mas dá erro de "no such table", veja: [DATABASE_INIT_FIX.md](./DATABASE_INIT_FIX.md)
 
 ### 🔐 Criar Primeiro Usuário Admin
 
