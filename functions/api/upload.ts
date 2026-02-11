@@ -168,7 +168,7 @@ export async function onRequestGet(context: {
     // Note: Keys include timestamp, so each upload creates a unique URL
     headers.set('cache-control', 'public, max-age=31536000, immutable');
 
-    return new Response(object.body, {
+    return new Response(object.body as any, {
       headers,
     });
   } catch (error: unknown) {
