@@ -1,9 +1,9 @@
 /**
  * POST /api/auth/register
- * Registra novo usuário
+ * Registra novo usuário (APENAS ADMIN)
  */
 
-import { registerUser } from '../../../src/lib/auth';
+import { registerUser, requireAdmin } from '../../../src/lib/auth';
 
 interface Env {
   DB: D1Database;
@@ -15,6 +15,22 @@ export async function onRequestPost(context: {
 }) {
   try {
     const db = context.env.DB;
+
+    // Verifica se é admin antes de permitir registro
+    try {
+      await requireAdmin(db, context.request);
+    } catch (error) {
+      return new Response(
+        JSON.stringify({
+          error: 'Acesso negado. Apenas administradores podem criar usuários.',
+        }),
+        {
+          status: 403,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
     const body = (await context.request.json()) as {
       email: string;
       password: string;

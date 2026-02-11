@@ -22,7 +22,7 @@ export default function LoginForm() {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await response.json();
+      const data: any = await response.json();
 
       if (!response.ok) {
         setError(data.error || 'Erro ao fazer login');
@@ -82,12 +82,7 @@ export default function LoginForm() {
         </button>
       </form>
 
-      <p className="text-center text-sm mt-4">
-        Não tem conta?{' '}
-        <a href="/register" className="text-blue-500 hover:underline">
-          Registre-se aqui
-        </a>
-      </p>
+      {/* Registration removed - only admin can create users */}
     </div>
   );
 }

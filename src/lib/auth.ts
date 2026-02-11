@@ -68,7 +68,7 @@ export async function getUserByEmail(db: D1Database, email: string): Promise<Use
     .bind(email.toLowerCase())
     .first();
 
-  return (result as User) || null;
+  return result ? (result as unknown as User) : null;
 }
 
 /**
@@ -80,7 +80,7 @@ export async function getUserById(db: D1Database, userId: number): Promise<User 
     .bind(userId)
     .first();
 
-  return (result as User) || null;
+  return result ? (result as unknown as User) : null;
 }
 
 /**
@@ -123,7 +123,7 @@ export async function registerUser(
       .bind(input.email.toLowerCase(), storedPassword, input.name.trim(), 'user')
       .first();
 
-    return { user: result as User };
+    return { user: result as unknown as User };
   } catch (error: any) {
     return { error: 'Erro ao criar usuário' };
   }

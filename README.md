@@ -132,6 +132,21 @@ database_name = "sistema-ax-festas"
 database_id = "seu-database-id"
 ```
 
+### 🔐 Criar Primeiro Usuário Admin
+
+Para criar o primeiro administrador no sistema:
+
+**Guia Rápido:** [CRIAR_ADMIN_RAPIDO.md](./CRIAR_ADMIN_RAPIDO.md)
+
+**Documentação Completa:** [ADMIN_SETUP.md](./ADMIN_SETUP.md)
+
+```bash
+# Método rápido (2 comandos):
+node scripts/generate-password-hash.js "SuaSenha"
+# Copie o hash e execute:
+wrangler d1 execute sistema-ax-festas --command="INSERT INTO users (email, password_hash, name, role) VALUES ('alex.fraga@axfestas.com.br', 'HASH_AQUI', 'Alex Fraga', 'admin');"
+```
+
 ## 📦 Armazenamento (R2)
 
 Para armazenar imagens e arquivos:
