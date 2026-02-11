@@ -39,3 +39,7 @@ next-env.d.ts
 # Cloudflare
 .wrangler
 wrangler.toml.bak
+
+# Sensitive files with credentials
+COMANDOS_PRONTOS.md
+INICIO_ADMIN.md
