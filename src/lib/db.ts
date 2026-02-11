@@ -110,6 +110,64 @@ export interface FinancialSummary {
   };
 }
 
+// ==================== KITS ====================
+
+export interface Kit {
+  id: number;
+  name: string;
+  description?: string;
+  price: number;
+  is_active: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface KitInput {
+  name: string;
+  description?: string;
+  price: number;
+  is_active?: number;
+}
+
+export interface KitItem {
+  id: number;
+  kit_id: number;
+  item_id: number;
+  quantity: number;
+}
+
+export interface KitItemInput {
+  kit_id: number;
+  item_id: number;
+  quantity: number;
+}
+
+export interface KitWithItems extends Kit {
+  items: Array<{
+    id: number;
+    item_id: number;
+    item_name: string;
+    quantity: number;
+  }>;
+}
+
+export interface ReservationItem {
+  id: number;
+  reservation_id: number;
+  item_id: number;
+  quantity: number;
+  date_from: string;
+  date_to: string;
+}
+
+export interface ReservationItemInput {
+  reservation_id: number;
+  item_id: number;
+  quantity: number;
+  date_from: string;
+  date_to: string;
+}
+
 // ==================== ITEMS (ITENS) ====================
 
 /**
@@ -846,4 +904,359 @@ export async function updateSiteSettings(
   
   const result = await db.prepare(query).bind(...values).first();
   return result ? (result as unknown as SiteSettings) : null;
+}
+
+// ==================== KITS ====================
+
+/**
+ * Busca todos os kits
+ */
+export async function getKits(
+  db: D1Database,
+  options?: {
+    activeOnly?: boolean;
+    maxRecords?: number;
+  }
+): Promise<Kit[]> {
+  let query = 'SELECT * FROM kits';
+  const params: any[] = [];
+
+  if (options?.activeOnly) {
+    query += ' WHERE is_active = 1';
+  }
+
+  query += ' ORDER BY name';
+
+  if (options?.maxRecords) {
+    query += ` LIMIT ${options.maxRecords}`;
+  }
+
+  const result = await db.prepare(query).bind(...params).all();
+  return (result.results as unknown as Kit[]) || [];
+}
+
+/**
+ * Busca um kit específico pelo ID
+ */
+export async function getKitById(
+  db: D1Database,
+  kitId: number
+): Promise<Kit | null> {
+  const result = await db
+    .prepare('SELECT * FROM kits WHERE id = ?')
+    .bind(kitId)
+    .first();
+  return result ? (result as unknown as Kit) : null;
+}
+
+/**
+ * Busca um kit com seus itens
+ */
+export async function getKitWithItems(
+  db: D1Database,
+  kitId: number
+): Promise<KitWithItems | null> {
+  const kit = await getKitById(db, kitId);
+  if (!kit) return null;
+
+  const itemsResult = await db
+    .prepare(`
+      SELECT 
+        ki.id,
+        ki.item_id,
+        ki.quantity,
+        i.name as item_name
+      FROM kit_items ki
+      JOIN items i ON ki.item_id = i.id
+      WHERE ki.kit_id = ?
+      ORDER BY i.name
+    `)
+    .bind(kitId)
+    .all();
+
+  const items = itemsResult.results.map((row: any) => ({
+    id: row.id,
+    item_id: row.item_id,
+    item_name: row.item_name,
+    quantity: row.quantity,
+  }));
+
+  return {
+    ...kit,
+    items,
+  };
+}
+
+/**
+ * Cria um novo kit
+ */
+export async function createKit(
+  db: D1Database,
+  kit: KitInput
+): Promise<Kit> {
+  const result = await db
+    .prepare(
+      'INSERT INTO kits (name, description, price, is_active) VALUES (?, ?, ?, ?) RETURNING *'
+    )
+    .bind(
+      kit.name,
+      kit.description || null,
+      kit.price,
+      kit.is_active !== undefined ? kit.is_active : 1
+    )
+    .first();
+  return result as unknown as Kit;
+}
+
+/**
+ * Atualiza um kit existente
+ */
+export async function updateKit(
+  db: D1Database,
+  kitId: number,
+  updates: Partial<KitInput>
+): Promise<Kit | null> {
+  const fields: string[] = [];
+  const values: any[] = [];
+
+  if (updates.name !== undefined) {
+    fields.push('name = ?');
+    values.push(updates.name);
+  }
+  if (updates.description !== undefined) {
+    fields.push('description = ?');
+    values.push(updates.description);
+  }
+  if (updates.price !== undefined) {
+    fields.push('price = ?');
+    values.push(updates.price);
+  }
+  if (updates.is_active !== undefined) {
+    fields.push('is_active = ?');
+    values.push(updates.is_active);
+  }
+
+  if (fields.length === 0) {
+    return getKitById(db, kitId);
+  }
+
+  fields.push('updated_at = CURRENT_TIMESTAMP');
+  values.push(kitId);
+
+  const query = `UPDATE kits SET ${fields.join(', ')} WHERE id = ? RETURNING *`;
+  const result = await db.prepare(query).bind(...values).first();
+  return result ? (result as unknown as Kit) : null;
+}
+
+/**
+ * Deleta um kit
+ */
+export async function deleteKit(db: D1Database, kitId: number): Promise<boolean> {
+  const result = await db
+    .prepare('DELETE FROM kits WHERE id = ?')
+    .bind(kitId)
+    .run();
+  return result.success;
+}
+
+/**
+ * Adiciona um item a um kit
+ */
+export async function addItemToKit(
+  db: D1Database,
+  input: KitItemInput
+): Promise<KitItem> {
+  const result = await db
+    .prepare(
+      'INSERT INTO kit_items (kit_id, item_id, quantity) VALUES (?, ?, ?) RETURNING *'
+    )
+    .bind(input.kit_id, input.item_id, input.quantity)
+    .first();
+  return result as unknown as KitItem;
+}
+
+/**
+ * Remove um item de um kit
+ */
+export async function removeItemFromKit(
+  db: D1Database,
+  kitItemId: number
+): Promise<boolean> {
+  const result = await db
+    .prepare('DELETE FROM kit_items WHERE id = ?')
+    .bind(kitItemId)
+    .run();
+  return result.success;
+}
+
+/**
+ * Atualiza a quantidade de um item no kit
+ */
+export async function updateKitItem(
+  db: D1Database,
+  kitItemId: number,
+  quantity: number
+): Promise<KitItem | null> {
+  const result = await db
+    .prepare('UPDATE kit_items SET quantity = ? WHERE id = ? RETURNING *')
+    .bind(quantity, kitItemId)
+    .first();
+  return result ? (result as unknown as KitItem) : null;
+}
+
+/**
+ * Busca os itens de um kit
+ */
+export async function getKitItems(
+  db: D1Database,
+  kitId: number
+): Promise<KitItem[]> {
+  const result = await db
+    .prepare('SELECT * FROM kit_items WHERE kit_id = ?')
+    .bind(kitId)
+    .all();
+  return (result.results as unknown as KitItem[]) || [];
+}
+
+/**
+ * Verifica disponibilidade de um kit para um período
+ * Retorna true se todos os itens do kit estão disponíveis nas quantidades necessárias
+ */
+export async function checkKitAvailability(
+  db: D1Database,
+  kitId: number,
+  dateFrom: string,
+  dateTo: string,
+  quantityNeeded: number = 1
+): Promise<{ available: boolean; unavailableItems: string[] }> {
+  const kitItems = await getKitItems(db, kitId);
+  const unavailableItems: string[] = [];
+
+  for (const kitItem of kitItems) {
+    const item = await getItemById(db, kitItem.item_id);
+    if (!item) continue;
+
+    // Quantidade total necessária para o kit
+    const totalNeeded = kitItem.quantity * quantityNeeded;
+
+    // Buscar reservas existentes que se sobrepõem com o período
+    const reservedResult = await db
+      .prepare(`
+        SELECT COALESCE(SUM(quantity), 0) as total_reserved
+        FROM reservation_items
+        WHERE item_id = ?
+          AND (
+            (date_from <= ? AND date_to >= ?) OR
+            (date_from <= ? AND date_to >= ?) OR
+            (date_from >= ? AND date_to <= ?)
+          )
+      `)
+      .bind(
+        kitItem.item_id,
+        dateFrom, dateFrom,
+        dateTo, dateTo,
+        dateFrom, dateTo
+      )
+      .first();
+
+    const totalReserved = (reservedResult as any)?.total_reserved || 0;
+    const available = item.quantity - totalReserved;
+
+    if (available < totalNeeded) {
+      unavailableItems.push(item.name);
+    }
+  }
+
+  return {
+    available: unavailableItems.length === 0,
+    unavailableItems,
+  };
+}
+
+/**
+ * Cria itens de reserva para um kit
+ * Quando um kit é reservado, cria entradas em reservation_items para cada item do kit
+ */
+export async function createReservationItemsForKit(
+  db: D1Database,
+  reservationId: number,
+  kitId: number,
+  dateFrom: string,
+  dateTo: string,
+  quantity: number = 1
+): Promise<void> {
+  const kitItems = await getKitItems(db, kitId);
+
+  for (const kitItem of kitItems) {
+    await db
+      .prepare(
+        'INSERT INTO reservation_items (reservation_id, item_id, quantity, date_from, date_to) VALUES (?, ?, ?, ?, ?)'
+      )
+      .bind(
+        reservationId,
+        kitItem.item_id,
+        kitItem.quantity * quantity,
+        dateFrom,
+        dateTo
+      )
+      .run();
+  }
+}
+
+/**
+ * Busca itens de uma reserva
+ */
+export async function getReservationItems(
+  db: D1Database,
+  reservationId: number
+): Promise<ReservationItem[]> {
+  const result = await db
+    .prepare('SELECT * FROM reservation_items WHERE reservation_id = ?')
+    .bind(reservationId)
+    .all();
+  return (result.results as unknown as ReservationItem[]) || [];
+}
+
+/**
+ * Verifica disponibilidade de um item para um período
+ */
+export async function checkItemAvailability(
+  db: D1Database,
+  itemId: number,
+  dateFrom: string,
+  dateTo: string,
+  quantityNeeded: number = 1
+): Promise<{ available: boolean; quantityAvailable: number }> {
+  const item = await getItemById(db, itemId);
+  if (!item) {
+    return { available: false, quantityAvailable: 0 };
+  }
+
+  // Buscar reservas existentes que se sobrepõem com o período
+  const reservedResult = await db
+    .prepare(`
+      SELECT COALESCE(SUM(quantity), 0) as total_reserved
+      FROM reservation_items
+      WHERE item_id = ?
+        AND (
+          (date_from <= ? AND date_to >= ?) OR
+          (date_from <= ? AND date_to >= ?) OR
+          (date_from >= ? AND date_to <= ?)
+        )
+    `)
+    .bind(
+      itemId,
+      dateFrom, dateFrom,
+      dateTo, dateTo,
+      dateFrom, dateTo
+    )
+    .first();
+
+  const totalReserved = (reservedResult as any)?.total_reserved || 0;
+  const quantityAvailable = item.quantity - totalReserved;
+
+  return {
+    available: quantityAvailable >= quantityNeeded,
+    quantityAvailable: Math.max(0, quantityAvailable),
+  };
 }
