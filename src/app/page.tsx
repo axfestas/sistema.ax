@@ -68,11 +68,11 @@ export default function Home() {
           {loading ? (
             <div className="text-center py-12">
               <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-brand-yellow"></div>
-              <p className="mt-4 text-gray-600">Carregando portfólio...</p>
+              <p className="mt-4 text-gray-600">Carregando catálogo...</p>
             </div>
           ) : portfolioImages.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-600 text-lg">Nenhuma imagem de portfólio disponível no momento.</p>
+              <p className="text-gray-600 text-lg">Nenhuma imagem de catálogo disponível no momento.</p>
               <p className="text-gray-500 text-sm mt-2">Em breve adicionaremos fotos dos nossos trabalhos!</p>
             </div>
           ) : (

@@ -64,8 +64,8 @@ export default function AdminPage() {
           <p className="text-gray-600">Resumo financeiro</p>
         </a>
         <a href="/admin/portfolio" className="bg-pink-50 p-4 rounded-lg shadow hover:shadow-lg transition-shadow">
-          <h2 className="font-bold text-lg mb-2">Portfólio</h2>
-          <p className="text-gray-600">Gerenciar imagens do portfólio</p>
+          <h2 className="font-bold text-lg mb-2">Catálogo</h2>
+          <p className="text-gray-600">Gerenciar imagens do catálogo</p>
         </a>
         <a href="/admin/settings" className="bg-orange-50 p-4 rounded-lg shadow hover:shadow-lg transition-shadow">
           <h2 className="font-bold text-lg mb-2">⚙️ Configurações</h2>
