@@ -2,11 +2,25 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useCart } from './CartContext'
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [logoSrc, setLogoSrc] = useState('/logotipo.png')
+  const [logoError, setLogoError] = useState(false)
   const { itemCount } = useCart()
+
+  const handleLogoError = () => {
+    // Try alternative image formats
+    if (logoSrc === '/logotipo.png') {
+      setLogoSrc('/logotipo.jpg')
+    } else if (logoSrc === '/logotipo.jpg') {
+      setLogoSrc('/logotipo.svg')
+    } else {
+      setLogoError(true)
+    }
+  }
 
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
@@ -14,9 +28,23 @@ export default function Header() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center">
-            <div className="w-12 h-12 bg-brand-yellow rounded-full flex items-center justify-center">
-              <span className="text-2xl font-bold text-brand-gray">AX</span>
-            </div>
+            {!logoError ? (
+              <div className="w-12 h-12 relative flex items-center justify-center">
+                <Image
+                  src={logoSrc}
+                  alt="Ax Festas Logo"
+                  width={48}
+                  height={48}
+                  className="object-contain"
+                  onError={handleLogoError}
+                  priority
+                />
+              </div>
+            ) : (
+              <div className="w-12 h-12 bg-brand-yellow rounded-full flex items-center justify-center">
+                <span className="text-2xl font-bold text-brand-gray">AX</span>
+              </div>
+            )}
             <span className="ml-3 text-xl font-bold text-brand-gray">Ax Festas</span>
           </Link>
 
