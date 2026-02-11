@@ -21,7 +21,7 @@ export default function CartPage() {
     // Here you would send the quote request to your backend
     showSuccess('Orçamento solicitado com sucesso! Entraremos em contato em breve.')
     setShowQuoteForm(false)
-    clearCart()
+    // Cart is NOT cleared so user can request multiple quotes or modify
   }
 
   if (items.length === 0 && !showQuoteForm) {
