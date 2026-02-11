@@ -161,8 +161,8 @@ export async function onRequestGet(context: {
       );
     }
 
-    const headers = new Headers();
-    object.writeHttpMetadata(headers);
+    const headers = new Headers() as Headers;
+    object.writeHttpMetadata(headers as any);
     headers.set('etag', object.httpEtag);
     // Cache for 1 year - files use timestamp in key for cache busting
     // Note: Keys include timestamp, so each upload creates a unique URL
