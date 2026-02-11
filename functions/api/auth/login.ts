@@ -4,11 +4,12 @@
  * Retorna session cookie
  */
 
-import type { D1Database } from '@cloudflare/workers-types';
+import type { D1Database, R2Bucket } from '@cloudflare/workers-types';
 import { loginUser, createSession } from '../../../src/lib/auth';
 
 interface Env {
   DB: D1Database;
+  STORAGE?: R2Bucket; // Optional for backward compatibility
 }
 
 export async function onRequestPost(context: {

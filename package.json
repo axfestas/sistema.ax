@@ -7,7 +7,9 @@
     "build": "next build",
     "pages:deploy": "npm run build && wrangler pages deploy out",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:init": "node scripts/init-database.js",
+    "db:check": "wrangler d1 execute sistema --command=\"SELECT name FROM sqlite_master WHERE type='table';\""
   },
   "dependencies": {
     "@types/node": "^20",

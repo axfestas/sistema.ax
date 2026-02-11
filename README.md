@@ -119,18 +119,41 @@ O projeto agora suporta integração com Airtable! Para configurar:
 
 Alternativa para usar banco de dados SQL:
 
-1. Crie um banco D1 no Cloudflare Dashboard
-2. Execute o schema SQL:
+#### ⚠️ IMPORTANTE: Inicialização Obrigatória
+
+**Antes de usar o sistema, você DEVE inicializar o banco de dados!**
+
+Sem isso, você verá o erro: `D1_ERROR: no such table: users`
+
+**Inicialização Rápida:**
+
 ```bash
-wrangler d1 execute YOUR_DATABASE_NAME --file=./schema.sql
+# 1. Criar banco D1 (se ainda não existir)
+wrangler d1 create sistema
+
+# 2. Inicializar com schema (OBRIGATÓRIO!)
+npm run db:init
+
+# Ou manualmente:
+wrangler d1 execute sistema --file=./schema.sql
+
+# 3. Verificar que funcionou
+npm run db:check
 ```
+
+**Configuração:**
+
+1. Crie um banco D1 no Cloudflare Dashboard (ou via CLI acima)
+2. Execute o schema SQL (comando acima)
 3. Configure a binding no `wrangler.toml`:
 ```toml
 [[d1_databases]]
 binding = "DB"
-database_name = "sistema-ax-festas"
+database_name = "sistema"
 database_id = "seu-database-id"
 ```
+
+**🚨 Erro de Produção?** Se o sistema já está no ar mas dá erro de "no such table", veja: [DATABASE_INIT_FIX.md](./DATABASE_INIT_FIX.md)
 
 ### 🔐 Criar Primeiro Usuário Admin
 
@@ -155,15 +178,33 @@ wrangler d1 execute sistema-ax-festas --command="INSERT INTO users (email, passw
 
 ## 📦 Armazenamento (R2)
 
+⚠️ **IMPORTANTE:** Você DEVE criar o bucket R2 ANTES de fazer deploy, caso contrário o deploy falhará!
+
 Para armazenar imagens e arquivos:
 
-1. Crie um bucket R2 no Cloudflare Dashboard
-2. Configure a binding no `wrangler.toml`:
-```toml
-[[r2_buckets]]
-binding = "STORAGE"
-bucket_name = "sistema-ax-festas"
+**Guia Completo:** [R2_SETUP.md](./R2_SETUP.md)
+
+**Guia de Deploy:** [R2_DEPLOY_FIX.md](./R2_DEPLOY_FIX.md) (se tiver erro de deploy)
+
+**Criação Rápida:**
+
+```bash
+# 1. Criar bucket R2 (OBRIGATÓRIO antes do deploy!)
+wrangler r2 bucket create sistema-ax-festas
+
+# 2. Verificar
+wrangler r2 bucket list
+
+# 3. Agora pode fazer deploy
+git push
 ```
+
+**Resumo:**
+
+1. Crie um bucket R2 no Cloudflare Dashboard ou via CLI (comando acima)
+2. O bucket DEVE se chamar `sistema-ax-festas` (já configurado no wrangler.toml)
+3. Use a API `/api/upload` para upload de imagens
+4. Veja exemplos de uso no [guia completo](./R2_SETUP.md)
 
 ## ⚠️ Importante
 

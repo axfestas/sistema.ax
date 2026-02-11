@@ -9,7 +9,7 @@
  * - DELETE /api/reservations?id=1 - Deleta uma reserva
  */
 
-import type { D1Database } from '@cloudflare/workers-types';
+import type { D1Database, R2Bucket } from '@cloudflare/workers-types';
 import {
   getReservations,
   getReservationById,
@@ -21,6 +21,7 @@ import {
 
 interface Env {
   DB: D1Database;
+  STORAGE?: R2Bucket; // Optional for backward compatibility
 }
 
 export async function onRequestGet(context: {
