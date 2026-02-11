@@ -9,6 +9,7 @@
  * - DELETE /api/items?id=1 - Deleta um item
  */
 
+import type { D1Database } from '@cloudflare/workers-types';
 import {
   getItems,
   getItemById,
