@@ -13,8 +13,20 @@ interface PortfolioImage {
   is_active: number
 }
 
+interface User {
+  id: number
+  name: string
+  email: string
+  role: string
+}
+
+interface AuthResponse {
+  authenticated: boolean
+  user?: User
+}
+
 export default function AdminPortfolioPage() {
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [images, setImages] = useState<PortfolioImage[]>([])
   const [showForm, setShowForm] = useState(false)
@@ -36,8 +48,8 @@ export default function AdminPortfolioPage() {
   const checkAuth = async () => {
     try {
       const res = await fetch('/api/auth/user')
-      const data = await res.json() as any
-      if (data.authenticated) {
+      const data = await res.json() as AuthResponse
+      if (data.authenticated && data.user) {
         setUser(data.user)
       } else {
         router.push('/login')
