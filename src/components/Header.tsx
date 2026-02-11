@@ -29,13 +29,13 @@ export default function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center">
             {!logoError ? (
-              <div className="w-12 h-12 relative flex items-center justify-center">
+              <div className="w-12 h-12 bg-brand-yellow rounded-full flex items-center justify-center overflow-hidden">
                 <Image
                   src={LOGO_FORMATS[logoIndex]}
                   alt="Ax Festas Logo"
                   width={48}
                   height={48}
-                  className="object-contain"
+                  className="object-cover"
                   onError={handleLogoError}
                   priority
                 />
@@ -94,6 +94,13 @@ export default function Header() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Portfólio
+              </Link>
+              <Link
+                href="/catalog"
+                className="px-4 py-2 hover:bg-brand-yellow/10 rounded-md transition text-brand-gray"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Catálogo
               </Link>
               <Link
                 href="/cart"
