@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useCart } from './CartContext'
 
-const LOGO_FORMATS = ['/logotipo.png', '/logotipo.jpg', '/logotipo.svg']
+const LOGO_FORMATS = ['/1.png', '/logotipo.png', '/logotipo.jpg', '/logotipo.svg']
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
