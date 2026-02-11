@@ -755,3 +755,95 @@ export async function deletePortfolioImage(
     .run();
   return result.success;
 }
+
+// ==================== SITE SETTINGS ====================
+
+export interface SiteSettings {
+  id: number;
+  company_name: string;
+  company_description: string;
+  phone: string;
+  email: string;
+  address: string;
+  facebook_url?: string;
+  instagram_url?: string;
+  whatsapp_url?: string;
+  updated_at?: string;
+}
+
+export interface SiteSettingsInput {
+  company_name?: string;
+  company_description?: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  facebook_url?: string;
+  instagram_url?: string;
+  whatsapp_url?: string;
+}
+
+/**
+ * Busca as configurações do site
+ */
+export async function getSiteSettings(
+  db: D1Database
+): Promise<SiteSettings | null> {
+  const result = await db
+    .prepare('SELECT * FROM site_settings WHERE id = 1')
+    .first();
+  return result ? (result as unknown as SiteSettings) : null;
+}
+
+/**
+ * Atualiza as configurações do site
+ */
+export async function updateSiteSettings(
+  db: D1Database,
+  updates: SiteSettingsInput
+): Promise<SiteSettings | null> {
+  const fields: string[] = [];
+  const values: (string | null)[] = [];
+  
+  if (updates.company_name !== undefined) {
+    fields.push('company_name = ?');
+    values.push(updates.company_name);
+  }
+  if (updates.company_description !== undefined) {
+    fields.push('company_description = ?');
+    values.push(updates.company_description);
+  }
+  if (updates.phone !== undefined) {
+    fields.push('phone = ?');
+    values.push(updates.phone);
+  }
+  if (updates.email !== undefined) {
+    fields.push('email = ?');
+    values.push(updates.email);
+  }
+  if (updates.address !== undefined) {
+    fields.push('address = ?');
+    values.push(updates.address);
+  }
+  if (updates.facebook_url !== undefined) {
+    fields.push('facebook_url = ?');
+    values.push(updates.facebook_url || null);
+  }
+  if (updates.instagram_url !== undefined) {
+    fields.push('instagram_url = ?');
+    values.push(updates.instagram_url || null);
+  }
+  if (updates.whatsapp_url !== undefined) {
+    fields.push('whatsapp_url = ?');
+    values.push(updates.whatsapp_url || null);
+  }
+  
+  if (fields.length === 0) {
+    return getSiteSettings(db);
+  }
+  
+  fields.push('updated_at = CURRENT_TIMESTAMP');
+  const query = `UPDATE site_settings SET ${fields.join(', ')} WHERE id = 1 RETURNING *`;
+  
+  const result = await db.prepare(query).bind(...values).first();
+  return result ? (result as unknown as SiteSettings) : null;
+}
