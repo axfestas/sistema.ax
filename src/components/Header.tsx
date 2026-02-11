@@ -5,18 +5,18 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useCart } from './CartContext'
 
+const LOGO_FORMATS = ['/logotipo.png', '/logotipo.jpg', '/logotipo.svg']
+
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [logoSrc, setLogoSrc] = useState('/logotipo.png')
+  const [logoIndex, setLogoIndex] = useState(0)
   const [logoError, setLogoError] = useState(false)
   const { itemCount } = useCart()
 
   const handleLogoError = () => {
-    // Try alternative image formats
-    if (logoSrc === '/logotipo.png') {
-      setLogoSrc('/logotipo.jpg')
-    } else if (logoSrc === '/logotipo.jpg') {
-      setLogoSrc('/logotipo.svg')
+    const nextIndex = logoIndex + 1
+    if (nextIndex < LOGO_FORMATS.length) {
+      setLogoIndex(nextIndex)
     } else {
       setLogoError(true)
     }
@@ -31,7 +31,7 @@ export default function Header() {
             {!logoError ? (
               <div className="w-12 h-12 relative flex items-center justify-center">
                 <Image
-                  src={logoSrc}
+                  src={LOGO_FORMATS[logoIndex]}
                   alt="Ax Festas Logo"
                   width={48}
                   height={48}
