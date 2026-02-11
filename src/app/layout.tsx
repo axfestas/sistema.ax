@@ -7,6 +7,11 @@ import Footer from '@/components/Footer'
 export const metadata: Metadata = {
   title: 'Ax Festas - Aluguel de Itens para Festas',
   description: 'Aluguel de itens para festas e eventos. Qualidade e excelência no atendimento.',
+  icons: {
+    icon: '/favicon.svg',
+    shortcut: '/favicon.svg',
+    apple: '/logotipo.svg',
+  },
 }
 
 export default function RootLayout({
