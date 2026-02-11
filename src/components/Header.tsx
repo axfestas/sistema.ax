@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useCart } from './CartContext'
@@ -11,7 +11,21 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [logoIndex, setLogoIndex] = useState(0)
   const [logoError, setLogoError] = useState(false)
+  const [companyName, setCompanyName] = useState('Ax Festas')
   const { itemCount } = useCart()
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then((res) => res.json())
+      .then((data: any) => {
+        if (data && !data.error && data.company_name) {
+          setCompanyName(data.company_name)
+        }
+      })
+      .catch(() => {
+        // Use default company name on error
+      });
+  }, []);
 
   const handleLogoError = () => {
     const nextIndex = logoIndex + 1
@@ -32,7 +46,7 @@ export default function Header() {
               <div className="w-12 h-12 bg-brand-yellow rounded-full flex items-center justify-center overflow-hidden">
                 <Image
                   src={LOGO_FORMATS[logoIndex]}
-                  alt="Ax Festas Logo"
+                  alt={`${companyName} Logo`}
                   width={48}
                   height={48}
                   className="object-cover w-full h-full"
@@ -45,7 +59,7 @@ export default function Header() {
                 <span className="text-2xl font-bold text-brand-gray">AX</span>
               </div>
             )}
-            <span className="ml-3 text-xl font-bold text-brand-gray">Ax Festas</span>
+            <span className="ml-3 text-xl font-bold text-brand-gray">{companyName}</span>
           </Link>
 
           {/* Right side: Cart + Hamburger Menu */}

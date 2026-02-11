@@ -3,6 +3,7 @@
  * Retorna dados do usuário autenticado
  */
 
+import type { D1Database } from '@cloudflare/workers-types';
 import { getAuthenticatedUser } from '../../../src/lib/auth';
 
 interface Env {

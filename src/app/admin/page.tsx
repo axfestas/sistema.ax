@@ -67,6 +67,10 @@ export default function AdminPage() {
           <h2 className="font-bold text-lg mb-2">Portfólio</h2>
           <p className="text-gray-600">Gerenciar imagens do portfólio</p>
         </a>
+        <a href="/admin/settings" className="bg-orange-50 p-4 rounded-lg shadow hover:shadow-lg transition-shadow">
+          <h2 className="font-bold text-lg mb-2">⚙️ Configurações</h2>
+          <p className="text-gray-600">Editar informações do site</p>
+        </a>
       </div>
     </div>
   );

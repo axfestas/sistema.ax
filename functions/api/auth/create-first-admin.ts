@@ -8,6 +8,7 @@
  * - Deve ser deletado após criar o primeiro admin
  */
 
+import type { D1Database } from '@cloudflare/workers-types';
 import { registerUser, getUserByEmail } from '../../../src/lib/auth';
 
 interface Env {

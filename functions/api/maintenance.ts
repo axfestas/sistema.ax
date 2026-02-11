@@ -9,6 +9,7 @@
  * - DELETE /api/maintenance?id=1 - Deleta uma manutenção
  */
 
+import type { D1Database } from '@cloudflare/workers-types';
 import {
   getMaintenance,
   getMaintenanceById,

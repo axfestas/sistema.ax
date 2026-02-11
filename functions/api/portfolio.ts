@@ -9,6 +9,7 @@
  * - DELETE /api/portfolio?id=1 - Deleta uma imagem
  */
 
+import type { D1Database } from '@cloudflare/workers-types';
 import {
   getPortfolioImages,
   getPortfolioImageById,

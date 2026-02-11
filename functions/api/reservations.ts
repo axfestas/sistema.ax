@@ -9,6 +9,7 @@
  * - DELETE /api/reservations?id=1 - Deleta uma reserva
  */
 
+import type { D1Database } from '@cloudflare/workers-types';
 import {
   getReservations,
   getReservationById,

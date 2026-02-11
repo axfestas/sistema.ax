@@ -3,6 +3,7 @@
  * Faz logout deletando a sessão
  */
 
+import type { D1Database } from '@cloudflare/workers-types';
 import { deleteSession, getSessionIdFromRequest } from '../../../src/lib/auth';
 
 interface Env {

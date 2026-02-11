@@ -65,6 +65,23 @@ CREATE TABLE portfolio_images (
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE site_settings (
+  id INTEGER PRIMARY KEY CHECK (id = 1), -- Ensure only one row
+  company_name TEXT NOT NULL DEFAULT 'Ax Festas',
+  company_description TEXT DEFAULT 'Aluguel de itens para festas e eventos. Qualidade e excelência no atendimento.',
+  phone TEXT DEFAULT '(00) 00000-0000',
+  email TEXT DEFAULT 'contato@axfestas.com.br',
+  address TEXT DEFAULT 'A definir',
+  facebook_url TEXT,
+  instagram_url TEXT,
+  whatsapp_url TEXT,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Sample data: Add Kit Festa Completo to catalog
 INSERT OR IGNORE INTO items (id, name, description, price, quantity) 
 VALUES (1, 'Kit Festa Completo', 'Inclui mesas, cadeiras, toalhas e decoração', 350.00, 10);
+
+-- Initialize site settings with default values
+INSERT OR IGNORE INTO site_settings (id, company_name, company_description, phone, email, address) 
+VALUES (1, 'Ax Festas', 'Aluguel de itens para festas e eventos. Qualidade e excelência no atendimento.', '(00) 00000-0000', 'contato@axfestas.com.br', 'A definir');

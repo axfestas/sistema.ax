@@ -3,6 +3,7 @@
  * Registra novo usuário (APENAS ADMIN)
  */
 
+import type { D1Database } from '@cloudflare/workers-types';
 import { registerUser, requireAdmin } from '../../../src/lib/auth';
 
 interface Env {

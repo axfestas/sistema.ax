@@ -6,6 +6,7 @@
  * - GET /api/finance/summary?startDate=2026-01-01&endDate=2026-12-31 - Período específico
  */
 
+import type { D1Database } from '@cloudflare/workers-types';
 import { getFinancialSummary } from '../../../src/lib/db';
 
 interface Env {

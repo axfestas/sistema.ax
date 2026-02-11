@@ -3,7 +3,7 @@
  * Funções para hash, verificação e gerenciamento de sessões
  */
 
-import { createHash, randomBytes } from 'crypto';
+import { createHash, randomBytes } from 'node:crypto';
 
 // ==================== TIPOS ====================
 
