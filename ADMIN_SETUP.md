@@ -19,7 +19,7 @@ Esta é a maneira mais rápida de criar o primeiro admin no banco D1.
 Execute este script Node.js para gerar o hash da sua senha:
 
 ```bash
-node scripts/generate-password-hash.js "SUA_SENHA_AQUI"
+node scripts/generate-password-hash.js "Ax7866Nb@"
 ```
 
 Isso irá gerar algo como:
@@ -37,7 +37,7 @@ Com o password hash gerado, execute este SQL:
 INSERT INTO users (email, password_hash, name, role)
 VALUES (
   'alex.fraga@axfestas.com.br',
-  'SEU_PASSWORD_HASH_AQUI',
+  'Ax7866Nb@',
   'Alex Fraga',
   'admin'
 );
@@ -78,7 +78,7 @@ O script irá:
 
 Acesse `/login` com:
 - Email: `alex.fraga@axfestas.com.br`
-- Senha: A que você definiu
+- Senha: `Ax7866Nb@`
 
 ---
 
@@ -97,7 +97,7 @@ Para ambientes de produção, é mais seguro usar um endpoint protegido.
 **1. Adicione a variável de ambiente no Cloudflare:**
 
 ```
-FIRST_ADMIN_SECRET=SUA_CHAVE_SECRETA_COMPLEXA_AQUI
+FIRST_ADMIN_SECRET=y+!4x8$V?Z9z!@mNpR#T&WkYq2u5v8y/A?D(G+KbPeShVmYq3t6w9z$C&E)H@McQ
 ```
 
 **2. Faça uma requisição POST:**
@@ -107,7 +107,7 @@ curl -X POST https://seu-site.pages.dev/api/auth/create-first-admin \
   -H "Content-Type: application/json" \
   -d '{
     "email": "alex.fraga@axfestas.com.br",
-    "password": "SUA_SENHA_AQUI",
+    "password": "Ax7866Nb@",
     "name": "Alex Fraga",
     "secret": "SUA_CHAVE_SECRETA_COMPLEXA_AQUI"
   }'
