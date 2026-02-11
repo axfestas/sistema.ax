@@ -43,3 +43,7 @@ wrangler.toml.bak
 # Sensitive files with credentials
 COMANDOS_PRONTOS.md
 INICIO_ADMIN.md
+create-admin.sql
+criar-admin.sh
+README_CRIAR_ADMIN.md
+EXECUTE_AQUI.md
