@@ -36,7 +36,7 @@ export default function AdminPortfolioPage() {
   const checkAuth = async () => {
     try {
       const res = await fetch('/api/auth/user')
-      const data = await res.json()
+      const data = await res.json() as any
       if (data.authenticated) {
         setUser(data.user)
       } else {
@@ -53,7 +53,7 @@ export default function AdminPortfolioPage() {
     try {
       const response = await fetch('/api/portfolio')
       if (response.ok) {
-        const data = await response.json()
+        const data = await response.json() as PortfolioImage[]
         setImages(data)
       }
     } catch (error) {
