@@ -29,13 +29,13 @@ export default function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center">
             {!logoError ? (
-              <div className="w-12 h-12 bg-brand-yellow rounded-full flex items-center justify-center overflow-hidden">
+              <div className="w-12 h-12 bg-brand-yellow rounded-full flex items-center justify-center overflow-hidden p-1">
                 <Image
                   src={LOGO_FORMATS[logoIndex]}
                   alt="Ax Festas Logo"
                   width={48}
                   height={48}
-                  className="object-cover"
+                  className="object-contain"
                   onError={handleLogoError}
                   priority
                 />
