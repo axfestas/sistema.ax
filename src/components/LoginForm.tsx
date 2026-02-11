@@ -22,7 +22,7 @@ export default function LoginForm() {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await response.json();
+      const data: any = await response.json();
 
       if (!response.ok) {
         setError(data.error || 'Erro ao fazer login');

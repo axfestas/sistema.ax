@@ -12,7 +12,7 @@ export default function AdminPage() {
   useEffect(() => {
     fetch('/api/auth/user')
       .then((res) => res.json())
-      .then((data) => {
+      .then((data: any) => {
         if (data.authenticated) {
           setUser(data.user);
         } else {

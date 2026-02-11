@@ -125,7 +125,7 @@ export async function getItems(
   }
 
   const result = await db.prepare(query).all();
-  return (result.results as Item[]) || [];
+  return (result.results as unknown as Item[]) || [];
 }
 
 /**
@@ -139,7 +139,7 @@ export async function getItemById(
     .prepare('SELECT * FROM items WHERE id = ?')
     .bind(itemId)
     .first();
-  return (result as Item) || null;
+  return result ? (result as unknown as Item) : null;
 }
 
 /**
@@ -155,7 +155,7 @@ export async function createItem(
     )
     .bind(item.name, item.description || null, item.price, item.quantity)
     .first();
-  return result as Item;
+  return result as unknown as Item;
 }
 
 /**
@@ -194,7 +194,7 @@ export async function updateItem(
   const query = `UPDATE items SET ${fields.join(', ')} WHERE id = ? RETURNING *`;
 
   const result = await db.prepare(query).bind(...values).first();
-  return (result as Item) || null;
+  return result ? (result as unknown as Item) : null;
 }
 
 /**
@@ -233,7 +233,7 @@ export async function getReservations(
   }
 
   const result = await db.prepare(query).bind(...params).all();
-  return (result.results as Reservation[]) || [];
+  return (result.results as unknown as Reservation[]) || [];
 }
 
 /**
@@ -247,7 +247,7 @@ export async function getReservationById(
     .prepare('SELECT * FROM reservations WHERE id = ?')
     .bind(reservationId)
     .first();
-  return (result as Reservation) || null;
+  return result ? (result as unknown as Reservation) : null;
 }
 
 /**
@@ -271,7 +271,7 @@ export async function createReservation(
       status
     )
     .first();
-  return result as Reservation;
+  return result as unknown as Reservation;
 }
 
 /**
@@ -318,7 +318,7 @@ export async function updateReservation(
   const query = `UPDATE reservations SET ${fields.join(', ')} WHERE id = ? RETURNING *`;
 
   const result = await db.prepare(query).bind(...values).first();
-  return (result as Reservation) || null;
+  return result ? (result as unknown as Reservation) : null;
 }
 
 /**
@@ -351,7 +351,7 @@ export async function getMaintenance(
   }
 
   const result = await db.prepare(query).all();
-  return (result.results as MaintenanceRecord[]) || [];
+  return (result.results as unknown as MaintenanceRecord[]) || [];
 }
 
 /**
@@ -365,7 +365,7 @@ export async function getMaintenanceById(
     .prepare('SELECT * FROM maintenance WHERE id = ?')
     .bind(maintenanceId)
     .first();
-  return (result as MaintenanceRecord) || null;
+  return result ? (result as unknown as MaintenanceRecord) : null;
 }
 
 /**
@@ -379,7 +379,7 @@ export async function getMaintenanceByItemId(
     .prepare('SELECT * FROM maintenance WHERE item_id = ? ORDER BY date DESC')
     .bind(itemId)
     .all();
-  return (result.results as MaintenanceRecord[]) || [];
+  return (result.results as unknown as MaintenanceRecord[]) || [];
 }
 
 /**
@@ -400,7 +400,7 @@ export async function createMaintenance(
       maintenance.cost || null
     )
     .first();
-  return result as MaintenanceRecord;
+  return result as unknown as MaintenanceRecord;
 }
 
 /**
@@ -439,7 +439,7 @@ export async function updateMaintenance(
   const query = `UPDATE maintenance SET ${fields.join(', ')} WHERE id = ? RETURNING *`;
 
   const result = await db.prepare(query).bind(...values).first();
-  return (result as MaintenanceRecord) || null;
+  return result ? (result as unknown as MaintenanceRecord) : null;
 }
 
 /**
@@ -472,7 +472,7 @@ export async function getFinancial(
   }
 
   const result = await db.prepare(query).all();
-  return (result.results as FinancialRecord[]) || [];
+  return (result.results as unknown as FinancialRecord[]) || [];
 }
 
 /**
@@ -486,7 +486,7 @@ export async function getFinancialById(
     .prepare('SELECT * FROM financial_records WHERE id = ?')
     .bind(recordId)
     .first();
-  return (result as FinancialRecord) || null;
+  return result ? (result as unknown as FinancialRecord) : null;
 }
 
 /**
@@ -502,7 +502,7 @@ export async function createFinancial(
     )
     .bind(record.type, record.description, record.amount, record.date)
     .first();
-  return result as FinancialRecord;
+  return result as unknown as FinancialRecord;
 }
 
 /**
@@ -541,7 +541,7 @@ export async function updateFinancial(
   const query = `UPDATE financial_records SET ${fields.join(', ')} WHERE id = ? RETURNING *`;
 
   const result = await db.prepare(query).bind(...values).first();
-  return (result as FinancialRecord) || null;
+  return result ? (result as unknown as FinancialRecord) : null;
 }
 
 /**

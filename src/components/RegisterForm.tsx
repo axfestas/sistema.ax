@@ -23,7 +23,7 @@ export default function RegisterForm() {
         body: JSON.stringify({ email, password, name }),
       });
 
-      const data = await response.json();
+      const data: any = await response.json();
 
       if (!response.ok) {
         setError(data.error || 'Erro ao registrar');
