@@ -55,7 +55,7 @@ export async function onRequestGet(context: {
     const maxRecords = url.searchParams.get('maxRecords');
 
     const images = await getPortfolioImages(db, {
-      activeOnly: activeOnly || undefined,
+      activeOnly: activeOnly ? true : undefined,
       maxRecords: maxRecords ? Number(maxRecords) : undefined,
     });
 

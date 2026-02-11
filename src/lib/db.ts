@@ -642,6 +642,7 @@ export async function getPortfolioImages(
   }
 ): Promise<PortfolioImage[]> {
   let query = 'SELECT * FROM portfolio_images';
+  const params: (string | number)[] = [];
   
   if (options?.activeOnly) {
     query += ' WHERE is_active = 1';
@@ -650,10 +651,11 @@ export async function getPortfolioImages(
   query += ' ORDER BY display_order ASC, created_at DESC';
   
   if (options?.maxRecords) {
-    query += ` LIMIT ${options.maxRecords}`;
+    query += ' LIMIT ?';
+    params.push(options.maxRecords);
   }
   
-  const result = await db.prepare(query).all();
+  const result = await db.prepare(query).bind(...params).all();
   return (result.results as unknown as PortfolioImage[]) || [];
 }
 
@@ -705,7 +707,7 @@ export async function updatePortfolioImage(
   updates: Partial<PortfolioImageInput>
 ): Promise<PortfolioImage | null> {
   const fields: string[] = [];
-  const values: any[] = [];
+  const values: (string | number | null)[] = [];
   
   if (updates.title !== undefined) {
     fields.push('title = ?');
