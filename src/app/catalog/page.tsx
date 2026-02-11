@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
 import { useCart } from '@/components/CartContext'
 
 interface CatalogItem {
@@ -26,7 +27,7 @@ export default function CatalogPage() {
     try {
       const response = await fetch('/api/items')
       if (response.ok) {
-        const data = await response.json()
+        const data = await response.json() as CatalogItem[]
         setItems(data)
       }
     } catch (error) {
@@ -89,12 +90,13 @@ export default function CatalogPage() {
                   className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300"
                 >
                   {/* Image */}
-                  <div className="h-64 bg-gradient-to-br from-brand-blue to-brand-purple flex items-center justify-center">
+                  <div className="h-64 bg-gradient-to-br from-brand-blue to-brand-purple flex items-center justify-center relative overflow-hidden">
                     {item.imageUrl ? (
-                      <img 
+                      <Image 
                         src={item.imageUrl} 
                         alt={item.name}
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
                       />
                     ) : (
                       <span className="text-white text-6xl">📦</span>
