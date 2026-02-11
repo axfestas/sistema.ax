@@ -7,6 +7,7 @@
  * - Reservations (reservas de clientes)
  * - Maintenance (manutenções)
  * - Financial Records (controle financeiro)
+ * - Portfolio Images (imagens do portfólio)
  */
 
 // Interface para o ambiente do Cloudflare
@@ -29,6 +30,25 @@ export interface ItemInput {
   description?: string;
   price: number;
   quantity: number;
+}
+
+export interface PortfolioImage {
+  id: number;
+  title: string;
+  description?: string;
+  image_url: string;
+  display_order: number;
+  is_active: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface PortfolioImageInput {
+  title: string;
+  description?: string;
+  image_url: string;
+  display_order?: number;
+  is_active?: number;
 }
 
 export interface Reservation {
@@ -607,4 +627,131 @@ export async function getFinancialSummary(
       endDate: endDate || 'all-time',
     },
   };
+}
+
+// ==================== PORTFOLIO IMAGES ====================
+
+/**
+ * Busca todas as imagens do portfólio
+ */
+export async function getPortfolioImages(
+  db: D1Database,
+  options?: {
+    activeOnly?: boolean;
+    maxRecords?: number;
+  }
+): Promise<PortfolioImage[]> {
+  let query = 'SELECT * FROM portfolio_images';
+  const params: (string | number)[] = [];
+  
+  if (options?.activeOnly) {
+    query += ' WHERE is_active = 1';
+  }
+  
+  query += ' ORDER BY display_order ASC, created_at DESC';
+  
+  if (options?.maxRecords) {
+    query += ' LIMIT ?';
+    params.push(options.maxRecords);
+  }
+  
+  const result = await db.prepare(query).bind(...params).all();
+  return (result.results as unknown as PortfolioImage[]) || [];
+}
+
+/**
+ * Busca uma imagem do portfólio pelo ID
+ */
+export async function getPortfolioImageById(
+  db: D1Database,
+  imageId: number
+): Promise<PortfolioImage | null> {
+  const result = await db
+    .prepare('SELECT * FROM portfolio_images WHERE id = ?')
+    .bind(imageId)
+    .first();
+  return result ? (result as unknown as PortfolioImage) : null;
+}
+
+/**
+ * Cria uma nova imagem do portfólio
+ */
+export async function createPortfolioImage(
+  db: D1Database,
+  image: PortfolioImageInput
+): Promise<PortfolioImage> {
+  const displayOrder = image.display_order ?? 0;
+  const isActive = image.is_active ?? 1;
+  
+  const result = await db
+    .prepare(
+      'INSERT INTO portfolio_images (title, description, image_url, display_order, is_active) VALUES (?, ?, ?, ?, ?) RETURNING *'
+    )
+    .bind(
+      image.title,
+      image.description || null,
+      image.image_url,
+      displayOrder,
+      isActive
+    )
+    .first();
+  return result as unknown as PortfolioImage;
+}
+
+/**
+ * Atualiza uma imagem do portfólio
+ */
+export async function updatePortfolioImage(
+  db: D1Database,
+  imageId: number,
+  updates: Partial<PortfolioImageInput>
+): Promise<PortfolioImage | null> {
+  const fields: string[] = [];
+  const values: (string | number | null)[] = [];
+  
+  if (updates.title !== undefined) {
+    fields.push('title = ?');
+    values.push(updates.title);
+  }
+  if (updates.description !== undefined) {
+    fields.push('description = ?');
+    values.push(updates.description);
+  }
+  if (updates.image_url !== undefined) {
+    fields.push('image_url = ?');
+    values.push(updates.image_url);
+  }
+  if (updates.display_order !== undefined) {
+    fields.push('display_order = ?');
+    values.push(updates.display_order);
+  }
+  if (updates.is_active !== undefined) {
+    fields.push('is_active = ?');
+    values.push(updates.is_active);
+  }
+  
+  if (fields.length === 0) {
+    return getPortfolioImageById(db, imageId);
+  }
+  
+  fields.push('updated_at = CURRENT_TIMESTAMP');
+  values.push(imageId);
+  const query = `UPDATE portfolio_images SET ${fields.join(', ')} WHERE id = ? RETURNING *`;
+  
+  const result = await db.prepare(query).bind(...values).first();
+  return result ? (result as unknown as PortfolioImage) : null;
+}
+
+/**
+ * Deleta uma imagem do portfólio
+ */
+export async function deletePortfolioImage(
+  db: D1Database,
+  imageId: number
+): Promise<boolean> {
+  const result = await db
+    .prepare('DELETE FROM portfolio_images WHERE id = ?')
+    .bind(imageId)
+    .run();
+  return result.success;
 }

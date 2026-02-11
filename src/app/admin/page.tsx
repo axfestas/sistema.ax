@@ -47,22 +47,26 @@ export default function AdminPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-blue-50 p-4 rounded-lg shadow">
+        <a href="/admin/inventory" className="bg-blue-50 p-4 rounded-lg shadow hover:shadow-lg transition-shadow">
           <h2 className="font-bold text-lg mb-2">Itens</h2>
           <p className="text-gray-600">Gerenciar catálogo de itens</p>
-        </div>
-        <div className="bg-green-50 p-4 rounded-lg shadow">
+        </a>
+        <a href="/admin/reservations" className="bg-green-50 p-4 rounded-lg shadow hover:shadow-lg transition-shadow">
           <h2 className="font-bold text-lg mb-2">Reservas</h2>
           <p className="text-gray-600">Gerenciar reservas de clientes</p>
-        </div>
-        <div className="bg-yellow-50 p-4 rounded-lg shadow">
+        </a>
+        <a href="/admin/maintenance" className="bg-yellow-50 p-4 rounded-lg shadow hover:shadow-lg transition-shadow">
           <h2 className="font-bold text-lg mb-2">Manutenção</h2>
           <p className="text-gray-600">Controlar manutenções</p>
-        </div>
-        <div className="bg-purple-50 p-4 rounded-lg shadow">
+        </a>
+        <a href="/admin/finance" className="bg-purple-50 p-4 rounded-lg shadow hover:shadow-lg transition-shadow">
           <h2 className="font-bold text-lg mb-2">Financeiro</h2>
           <p className="text-gray-600">Resumo financeiro</p>
-        </div>
+        </a>
+        <a href="/admin/portfolio" className="bg-pink-50 p-4 rounded-lg shadow hover:shadow-lg transition-shadow">
+          <h2 className="font-bold text-lg mb-2">Portfólio</h2>
+          <p className="text-gray-600">Gerenciar imagens do portfólio</p>
+        </a>
       </div>
     </div>
   );

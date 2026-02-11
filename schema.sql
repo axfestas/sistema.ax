@@ -53,3 +53,18 @@ CREATE TABLE sessions (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+CREATE TABLE portfolio_images (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  description TEXT,
+  image_url TEXT NOT NULL,
+  display_order INTEGER DEFAULT 0,
+  is_active INTEGER DEFAULT 1, -- 1 for active, 0 for inactive
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Sample data: Add Kit Festa Completo to catalog
+INSERT OR IGNORE INTO items (id, name, description, price, quantity) 
+VALUES (1, 'Kit Festa Completo', 'Inclui mesas, cadeiras, toalhas e decoração', 350.00, 10);
