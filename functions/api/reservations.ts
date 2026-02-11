@@ -1,52 +1,70 @@
 /**
- * Cloudflare Pages Function para buscar reservas do Airtable
+ * Cloudflare Pages Function para gerenciar reservas
  * 
- * Endpoint: /api/reservations
- * 
- * Exemplos:
+ * Endpoints:
  * - GET /api/reservations - Lista todas as reservas
- * - GET /api/reservations?status=confirmed - Filtra reservas confirmadas
- * - GET /api/reservations?maxRecords=20 - Limita a 20 registros
+ * - GET /api/reservations?id=1 - Busca uma reserva específica
+ * - POST /api/reservations - Cria nova reserva
+ * - PUT /api/reservations?id=1 - Atualiza uma reserva
+ * - DELETE /api/reservations?id=1 - Deleta uma reserva
  */
 
-import { getReservations, AirtableConfig } from '../../src/lib/airtable';
+import {
+  getReservations,
+  getReservationById,
+  createReservation,
+  updateReservation,
+  deleteReservation,
+  type ReservationInput,
+} from '../../src/lib/db';
 
 interface Env {
-  AIRTABLE_API_KEY: string;
-  AIRTABLE_BASE_ID: string;
-  AIRTABLE_RESERVATIONS_TABLE?: string;
+  DB: D1Database;
 }
 
-export async function onRequestGet(context: { request: Request; env: Env }) {
+export async function onRequestGet(context: {
+  request: Request;
+  env: Env;
+}) {
   try {
-    // Criar configuração do Airtable a partir das variáveis de ambiente
-    const config: AirtableConfig = {
-      apiKey: context.env.AIRTABLE_API_KEY,
-      baseId: context.env.AIRTABLE_BASE_ID,
-      tables: {
-        reservations: context.env.AIRTABLE_RESERVATIONS_TABLE,
-      },
-    };
-
     const url = new URL(context.request.url);
-    const options: any = { config };
-    
+    const db = context.env.DB;
+
+    const reservationId = url.searchParams.get('id');
+
+    if (reservationId) {
+      const reservation = await getReservationById(db, Number(reservationId));
+
+      if (!reservation) {
+        return new Response(
+          JSON.stringify({ error: 'Reservation not found' }),
+          {
+            status: 404,
+            headers: { 'Content-Type': 'application/json' },
+          }
+        );
+      }
+
+      return new Response(JSON.stringify(reservation), {
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'public, max-age=30',
+        },
+      });
+    }
+
+    const status = url.searchParams.get('status') as
+      | 'pending'
+      | 'confirmed'
+      | 'completed'
+      | 'cancelled'
+      | null;
     const maxRecords = url.searchParams.get('maxRecords');
-    if (maxRecords) {
-      options.maxRecords = parseInt(maxRecords, 10);
-    }
 
-    const view = url.searchParams.get('view');
-    if (view) {
-      options.view = view;
-    }
-
-    const status = url.searchParams.get('status');
-    if (status) {
-      options.filterByFormula = `{status} = '${status}'`;
-    }
-
-    const reservations = await getReservations(options);
+    const reservations = await getReservations(db, {
+      status: status || undefined,
+      maxRecords: maxRecords ? Number(maxRecords) : undefined,
+    });
 
     return new Response(JSON.stringify(reservations), {
       headers: {
@@ -54,18 +72,171 @@ export async function onRequestGet(context: { request: Request; env: Env }) {
         'Cache-Control': 'public, max-age=30',
       },
     });
-
   } catch (error: any) {
     console.error('Error fetching reservations:', error);
-    
-    return new Response(JSON.stringify({ 
-      error: 'Failed to fetch reservations',
-      message: error.message 
-    }), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json',
-      },
+    return new Response(
+      JSON.stringify({
+        error: 'Failed to fetch reservations',
+        message: error.message,
+      }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+  }
+}
+
+export async function onRequestPost(context: {
+  request: Request;
+  env: Env;
+}) {
+  try {
+    const db = context.env.DB;
+    const body = (await context.request.json()) as ReservationInput;
+
+    if (
+      !body.item_id ||
+      !body.customer_name ||
+      !body.date_from ||
+      !body.date_to
+    ) {
+      return new Response(
+        JSON.stringify({
+          error:
+            'Missing required fields: item_id, customer_name, date_from, date_to',
+        }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    const newReservation = await createReservation(db, body);
+
+    return new Response(JSON.stringify(newReservation), {
+      status: 201,
+      headers: { 'Content-Type': 'application/json' },
     });
+  } catch (error: any) {
+    console.error('Error creating reservation:', error);
+    return new Response(
+      JSON.stringify({
+        error: 'Failed to create reservation',
+        message: error.message,
+      }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+  }
+}
+
+export async function onRequestPut(context: {
+  request: Request;
+  env: Env;
+}) {
+  try {
+    const url = new URL(context.request.url);
+    const db = context.env.DB;
+    const reservationId = url.searchParams.get('id');
+
+    if (!reservationId) {
+      return new Response(
+        JSON.stringify({ error: 'Missing reservation ID in query params' }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    const body = (await context.request.json()) as Partial<ReservationInput>;
+    const updatedReservation = await updateReservation(
+      db,
+      Number(reservationId),
+      body
+    );
+
+    if (!updatedReservation) {
+      return new Response(
+        JSON.stringify({ error: 'Reservation not found' }),
+        {
+          status: 404,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    return new Response(JSON.stringify(updatedReservation), {
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (error: any) {
+    console.error('Error updating reservation:', error);
+    return new Response(
+      JSON.stringify({
+        error: 'Failed to update reservation',
+        message: error.message,
+      }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+  }
+}
+
+export async function onRequestDelete(context: {
+  request: Request;
+  env: Env;
+}) {
+  try {
+    const url = new URL(context.request.url);
+    const db = context.env.DB;
+    const reservationId = url.searchParams.get('id');
+
+    if (!reservationId) {
+      return new Response(
+        JSON.stringify({ error: 'Missing reservation ID in query params' }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    const success = await deleteReservation(db, Number(reservationId));
+
+    if (!success) {
+      return new Response(
+        JSON.stringify({ error: 'Reservation not found' }),
+        {
+          status: 404,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    return new Response(
+      JSON.stringify({ message: 'Reservation deleted successfully' }),
+      {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+  } catch (error: any) {
+    console.error('Error deleting reservation:', error);
+    return new Response(
+      JSON.stringify({
+        error: 'Failed to delete reservation',
+        message: error.message,
+      }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
   }
 }
