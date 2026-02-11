@@ -134,7 +134,13 @@ database_id = "seu-database-id"
 
 ### 🔐 Criar Primeiro Usuário Admin
 
-Para criar o primeiro administrador no sistema:
+**Credenciais padrão** (incluídas no schema):
+- **Email:** alex.fraga@axfestas.com.br
+- **Senha:** Ax7866Nb@
+
+⚠️ **IMPORTANTE:** Altere a senha após o primeiro login!
+
+Para criar o primeiro administrador no sistema ou redefinir credenciais:
 
 **Guia Rápido:** [CRIAR_ADMIN_RAPIDO.md](./CRIAR_ADMIN_RAPIDO.md)
 

@@ -15,3 +15,5 @@ Replace `DB` with your actual database name from `wrangler.toml`.
 ## Migrations
 
 - `001_add_kit_festa_completo.sql` - Adds the "Kit Festa Completo" catalog item
+- `002_add_portfolio_images.sql` - Adds portfolio_images table
+- `003_add_default_admin_user.sql` - Adds default admin user (alex.fraga@axfestas.com.br)
