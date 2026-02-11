@@ -85,3 +85,13 @@ VALUES (1, 'Kit Festa Completo', 'Inclui mesas, cadeiras, toalhas e decoração'
 -- Initialize site settings with default values
 INSERT OR IGNORE INTO site_settings (id, company_name, company_description, phone, email, address) 
 VALUES (1, 'Ax Festas', 'Aluguel de itens para festas e eventos. Qualidade e excelência no atendimento.', '(00) 00000-0000', 'contato@axfestas.com.br', 'A definir');
+
+-- Add default admin user (alex.fraga@axfestas.com.br)
+-- Default password: Ax7866Nb@
+-- 
+-- ⚠️ SECURITY WARNING:
+-- Change this password immediately after first login!
+-- This is a known default password included for setup convenience.
+--
+INSERT OR IGNORE INTO users (email, password_hash, name, role) 
+VALUES ('alex.fraga@axfestas.com.br', 'b20c87122e7397ae12d9af93c6dacac9:125aa6d9b3ef0df48800ba7a0103c550b476afc38fa01ab012d6a6823bf06e82', 'Alex Fraga', 'admin');

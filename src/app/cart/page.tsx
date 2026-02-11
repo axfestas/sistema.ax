@@ -26,18 +26,22 @@ export default function CartPage() {
     return (
       <div className="min-h-[60vh] flex items-center justify-center px-4">
         <div className="text-center">
-          <div className="text-6xl mb-4">🛒</div>
+          <div className="mb-4 flex justify-center">
+            <svg className="w-24 h-24 text-brand-gray" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </div>
           <h1 className="text-3xl font-bold text-brand-gray mb-4">
             Seu carrinho está vazio
           </h1>
           <p className="text-gray-600 mb-8">
-            Adicione itens do nosso portfólio para solicitar um orçamento
+            Adicione itens do nosso catálogo para solicitar um orçamento
           </p>
           <a
             href="/#portfolio"
             className="inline-block bg-brand-yellow hover:bg-brand-yellow/90 text-white font-bold py-3 px-8 rounded-full transition-colors"
           >
-            Ver Portfólio
+            Ver Catálogo
           </a>
         </div>
       </div>
