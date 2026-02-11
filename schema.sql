@@ -53,3 +53,7 @@ CREATE TABLE sessions (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+-- Sample data: Add Kit Festa Completo to catalog
+INSERT INTO items (name, description, price, quantity) 
+VALUES ('Kit Festa Completo', 'Inclui mesas, cadeiras, toalhas e decoração', 350.00, 10);
