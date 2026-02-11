@@ -6,13 +6,26 @@ Este guia mostra como configurar o Cloudflare R2 para armazenamento de imagens e
 
 O Cloudflare R2 Storage é um serviço de armazenamento de objetos compatível com S3, ideal para armazenar imagens, arquivos e outros dados estáticos.
 
+## ⚠️ IMPORTANTE: Criar Bucket ANTES do Deploy!
+
+**O deploy falhará se o bucket R2 não existir!** 
+
+Se você tentar fazer deploy sem criar o bucket primeiro, verá o erro:
+```
+Error: Failed to publish your Function. Got error: Unknown internal error occurred.
+```
+
+**Solução:** Siga os passos abaixo para criar o bucket ANTES do deploy.
+
 ## 🚀 Configuração Inicial
 
-### 1. Criar Bucket R2
+### 1. Criar Bucket R2 (OBRIGATÓRIO!)
+
+**Nome do bucket:** `sistema-ax-festas` (exatamente este nome!)
 
 Você pode criar o bucket via CLI ou Dashboard:
 
-#### Via CLI (wrangler)
+#### Via CLI (wrangler) - Recomendado
 
 ```bash
 # Criar bucket
@@ -22,15 +35,17 @@ wrangler r2 bucket create sistema-ax-festas
 wrangler r2 bucket list
 ```
 
+Se o comando funcionar, você verá `sistema-ax-festas` na lista.
+
 #### Via Dashboard
 
 1. Acesse o [Cloudflare Dashboard](https://dash.cloudflare.com)
 2. Vá para **R2** no menu lateral
 3. Clique em **Create bucket**
-4. Nome do bucket: `sistema-ax-festas`
+4. Nome do bucket: `sistema-ax-festas` (exatamente este nome!)
 5. Clique em **Create bucket**
 
-### 2. Configurar Binding no wrangler.toml
+### 2. Verificar Binding no wrangler.toml
 
 O binding já está configurado em `wrangler.toml`:
 
@@ -42,6 +57,8 @@ bucket_name = "sistema-ax-festas"
 
 **Importante:** Se você criou o bucket com um nome diferente, atualize `bucket_name` no arquivo.
 
+⚠️ **NUNCA mude o nome do bucket sem atualizar o wrangler.toml!**
+
 ### 3. Deploy
 
 Após criar o bucket, faça o deploy da aplicação:
@@ -49,6 +66,7 @@ Após criar o bucket, faça o deploy da aplicação:
 ```bash
 npm run build
 npm run pages:deploy
+# Ou simplesmente: git push
 ```
 
 ## 📤 Usando o Upload de Arquivos

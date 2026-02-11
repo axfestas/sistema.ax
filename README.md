@@ -178,19 +178,31 @@ wrangler d1 execute sistema-ax-festas --command="INSERT INTO users (email, passw
 
 ## 📦 Armazenamento (R2)
 
+⚠️ **IMPORTANTE:** Você DEVE criar o bucket R2 ANTES de fazer deploy, caso contrário o deploy falhará!
+
 Para armazenar imagens e arquivos:
 
 **Guia Completo:** [R2_SETUP.md](./R2_SETUP.md)
 
+**Guia de Deploy:** [R2_DEPLOY_FIX.md](./R2_DEPLOY_FIX.md) (se tiver erro de deploy)
+
+**Criação Rápida:**
+
+```bash
+# 1. Criar bucket R2 (OBRIGATÓRIO antes do deploy!)
+wrangler r2 bucket create sistema-ax-festas
+
+# 2. Verificar
+wrangler r2 bucket list
+
+# 3. Agora pode fazer deploy
+git push
+```
+
 **Resumo:**
 
-1. Crie um bucket R2 no Cloudflare Dashboard
-2. Configure a binding no `wrangler.toml` (já configurado):
-```toml
-[[r2_buckets]]
-binding = "STORAGE"
-bucket_name = "sistema-ax-festas"
-```
+1. Crie um bucket R2 no Cloudflare Dashboard ou via CLI (comando acima)
+2. O bucket DEVE se chamar `sistema-ax-festas` (já configurado no wrangler.toml)
 3. Use a API `/api/upload` para upload de imagens
 4. Veja exemplos de uso no [guia completo](./R2_SETUP.md)
 

@@ -218,36 +218,75 @@ npm run build
 wrangler pages deploy out --project-name=sistema-ax-festas
 ```
 
-## 📦 Configuração do Storage R2
+## 📦 Configuração do Storage R2 (OBRIGATÓRIO!)
+
+### ⚠️ CRÍTICO: Criar Bucket ANTES do Deploy!
+
+**O deploy falhará se o bucket R2 não existir!** Você DEVE criar o bucket antes de fazer deploy.
 
 ### 1. Criar Bucket R2
 
+**Nome do bucket:** `sistema-ax-festas` (conforme wrangler.toml)
+
+#### Via CLI (Recomendado)
+
 ```bash
-# Via CLI
-wrangler r2 bucket create sistema-ax-festas-storage
+# Criar bucket
+wrangler r2 bucket create sistema-ax-festas
+
+# Verificar se foi criado
+wrangler r2 bucket list
 ```
 
-Ou pelo Dashboard:
-1. Vá para **R2** no menu lateral
-2. Clique em **Create bucket**
-3. Nome: `sistema-ax-festas-storage`
+#### Via Dashboard
 
-### 2. Configurar Binding
+1. Acesse [Cloudflare Dashboard](https://dash.cloudflare.com)
+2. Vá para **R2** no menu lateral
+3. Clique em **Create bucket**
+4. Nome: `sistema-ax-festas` (exatamente este nome!)
+5. Clique em **Create bucket**
 
-No arquivo `wrangler.toml`, adicione:
+### 2. Verificar Binding
+
+O binding já está configurado em `wrangler.toml`:
 
 ```toml
 [[r2_buckets]]
 binding = "STORAGE"
-bucket_name = "sistema-ax-festas-storage"
+bucket_name = "sistema-ax-festas"
 ```
 
-### 3. Redeploy
+**Importante:** NÃO mude o nome do bucket sem atualizar o wrangler.toml!
+
+### 3. Configurar Acesso Público (Opcional)
+
+Para permitir acesso público aos arquivos:
+
+1. No Dashboard, vá para **R2** > `sistema-ax-festas`
+2. Vá para a aba **Settings**
+3. Em **Public Access**, clique em **Allow Access**
+4. Um domínio público será gerado (ex: pub-xxxxx.r2.dev)
+
+### 4. Deploy
+
+Após criar o bucket, o deploy funcionará normalmente:
 
 ```bash
 npm run build
-wrangler pages deploy out --project-name=sistema-ax-festas
+npm run pages:deploy
+# Ou simplesmente git push (se configurado no GitHub)
 ```
+
+### 🚨 Erro: "Failed to publish your Function"
+
+Se você ver este erro durante o deploy:
+```
+Error: Failed to publish your Function. Got error: Unknown internal error occurred.
+```
+
+**Causa:** O bucket R2 não existe!
+
+**Solução:** Veja [R2_DEPLOY_FIX.md](./R2_DEPLOY_FIX.md) para instruções detalhadas.
 
 ## 🌐 Configuração de Domínio Customizado
 
