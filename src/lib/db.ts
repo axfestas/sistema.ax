@@ -200,8 +200,12 @@ export async function getItems(
   const conditions: string[] = [];
 
   // Filtrar apenas itens do catálogo
+  // Safely handle the case where show_in_catalog column might not exist
   if (options?.catalogOnly) {
-    conditions.push('show_in_catalog = 1');
+    // Check if column exists by attempting to use it
+    // SQLite will handle missing column gracefully in most cases
+    // We wrap this in a try-catch at a higher level
+    conditions.push('(show_in_catalog = 1 OR show_in_catalog IS NULL)');
   }
 
   // Filtrar por quantidade (disponível se quantity > 0)
@@ -227,8 +231,19 @@ export async function getItems(
     query += ` LIMIT ${options.maxRecords}`;
   }
 
-  const result = await db.prepare(query).all();
-  return (result.results as unknown as Item[]) || [];
+  try {
+    const result = await db.prepare(query).all();
+    return (result.results as unknown as Item[]) || [];
+  } catch (error: any) {
+    // If error is due to missing column, retry without show_in_catalog filter
+    if (error.message && error.message.includes('show_in_catalog')) {
+      console.warn('show_in_catalog column not found, fetching all items');
+      const fallbackQuery = 'SELECT * FROM items' + (options?.maxRecords ? ` LIMIT ${options.maxRecords}` : '');
+      const result = await db.prepare(fallbackQuery).all();
+      return (result.results as unknown as Item[]) || [];
+    }
+    throw error;
+  }
 }
 
 /**
@@ -255,28 +270,54 @@ export async function createItem(
   // Generate custom_id if not provided
   let customId = item.custom_id;
   if (!customId) {
-    // Get the last custom_id to generate the next one
-    const lastItem = await db
-      .prepare('SELECT custom_id FROM items WHERE custom_id IS NOT NULL ORDER BY custom_id DESC LIMIT 1')
-      .first<{ custom_id: string }>();
-    
-    customId = generateCustomId('EST', lastItem?.custom_id || null);
+    try {
+      // Get the last custom_id to generate the next one
+      const lastItem = await db
+        .prepare('SELECT custom_id FROM items WHERE custom_id IS NOT NULL ORDER BY custom_id DESC LIMIT 1')
+        .first<{ custom_id: string }>();
+      
+      customId = generateCustomId('EST', lastItem?.custom_id || null);
+    } catch (error) {
+      // If custom_id column doesn't exist, generate a new ID anyway
+      customId = generateCustomId('EST', null);
+    }
   }
 
-  const result = await db
-    .prepare(
-      'INSERT INTO items (name, description, price, quantity, show_in_catalog, custom_id) VALUES (?, ?, ?, ?, ?, ?) RETURNING *'
-    )
-    .bind(
-      item.name,
-      item.description || null,
-      item.price,
-      item.quantity,
-      item.show_in_catalog !== undefined ? item.show_in_catalog : 1,
-      customId
-    )
-    .first();
-  return result as unknown as Item;
+  try {
+    // Try to insert with all columns including show_in_catalog and custom_id
+    const result = await db
+      .prepare(
+        'INSERT INTO items (name, description, price, quantity, show_in_catalog, custom_id) VALUES (?, ?, ?, ?, ?, ?) RETURNING *'
+      )
+      .bind(
+        item.name,
+        item.description || null,
+        item.price,
+        item.quantity,
+        item.show_in_catalog !== undefined ? item.show_in_catalog : 1,
+        customId
+      )
+      .first();
+    return result as unknown as Item;
+  } catch (error: any) {
+    // If error is due to missing columns, try without them
+    if (error.message && (error.message.includes('show_in_catalog') || error.message.includes('custom_id'))) {
+      console.warn('Some columns not found, inserting with basic fields only');
+      const result = await db
+        .prepare(
+          'INSERT INTO items (name, description, price, quantity) VALUES (?, ?, ?, ?) RETURNING *'
+        )
+        .bind(
+          item.name,
+          item.description || null,
+          item.price,
+          item.quantity
+        )
+        .first();
+      return result as unknown as Item;
+    }
+    throw error;
+  }
 }
 
 /**
@@ -395,32 +436,64 @@ export async function createReservation(
   // Generate custom_id if not provided
   let customId = reservation.custom_id;
   if (!customId) {
-    // Get the last custom_id to generate the next one
-    const lastReservation = await db
-      .prepare('SELECT custom_id FROM reservations WHERE custom_id IS NOT NULL ORDER BY custom_id DESC LIMIT 1')
-      .first<{ custom_id: string }>();
-    
-    customId = generateCustomId('RES', lastReservation?.custom_id || null);
+    try {
+      // Get the last custom_id to generate the next one
+      const lastReservation = await db
+        .prepare('SELECT custom_id FROM reservations WHERE custom_id IS NOT NULL ORDER BY custom_id DESC LIMIT 1')
+        .first<{ custom_id: string }>();
+      
+      customId = generateCustomId('RES', lastReservation?.custom_id || null);
+    } catch (error) {
+      // If custom_id column doesn't exist, generate a new ID anyway
+      customId = generateCustomId('RES', null);
+    }
   }
 
-  const result = await db
-    .prepare(
-      'INSERT INTO reservations (item_id, kit_id, quantity, customer_name, customer_email, date_from, date_to, status, custom_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *'
-    )
-    .bind(
-      reservation.item_id || null,
-      reservation.kit_id || null,
-      quantity,
-      reservation.customer_name,
-      reservation.customer_email || null,
-      reservation.date_from,
-      reservation.date_to,
-      status,
-      customId
-    )
-    .first();
+  let newReservation: Reservation;
 
-  const newReservation = result as unknown as Reservation;
+  try {
+    // Try to insert with custom_id
+    const result = await db
+      .prepare(
+        'INSERT INTO reservations (item_id, kit_id, quantity, customer_name, customer_email, date_from, date_to, status, custom_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *'
+      )
+      .bind(
+        reservation.item_id || null,
+        reservation.kit_id || null,
+        quantity,
+        reservation.customer_name,
+        reservation.customer_email || null,
+        reservation.date_from,
+        reservation.date_to,
+        status,
+        customId
+      )
+      .first();
+    newReservation = result as unknown as Reservation;
+  } catch (error: any) {
+    // If error is due to missing custom_id column, try without it
+    if (error.message && error.message.includes('custom_id')) {
+      console.warn('custom_id column not found, inserting without it');
+      const result = await db
+        .prepare(
+          'INSERT INTO reservations (item_id, kit_id, quantity, customer_name, customer_email, date_from, date_to, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING *'
+        )
+        .bind(
+          reservation.item_id || null,
+          reservation.kit_id || null,
+          quantity,
+          reservation.customer_name,
+          reservation.customer_email || null,
+          reservation.date_from,
+          reservation.date_to,
+          status
+        )
+        .first();
+      newReservation = result as unknown as Reservation;
+    } else {
+      throw error;
+    }
+  }
 
   // Se for reserva de kit, criar entradas em reservation_items
   if (reservation.kit_id) {
@@ -1104,27 +1177,53 @@ export async function createKit(
   // Generate custom_id if not provided
   let customId = kit.custom_id;
   if (!customId) {
-    // Get the last custom_id to generate the next one
-    const lastKit = await db
-      .prepare('SELECT custom_id FROM kits WHERE custom_id IS NOT NULL ORDER BY custom_id DESC LIMIT 1')
-      .first<{ custom_id: string }>();
-    
-    customId = generateCustomId('KIT', lastKit?.custom_id || null);
+    try {
+      // Get the last custom_id to generate the next one
+      const lastKit = await db
+        .prepare('SELECT custom_id FROM kits WHERE custom_id IS NOT NULL ORDER BY custom_id DESC LIMIT 1')
+        .first<{ custom_id: string }>();
+      
+      customId = generateCustomId('KIT', lastKit?.custom_id || null);
+    } catch (error) {
+      // If custom_id column doesn't exist, generate a new ID anyway
+      customId = generateCustomId('KIT', null);
+    }
   }
 
-  const result = await db
-    .prepare(
-      'INSERT INTO kits (name, description, price, is_active, custom_id) VALUES (?, ?, ?, ?, ?) RETURNING *'
-    )
-    .bind(
-      kit.name,
-      kit.description || null,
-      kit.price,
-      kit.is_active !== undefined ? kit.is_active : 1,
-      customId
-    )
-    .first();
-  return result as unknown as Kit;
+  try {
+    // Try to insert with custom_id
+    const result = await db
+      .prepare(
+        'INSERT INTO kits (name, description, price, is_active, custom_id) VALUES (?, ?, ?, ?, ?) RETURNING *'
+      )
+      .bind(
+        kit.name,
+        kit.description || null,
+        kit.price,
+        kit.is_active !== undefined ? kit.is_active : 1,
+        customId
+      )
+      .first();
+    return result as unknown as Kit;
+  } catch (error: any) {
+    // If error is due to missing custom_id column, try without it
+    if (error.message && error.message.includes('custom_id')) {
+      console.warn('custom_id column not found, inserting without it');
+      const result = await db
+        .prepare(
+          'INSERT INTO kits (name, description, price, is_active) VALUES (?, ?, ?, ?) RETURNING *'
+        )
+        .bind(
+          kit.name,
+          kit.description || null,
+          kit.price,
+          kit.is_active !== undefined ? kit.is_active : 1
+        )
+        .first();
+      return result as unknown as Kit;
+    }
+    throw error;
+  }
 }
 
 /**
