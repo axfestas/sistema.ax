@@ -4,6 +4,13 @@ import { useCart } from '@/components/CartContext'
 import { useToast } from '@/hooks/useToast'
 import { useState } from 'react'
 
+interface ReservationRequestResponse {
+  success: boolean
+  message?: string
+  error?: string
+  code?: string
+}
+
 export default function CartPage() {
   const { items, removeItem, updateQuantity, clearCart, total } = useCart()
   const { showSuccess, showError } = useToast()
@@ -38,7 +45,7 @@ export default function CartPage() {
         })
       })
       
-      const result = await response.json()
+      const result = await response.json() as ReservationRequestResponse
       
       if (response.ok && result.success) {
         showSuccess('Solicitação de reserva enviada com sucesso! Verifique seu email para mais detalhes.')
