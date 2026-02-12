@@ -271,6 +271,49 @@ export async function onRequestPost(context: {
       );
     }
     
+    const db = context.env.DB;
+    
+    // Salvar solicitação no banco de dados
+    try {
+      // Gerar custom_id para a solicitação
+      const lastRequest = await db
+        .prepare('SELECT custom_id FROM reservation_requests WHERE custom_id IS NOT NULL ORDER BY custom_id DESC LIMIT 1')
+        .first<{ custom_id: string }>();
+      
+      let customId = 'SOL-A001';
+      if (lastRequest?.custom_id) {
+        const match = lastRequest.custom_id.match(/SOL-A(\d+)/);
+        if (match) {
+          const num = parseInt(match[1]) + 1;
+          customId = `SOL-A${num.toString().padStart(3, '0')}`;
+        }
+      }
+      
+      // Inserir solicitação no banco
+      await db
+        .prepare(`
+          INSERT INTO reservation_requests 
+          (custom_id, customer_name, customer_email, customer_phone, event_date, message, items_json, total_amount, status)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+        `)
+        .bind(
+          customId,
+          body.name,
+          body.email,
+          body.phone,
+          body.eventDate,
+          body.message || null,
+          JSON.stringify(body.items),
+          body.total
+        )
+        .run();
+      
+      console.log(`Reservation request saved to database: ${customId}`);
+    } catch (dbError: any) {
+      console.error('Error saving to database:', dbError);
+      // Continue even if database save fails - we still want to send emails
+    }
+    
     // Verificar se RESEND_API_KEY está configurado
     const resendApiKey = context.env.RESEND_API_KEY;
     if (!resendApiKey) {
