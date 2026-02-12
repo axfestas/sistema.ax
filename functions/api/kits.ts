@@ -14,6 +14,7 @@ import {
   getKits,
   getKitById,
   getKitWithItems,
+  getKitsWithItems,
   createKit,
   updateKit,
   deleteKit,
@@ -60,10 +61,16 @@ export async function onRequestGet(context: {
     const activeOnly = url.searchParams.get('activeOnly') === 'true';
     const maxRecords = url.searchParams.get('maxRecords');
 
-    const kits = await getKits(db, {
-      activeOnly,
-      maxRecords: maxRecords ? Number(maxRecords) : undefined,
-    });
+    // When activeOnly is true (used by catalog), return kits with their items
+    const kits = activeOnly 
+      ? await getKitsWithItems(db, {
+          activeOnly,
+          maxRecords: maxRecords ? Number(maxRecords) : undefined,
+        })
+      : await getKits(db, {
+          activeOnly,
+          maxRecords: maxRecords ? Number(maxRecords) : undefined,
+        });
 
     return new Response(JSON.stringify(kits), {
       headers: {

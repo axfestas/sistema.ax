@@ -130,6 +130,7 @@ export interface Kit {
   name: string;
   description?: string;
   price: number;
+  image_url?: string;
   is_active: number;
   created_at?: string;
   updated_at?: string;
@@ -1179,6 +1180,30 @@ export async function getKitWithItems(
     ...kit,
     items,
   };
+}
+
+/**
+ * Busca todos os kits com seus itens
+ */
+export async function getKitsWithItems(
+  db: D1Database,
+  options?: {
+    activeOnly?: boolean;
+    maxRecords?: number;
+  }
+): Promise<KitWithItems[]> {
+  const kits = await getKits(db, options);
+  
+  const kitsWithItems: KitWithItems[] = [];
+  
+  for (const kit of kits) {
+    const kitWithItems = await getKitWithItems(db, kit.id);
+    if (kitWithItems) {
+      kitsWithItems.push(kitWithItems);
+    }
+  }
+  
+  return kitsWithItems;
 }
 
 /**
