@@ -46,6 +46,7 @@ export interface PortfolioImage {
   image_url: string;
   display_order: number;
   is_active: number;
+  image_size?: string; // 'small', 'medium', 'large'
   created_at?: string;
   updated_at?: string;
 }
@@ -56,6 +57,7 @@ export interface PortfolioImageInput {
   image_url: string;
   display_order?: number;
   is_active?: number;
+  image_size?: string; // 'small', 'medium', 'large'
 }
 
 export interface Reservation {
@@ -953,20 +955,49 @@ export async function createPortfolioImage(
 ): Promise<PortfolioImage> {
   const displayOrder = image.display_order ?? 0;
   const isActive = image.is_active ?? 1;
+  const imageSize = image.image_size || 'medium';
   
-  const result = await db
-    .prepare(
-      'INSERT INTO portfolio_images (title, description, image_url, display_order, is_active) VALUES (?, ?, ?, ?, ?) RETURNING *'
-    )
-    .bind(
-      image.title,
-      image.description || null,
-      image.image_url,
-      displayOrder,
-      isActive
-    )
-    .first();
-  return result as unknown as PortfolioImage;
+  try {
+    // Try to insert with image_size
+    const result = await db
+      .prepare(
+        'INSERT INTO portfolio_images (title, description, image_url, display_order, is_active, image_size) VALUES (?, ?, ?, ?, ?, ?) RETURNING *'
+      )
+      .bind(
+        image.title,
+        image.description || null,
+        image.image_url,
+        displayOrder,
+        isActive,
+        imageSize
+      )
+      .first();
+    return result as unknown as PortfolioImage;
+  } catch (error: any) {
+    // If error is due to missing image_size column, try without it
+    const isColumnError = error.message && (
+      error.message.toLowerCase().includes('column') ||
+      error.message.includes('image_size')
+    );
+    
+    if (isColumnError) {
+      console.warn('image_size column not found, inserting without it');
+      const result = await db
+        .prepare(
+          'INSERT INTO portfolio_images (title, description, image_url, display_order, is_active) VALUES (?, ?, ?, ?, ?) RETURNING *'
+        )
+        .bind(
+          image.title,
+          image.description || null,
+          image.image_url,
+          displayOrder,
+          isActive
+        )
+        .first();
+      return result as unknown as PortfolioImage;
+    }
+    throw error;
+  }
 }
 
 /**
@@ -999,6 +1030,10 @@ export async function updatePortfolioImage(
   if (updates.is_active !== undefined) {
     fields.push('is_active = ?');
     values.push(updates.is_active);
+  }
+  if (updates.image_size !== undefined) {
+    fields.push('image_size = ?');
+    values.push(updates.image_size);
   }
   
   if (fields.length === 0) {

@@ -9,6 +9,7 @@ interface PortfolioImage {
   description?: string
   image_url: string
   display_order: number
+  image_size?: string
 }
 
 export default function Home() {
@@ -30,6 +31,18 @@ export default function Home() {
       console.error('Error loading portfolio images:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const getImageHeightClass = (size?: string) => {
+    switch (size) {
+      case 'small':
+        return 'h-48' // 192px
+      case 'large':
+        return 'h-80' // 320px
+      case 'medium':
+      default:
+        return 'h-64' // 256px
     }
   }
 
@@ -83,7 +96,7 @@ export default function Home() {
                   className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300"
                 >
                   {/* Portfolio Image */}
-                  <div className="h-64 bg-gray-200 relative overflow-hidden">
+                  <div className={`${getImageHeightClass(image.image_size)} bg-gray-200 relative overflow-hidden`}>
                     <Image 
                       src={image.image_url} 
                       alt={image.title}

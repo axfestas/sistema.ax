@@ -13,6 +13,7 @@ interface PortfolioImage {
   image_url: string
   display_order: number
   is_active: number
+  image_size?: string
 }
 
 interface User {
@@ -38,7 +39,8 @@ export default function AdminPortfolioPage() {
     description: '',
     image_url: '',
     display_order: 0,
-    is_active: 1
+    is_active: 1,
+    image_size: 'medium'
   })
   const router = useRouter()
   const { showSuccess, showError } = useToast()
@@ -100,7 +102,8 @@ export default function AdminPortfolioPage() {
           description: '',
           image_url: '',
           display_order: 0,
-          is_active: 1
+          is_active: 1,
+          image_size: 'medium'
         })
         loadImages()
         showSuccess(editingImage ? 'Imagem atualizada com sucesso!' : 'Imagem adicionada com sucesso!')
@@ -120,7 +123,8 @@ export default function AdminPortfolioPage() {
       description: image.description || '',
       image_url: image.image_url,
       display_order: image.display_order,
-      is_active: image.is_active
+      is_active: image.is_active,
+      image_size: image.image_size || 'medium'
     })
     setShowForm(true)
   }
@@ -188,7 +192,8 @@ export default function AdminPortfolioPage() {
                 description: '',
                 image_url: '',
                 display_order: 0,
-                is_active: 1
+                is_active: 1,
+                image_size: 'medium'
               })
             }}
             className="bg-brand-yellow hover:bg-brand-yellow/90 text-white font-bold py-2 px-6 rounded-full"
@@ -239,16 +244,28 @@ export default function AdminPortfolioPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Status</label>
+                  <label className="block text-sm font-medium mb-1">Tamanho da Imagem</label>
                   <select
-                    value={formData.is_active}
-                    onChange={(e) => setFormData({ ...formData, is_active: Number(e.target.value) })}
+                    value={formData.image_size}
+                    onChange={(e) => setFormData({ ...formData, image_size: e.target.value })}
                     className="w-full border border-gray-300 rounded px-3 py-2"
                   >
-                    <option value={1}>Ativo</option>
-                    <option value={0}>Inativo</option>
+                    <option value="small">Pequeno (192px)</option>
+                    <option value="medium">Médio (256px)</option>
+                    <option value="large">Grande (320px)</option>
                   </select>
                 </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Status</label>
+                <select
+                  value={formData.is_active}
+                  onChange={(e) => setFormData({ ...formData, is_active: Number(e.target.value) })}
+                  className="w-full border border-gray-300 rounded px-3 py-2"
+                >
+                  <option value={1}>Ativo</option>
+                  <option value={0}>Inativo</option>
+                </select>
               </div>
               <div className="flex gap-2">
                 <button

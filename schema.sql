@@ -2,6 +2,7 @@
 
 CREATE TABLE items (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  custom_id TEXT UNIQUE,
   name TEXT NOT NULL,
   description TEXT,
   price REAL NOT NULL,
@@ -12,6 +13,7 @@ CREATE TABLE items (
 
 CREATE TABLE reservations (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  custom_id TEXT UNIQUE,
   reservation_type TEXT NOT NULL DEFAULT 'unit', -- 'kit' or 'unit'
   item_id INTEGER,
   kit_id INTEGER,
@@ -73,6 +75,7 @@ CREATE TABLE portfolio_images (
   image_url TEXT NOT NULL,
   display_order INTEGER DEFAULT 0,
   is_active INTEGER DEFAULT 1, -- 1 for active, 0 for inactive
+  image_size TEXT DEFAULT 'medium', -- 'small', 'medium', 'large'
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -93,6 +96,7 @@ CREATE TABLE site_settings (
 -- Tabela de Kits
 CREATE TABLE kits (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  custom_id TEXT UNIQUE,
   name TEXT NOT NULL,
   description TEXT,
   price REAL NOT NULL,
@@ -138,6 +142,9 @@ CREATE TABLE password_reset_tokens (
 
 -- Índices para melhorar performance
 CREATE INDEX idx_items_show_in_catalog ON items(show_in_catalog);
+CREATE INDEX idx_items_custom_id ON items(custom_id);
+CREATE INDEX idx_kits_custom_id ON kits(custom_id);
+CREATE INDEX idx_reservations_custom_id ON reservations(custom_id);
 CREATE INDEX idx_kit_items_kit_id ON kit_items(kit_id);
 CREATE INDEX idx_kit_items_item_id ON kit_items(item_id);
 CREATE INDEX idx_reservation_items_reservation_id ON reservation_items(reservation_id);
