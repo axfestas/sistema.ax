@@ -259,6 +259,8 @@ export async function getItemById(
 
 /**
  * Cria um novo item
+ * Note: Requires properly formatted custom_id values in database (EST-A###)
+ * for correct sequencing. Any existing IDs with different formats will be ignored.
  */
 export async function createItem(
   db: D1Database,
@@ -270,6 +272,7 @@ export async function createItem(
     try {
       // Get the last custom_id to generate the next one
       // Note: Lexicographic sort works correctly because IDs are zero-padded (EST-A001, EST-A002, etc.)
+      // IDs with incorrect format (e.g., EST-A1, EST-A12345) will be ignored by generateCustomId
       const lastItem = await db
         .prepare('SELECT custom_id FROM items WHERE custom_id IS NOT NULL ORDER BY custom_id DESC LIMIT 1')
         .first<{ custom_id: string }>();

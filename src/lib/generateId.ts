@@ -33,7 +33,8 @@ export function generateCustomId(prefix: string, lastId: string | null): string 
   }
   
   // Extract number from the last ID (ex: "KIT-A005" -> 5)
-  const match = lastId.match(/-A(\d+)$/);
+  // Enforce exactly 3 digits to match validation
+  const match = lastId.match(/-A(\d{3})$/);
   if (!match) {
     // If the format is invalid, start fresh
     return `${prefix}-A001`;
