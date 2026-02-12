@@ -76,7 +76,7 @@ CREATE TABLE portfolio_images (
   image_url TEXT NOT NULL,
   display_order INTEGER DEFAULT 0,
   is_active INTEGER DEFAULT 1, -- 1 for active, 0 for inactive
-  image_size TEXT DEFAULT 'medium', -- 'small', 'medium', 'large'
+  image_size TEXT DEFAULT 'feed-square', -- 'feed-vertical', 'feed-square', 'story', 'profile'
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
