@@ -65,9 +65,12 @@ export interface PortfolioImageInput {
 export interface Reservation {
   id: number;
   custom_id?: string; // RES-A001, RES-A002, etc.
-  item_id: number;
+  item_id?: number;
   kit_id?: number;  // Optional: if reserving a kit instead of item
+  sweet_id?: number; // Optional: if reserving a sweet
+  design_id?: number; // Optional: if reserving a design
   quantity: number; // Quantity of items/kits reserved
+  client_id?: number; // Optional: link to client record
   customer_name: string;
   customer_email?: string;
   date_from: string; // YYYY-MM-DD
@@ -76,9 +79,12 @@ export interface Reservation {
 }
 
 export interface ReservationInput {
-  item_id?: number;  // Optional if kit_id is provided
-  kit_id?: number;   // Optional if item_id is provided
+  item_id?: number;  // Optional if kit_id/sweet_id/design_id is provided
+  kit_id?: number;   // Optional if item_id/sweet_id/design_id is provided
+  sweet_id?: number; // Optional if item_id/kit_id/design_id is provided
+  design_id?: number; // Optional if item_id/kit_id/sweet_id is provided
   quantity?: number; // Default to 1 if not provided
+  client_id?: number; // Optional: link to client record
   customer_name: string;
   customer_email?: string;
   date_from: string;
@@ -471,9 +477,9 @@ export async function createReservation(
   const status = reservation.status || 'pending';
   const quantity = reservation.quantity || 1;
   
-  // Validação: deve ter item_id OU kit_id, não ambos
-  if (!reservation.item_id && !reservation.kit_id) {
-    throw new Error('Deve fornecer item_id ou kit_id');
+  // Validação: deve ter pelo menos um tipo de item
+  if (!reservation.item_id && !reservation.kit_id && !reservation.sweet_id && !reservation.design_id) {
+    throw new Error('Deve fornecer item_id, kit_id, sweet_id ou design_id');
   }
 
   // Generate custom_id if not provided
@@ -496,14 +502,17 @@ export async function createReservation(
   let newReservation: Reservation;
 
   try {
-    // Try to insert with custom_id
+    // Try to insert with all fields including sweet_id, design_id, and client_id
     const result = await db
       .prepare(
-        'INSERT INTO reservations (item_id, kit_id, quantity, customer_name, customer_email, date_from, date_to, status, custom_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *'
+        'INSERT INTO reservations (item_id, kit_id, sweet_id, design_id, client_id, quantity, customer_name, customer_email, date_from, date_to, status, custom_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *'
       )
       .bind(
         reservation.item_id || null,
         reservation.kit_id || null,
+        reservation.sweet_id || null,
+        reservation.design_id || null,
+        reservation.client_id || null,
         quantity,
         reservation.customer_name,
         reservation.customer_email || null,
@@ -515,14 +524,17 @@ export async function createReservation(
       .first();
     newReservation = result as unknown as Reservation;
   } catch (error: any) {
-    // If error is due to missing custom_id column, try without it
+    // If error is due to missing columns, try with basic fields
     const isColumnError = error.message && (
       error.message.toLowerCase().includes('column') ||
-      error.message.includes('custom_id')
+      error.message.includes('custom_id') ||
+      error.message.includes('sweet_id') ||
+      error.message.includes('design_id') ||
+      error.message.includes('client_id')
     );
     
     if (isColumnError) {
-      console.warn('custom_id column not found, inserting without it');
+      console.warn('Some columns not found, inserting with basic fields');
       const result = await db
         .prepare(
           'INSERT INTO reservations (item_id, kit_id, quantity, customer_name, customer_email, date_from, date_to, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING *'
@@ -591,6 +603,18 @@ export async function updateReservation(
   if (updates.kit_id !== undefined) {
     fields.push('kit_id = ?');
     values.push(updates.kit_id);
+  }
+  if (updates.sweet_id !== undefined) {
+    fields.push('sweet_id = ?');
+    values.push(updates.sweet_id);
+  }
+  if (updates.design_id !== undefined) {
+    fields.push('design_id = ?');
+    values.push(updates.design_id);
+  }
+  if (updates.client_id !== undefined) {
+    fields.push('client_id = ?');
+    values.push(updates.client_id);
   }
   if (updates.quantity !== undefined) {
     fields.push('quantity = ?');
