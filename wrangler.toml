@@ -21,3 +21,5 @@ bucket_name = "sistema-ax-festas"
 # Environment variables
 [vars]
 NODE_VERSION = "18"
+SITE_URL = "https://axfestas.com.br"
+# Email settings (optional - set RESEND_API_KEY in Cloudflare dashboard as secret)

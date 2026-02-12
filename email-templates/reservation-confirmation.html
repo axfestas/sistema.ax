@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmação de Reserva - Ax Festas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #fbbf24;
+            color: #1f2937;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+        .content {
+            background-color: #f9fafb;
+            padding: 30px;
+            border: 1px solid #e5e7eb;
+        }
+        .footer {
+            background-color: #1f2937;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+            border-radius: 0 0 8px 8px;
+        }
+        .info-box {
+            background-color: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .info-box h3 {
+            margin-top: 0;
+            color: #fbbf24;
+        }
+        .item-list {
+            list-style: none;
+            padding: 0;
+        }
+        .item-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .item-list li:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎉 Reserva Confirmada!</h1>
+    </div>
+    
+    <div class="content">
+        <p>Olá, <strong>{{customerName}}</strong>!</p>
+        
+        <p>Sua reserva foi confirmada com sucesso na <strong>Ax Festas</strong>!</p>
+        
+        <div class="info-box">
+            <h3>📋 Detalhes da Reserva</h3>
+            <p><strong>ID da Reserva:</strong> #{{reservationId}}</p>
+            <p><strong>Status:</strong> {{status}}</p>
+            <p><strong>Data de Retirada:</strong> {{dateFrom}}</p>
+            <p><strong>Data de Devolução:</strong> {{dateTo}}</p>
+        </div>
+        
+        <div class="info-box">
+            <h3>📦 Itens Reservados</h3>
+            <div>{{itemsList}}</div>
+        </div>
+        
+        <p><strong>O que fazer agora?</strong></p>
+        <ul>
+            <li>Anote o ID da sua reserva (#{{reservationId}})</li>
+            <li>Confirme as datas de retirada e devolução</li>
+            <li>Entre em contato para mais informações</li>
+        </ul>
+    </div>
+    
+    <div class="footer">
+        <p><strong>Ax Festas</strong></p>
+        <p>📧 contato@axfestas.com.br | 📱 (00) 00000-0000</p>
+    </div>
+</body>
+</html>
