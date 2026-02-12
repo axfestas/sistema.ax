@@ -40,7 +40,7 @@ export default function AdminPortfolioPage() {
     image_url: '',
     display_order: 0,
     is_active: 1,
-    image_size: 'medium'
+    image_size: 'feed-square' // Default to square feed format
   })
   const router = useRouter()
   const { showSuccess, showError } = useToast()
@@ -103,7 +103,7 @@ export default function AdminPortfolioPage() {
           image_url: '',
           display_order: 0,
           is_active: 1,
-          image_size: 'medium'
+          image_size: 'feed-square' // Default to square feed format
         })
         loadImages()
         showSuccess(editingImage ? 'Imagem atualizada com sucesso!' : 'Imagem adicionada com sucesso!')
@@ -124,7 +124,7 @@ export default function AdminPortfolioPage() {
       image_url: image.image_url,
       display_order: image.display_order,
       is_active: image.is_active,
-      image_size: image.image_size || 'medium'
+      image_size: image.image_size || 'feed-square' // Default to square feed format
     })
     setShowForm(true)
   }
@@ -193,7 +193,7 @@ export default function AdminPortfolioPage() {
                 image_url: '',
                 display_order: 0,
                 is_active: 1,
-                image_size: 'medium'
+                image_size: 'feed-square' // Default to square feed format
               })
             }}
             className="bg-brand-yellow hover:bg-brand-yellow/90 text-white font-bold py-2 px-6 rounded-full"
@@ -244,16 +244,20 @@ export default function AdminPortfolioPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Tamanho da Imagem</label>
+                  <label className="block text-sm font-medium mb-1">Formato da Imagem</label>
                   <select
                     value={formData.image_size}
                     onChange={(e) => setFormData({ ...formData, image_size: e.target.value })}
                     className="w-full border border-gray-300 rounded px-3 py-2"
                   >
-                    <option value="small">Pequeno (192px)</option>
-                    <option value="medium">Médio (256px)</option>
-                    <option value="large">Grande (320px)</option>
+                    <option value="feed-vertical">Feed - Vertical (4:5)</option>
+                    <option value="feed-square">Feed - Quadrado (1:1)</option>
+                    <option value="story">Stories/Reels (9:16)</option>
+                    <option value="profile">Foto de Perfil (1:1)</option>
                   </select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Escolha o formato baseado no uso da imagem nas redes sociais
+                  </p>
                 </div>
               </div>
               <div>

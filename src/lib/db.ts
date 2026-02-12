@@ -48,7 +48,7 @@ export interface PortfolioImage {
   image_url: string;
   display_order: number;
   is_active: number;
-  image_size?: string; // 'small', 'medium', 'large'
+  image_size?: string; // 'feed-vertical' (4:5), 'feed-square' (1:1), 'story' (9:16), 'profile' (1:1 small)
   created_at?: string;
   updated_at?: string;
 }
@@ -59,7 +59,7 @@ export interface PortfolioImageInput {
   image_url: string;
   display_order?: number;
   is_active?: number;
-  image_size?: string; // 'small', 'medium', 'large'
+  image_size?: string; // 'feed-vertical' (4:5), 'feed-square' (1:1), 'story' (9:16), 'profile' (1:1 small)
 }
 
 export interface Reservation {
@@ -1029,7 +1029,7 @@ export async function createPortfolioImage(
 ): Promise<PortfolioImage> {
   const displayOrder = image.display_order ?? 0;
   const isActive = image.is_active ?? 1;
-  const imageSize = image.image_size || 'medium';
+  const imageSize = image.image_size || 'feed-square'; // Default to square feed format
   
   try {
     // Try to insert with image_size column
