@@ -58,10 +58,12 @@ export async function onRequestGet(context: {
       | 'reserved'
       | 'maintenance'
       | null;
+    const catalogOnly = url.searchParams.get('catalogOnly') === 'true';
     const maxRecords = url.searchParams.get('maxRecords');
 
     const items = await getItems(db, {
       status: status || undefined,
+      catalogOnly,
       maxRecords: maxRecords ? Number(maxRecords) : undefined,
     });
 
