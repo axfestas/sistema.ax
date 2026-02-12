@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/useToast';
+import ImageUpload from '@/components/ImageUpload';
 
 interface Item {
   id: number;
@@ -9,6 +10,7 @@ interface Item {
   description?: string;
   price: number;
   quantity: number;
+  image_url?: string;
   show_in_catalog?: number; // 1 = show, 0 = hide
 }
 
@@ -22,6 +24,7 @@ export default function InventoryPage() {
     description: '',
     price: '',
     quantity: '',
+    image_url: '',
     show_in_catalog: 1, // Default to showing in catalog
   });
   const { showSuccess, showError } = useToast();
@@ -52,6 +55,7 @@ export default function InventoryPage() {
       description: formData.description || undefined,
       price: parseFloat(formData.price),
       quantity: parseInt(formData.quantity),
+      image_url: formData.image_url || undefined,
       show_in_catalog: formData.show_in_catalog,
     };
 
@@ -71,8 +75,8 @@ export default function InventoryPage() {
         await loadItems();
         setShowForm(false);
         setEditingItem(null);
-        setFormData({ name: '', description: '', price: '', quantity: '', show_in_catalog: 1 });
-        showSuccess(editingItem ? 'Item atualizado com sucesso!' : 'Item salve com sucesso!');
+        setFormData({ name: '', description: '', price: '', quantity: '', image_url: '', show_in_catalog: 1 });
+        showSuccess(editingItem ? 'Item atualizado com sucesso!' : 'Item salvo com sucesso!');
       } else {
         const error: any = await response.json();
         showError(error.error || 'Erro ao salvar item');
@@ -90,6 +94,7 @@ export default function InventoryPage() {
       description: item.description || '',
       price: item.price.toString(),
       quantity: item.quantity.toString(),
+      image_url: item.image_url || '',
       show_in_catalog: item.show_in_catalog !== undefined ? item.show_in_catalog : 1,
     });
     setShowForm(true);
@@ -127,7 +132,7 @@ export default function InventoryPage() {
           onClick={() => {
             setShowForm(true);
             setEditingItem(null);
-            setFormData({ name: '', description: '', price: '', quantity: '', show_in_catalog: 1 });
+            setFormData({ name: '', description: '', price: '', quantity: '', image_url: '', show_in_catalog: 1 });
           }}
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
         >
@@ -160,6 +165,12 @@ export default function InventoryPage() {
                 rows={3}
               />
             </div>
+            <ImageUpload
+              currentImage={formData.image_url}
+              onUpload={(url) => setFormData({ ...formData, image_url: url })}
+              folder="items"
+              label="Imagem do Item"
+            />
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Preço (R$)</label>
@@ -212,6 +223,7 @@ export default function InventoryPage() {
                 onClick={() => {
                   setShowForm(false);
                   setEditingItem(null);
+                  setFormData({ name: '', description: '', price: '', quantity: '', image_url: '', show_in_catalog: 1 });
                 }}
                 className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
               >
