@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { useToast } from '@/hooks/useToast'
+import ImageUpload from '@/components/ImageUpload'
 
 interface Kit {
   id: number
   name: string
   description?: string
   price: number
+  image_url?: string
   is_active: number
 }
 
@@ -41,6 +43,7 @@ export default function KitsPage() {
     name: '',
     description: '',
     price: '',
+    image_url: '',
     is_active: 1,
   })
   const [newKitItem, setNewKitItem] = useState({
@@ -100,6 +103,7 @@ export default function KitsPage() {
       name: formData.name,
       description: formData.description || undefined,
       price: parseFloat(formData.price),
+      image_url: formData.image_url || undefined,
       is_active: formData.is_active,
     }
 
@@ -117,7 +121,7 @@ export default function KitsPage() {
         await loadKits()
         setShowForm(false)
         setEditingKit(null)
-        setFormData({ name: '', description: '', price: '', is_active: 1 })
+        setFormData({ name: '', description: '', price: '', image_url: '', is_active: 1 })
         showSuccess(editingKit ? 'Kit atualizado com sucesso!' : 'Kit criado com sucesso!')
       } else {
         const error: any = await response.json()
@@ -135,6 +139,7 @@ export default function KitsPage() {
       name: kit.name,
       description: kit.description || '',
       price: kit.price.toString(),
+      image_url: kit.image_url || '',
       is_active: kit.is_active,
     })
     setShowForm(true)
@@ -226,7 +231,7 @@ export default function KitsPage() {
           onClick={() => {
             setShowForm(true)
             setEditingKit(null)
-            setFormData({ name: '', description: '', price: '', is_active: 1 })
+            setFormData({ name: '', description: '', price: '', image_url: '', is_active: 1 })
           }}
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
         >
@@ -259,6 +264,12 @@ export default function KitsPage() {
                 rows={3}
               />
             </div>
+            <ImageUpload
+              currentImage={formData.image_url}
+              onUpload={(url) => setFormData({ ...formData, image_url: url })}
+              folder="kits"
+              label="Imagem do Kit"
+            />
             <div>
               <label className="block text-sm font-medium mb-1">Preço (R$)</label>
               <input

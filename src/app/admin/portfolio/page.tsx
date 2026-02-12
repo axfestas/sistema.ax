@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/hooks/useToast'
 import Image from 'next/image'
+import ImageUpload from '@/components/ImageUpload'
 
 interface PortfolioImage {
   id: number
@@ -221,17 +222,12 @@ export default function AdminPortfolioPage() {
                   rows={3}
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">URL da Imagem *</label>
-                <input
-                  type="url"
-                  required
-                  value={formData.image_url}
-                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                  className="w-full border border-gray-300 rounded px-3 py-2"
-                  placeholder="https://exemplo.com/imagem.jpg"
-                />
-              </div>
+              <ImageUpload
+                currentImage={formData.image_url}
+                onUpload={(url) => setFormData({ ...formData, image_url: url })}
+                folder="portfolio"
+                label="Imagem do Portfólio"
+              />
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">Ordem de Exibição</label>
