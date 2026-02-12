@@ -59,6 +59,10 @@ export default function AdminPage() {
           <h2 className="font-bold text-lg mb-2">📅 Reservas</h2>
           <p className="text-gray-600">Gerenciar reservas de clientes</p>
         </a>
+        <a href="/admin/users" className="bg-cyan-50 p-4 rounded-lg shadow hover:shadow-lg transition-shadow">
+          <h2 className="font-bold text-lg mb-2">👥 Usuáries</h2>
+          <p className="text-gray-600">Gerenciar contas de usuáries</p>
+        </a>
         <a href="/admin/maintenance" className="bg-yellow-50 p-4 rounded-lg shadow hover:shadow-lg transition-shadow">
           <h2 className="font-bold text-lg mb-2">🔧 Manutenção</h2>
           <p className="text-gray-600">Controlar manutenções</p>

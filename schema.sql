@@ -5,18 +5,28 @@ CREATE TABLE items (
   name TEXT NOT NULL,
   description TEXT,
   price REAL NOT NULL,
-  quantity INTEGER NOT NULL
+  quantity INTEGER NOT NULL,
+  image_url TEXT,
+  show_in_catalog INTEGER DEFAULT 1
 );
 
 CREATE TABLE reservations (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  reservation_type TEXT NOT NULL DEFAULT 'unit', -- 'kit' or 'unit'
   item_id INTEGER,
+  kit_id INTEGER,
+  quantity INTEGER DEFAULT 1,
   customer_name TEXT NOT NULL,
   customer_email TEXT,
+  customer_phone TEXT,
   date_from DATE NOT NULL,
   date_to DATE NOT NULL,
   status TEXT DEFAULT 'pending',
-  FOREIGN KEY (item_id) REFERENCES items(id)
+  notes TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (item_id) REFERENCES items(id),
+  FOREIGN KEY (kit_id) REFERENCES kits(id)
 );
 
 CREATE TABLE maintenance (
@@ -42,6 +52,8 @@ CREATE TABLE users (
   password_hash TEXT NOT NULL,
   name TEXT NOT NULL,
   role TEXT DEFAULT 'user', -- 'admin' ou 'user'
+  active INTEGER DEFAULT 1,
+  phone TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -77,6 +89,63 @@ CREATE TABLE site_settings (
   whatsapp_url TEXT,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Tabela de Kits
+CREATE TABLE kits (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  description TEXT,
+  price REAL NOT NULL,
+  image_url TEXT,
+  is_active INTEGER DEFAULT 1,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabela de Itens do Kit (relação muitos-para-muitos)
+CREATE TABLE kit_items (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  kit_id INTEGER NOT NULL,
+  item_id INTEGER NOT NULL,
+  quantity INTEGER NOT NULL DEFAULT 1,
+  FOREIGN KEY (kit_id) REFERENCES kits(id) ON DELETE CASCADE,
+  FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE CASCADE,
+  UNIQUE(kit_id, item_id)
+);
+
+-- Tabela para rastrear itens individuais de cada reserva
+CREATE TABLE reservation_items (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  reservation_id INTEGER NOT NULL,
+  item_id INTEGER NOT NULL,
+  quantity INTEGER NOT NULL DEFAULT 1,
+  date_from DATE NOT NULL,
+  date_to DATE NOT NULL,
+  FOREIGN KEY (reservation_id) REFERENCES reservations(id) ON DELETE CASCADE,
+  FOREIGN KEY (item_id) REFERENCES items(id)
+);
+
+-- Tabela de tokens de recuperação de senha
+CREATE TABLE password_reset_tokens (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  token TEXT UNIQUE NOT NULL,
+  expires_at DATETIME NOT NULL,
+  used INTEGER DEFAULT 0,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Índices para melhorar performance
+CREATE INDEX idx_items_show_in_catalog ON items(show_in_catalog);
+CREATE INDEX idx_kit_items_kit_id ON kit_items(kit_id);
+CREATE INDEX idx_kit_items_item_id ON kit_items(item_id);
+CREATE INDEX idx_reservation_items_reservation_id ON reservation_items(reservation_id);
+CREATE INDEX idx_reservation_items_item_id ON reservation_items(item_id);
+CREATE INDEX idx_reservation_items_item_dates ON reservation_items(item_id, date_from, date_to);
+CREATE INDEX idx_reservations_dates ON reservations(date_from, date_to);
+CREATE INDEX idx_reservations_kit_id ON reservations(kit_id);
+CREATE INDEX idx_password_reset_tokens_token ON password_reset_tokens(token);
 
 -- Sample data: Add Kit Festa Completo to catalog
 INSERT OR IGNORE INTO items (id, name, description, price, quantity) 
