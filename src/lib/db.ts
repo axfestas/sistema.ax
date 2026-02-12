@@ -26,6 +26,7 @@ export interface Item {
   description?: string;
   price: number;
   quantity: number;
+  image_url?: string;
   show_in_catalog?: number; // 1 = show in catalog, 0 = hide
 }
 
