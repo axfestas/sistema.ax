@@ -263,7 +263,7 @@ export async function onRequestPost(context: {
     }
     
     // Validar email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
     if (!emailRegex.test(body.email)) {
       return new Response(
         JSON.stringify({ success: false, error: 'Email inválido' }),
@@ -275,14 +275,13 @@ export async function onRequestPost(context: {
     const resendApiKey = context.env.RESEND_API_KEY;
     if (!resendApiKey) {
       console.error('RESEND_API_KEY not configured');
-      // Retornar sucesso mesmo sem email configurado para não bloquear o fluxo
       return new Response(
         JSON.stringify({
-          success: true,
-          message: 'Solicitação recebida com sucesso! (Email não configurado)',
-          warning: 'Email service not configured'
+          success: false,
+          error: 'Serviço de email não configurado. Por favor, entre em contato diretamente pelo telefone ou WhatsApp.',
+          code: 'EMAIL_SERVICE_UNAVAILABLE'
         }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
+        { status: 503, headers: { 'Content-Type': 'application/json' } }
       );
     }
     
@@ -315,28 +314,23 @@ export async function onRequestPost(context: {
       console.error('Customer email error:', customerResult);
     }
     
-    // Se ambos falharam, retornar erro
-    if (errors.length === 2) {
+    // Se qualquer email falhou, retornar erro
+    if (errors.length > 0) {
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'Falha ao enviar emails. Por favor, tente novamente ou entre em contato diretamente.',
+          error: 'Não foi possível processar sua solicitação. Por favor, tente novamente ou entre em contato diretamente.',
           details: errors
         }),
         { status: 500, headers: { 'Content-Type': 'application/json' } }
       );
     }
     
-    // Retornar sucesso (mesmo com falhas parciais)
+    // Retornar sucesso apenas se ambos os emails foram enviados
     return new Response(
       JSON.stringify({
         success: true,
-        message: 'Solicitação de reserva recebida com sucesso!',
-        emailsSent: {
-          admin: adminResult.status === 'fulfilled' && adminResult.value.success,
-          customer: customerResult.status === 'fulfilled' && customerResult.value.success
-        },
-        warnings: errors.length > 0 ? errors : undefined
+        message: 'Solicitação de reserva recebida com sucesso! Verifique seu email para mais detalhes.'
       }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );

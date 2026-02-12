@@ -41,7 +41,7 @@ export default function CartPage() {
       const result = await response.json()
       
       if (response.ok && result.success) {
-        showSuccess('Solicitação de reserva enviada com sucesso! Entraremos em contato em breve.')
+        showSuccess('Solicitação de reserva enviada com sucesso! Verifique seu email para mais detalhes.')
         setShowQuoteForm(false)
         clearCart()
         setFormData({
@@ -51,6 +51,8 @@ export default function CartPage() {
           eventDate: '',
           message: ''
         })
+      } else if (response.status === 503) {
+        showError('Serviço temporariamente indisponível. Por favor, entre em contato pelo telefone ou WhatsApp.')
       } else {
         showError(result.error || 'Erro ao enviar solicitação. Por favor, tente novamente.')
       }
