@@ -39,10 +39,10 @@ export default function Home() {
       <section className="relative bg-gradient-to-r from-brand-yellow via-brand-blue to-brand-purple py-20 px-4">
         <div className="max-w-7xl mx-auto text-center">
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 drop-shadow-lg">
-            Transforme sua Festa em Momentos Inesquecíveis
+            Brilhe e comemore com a Ax Festas
           </h1>
           <p className="text-xl md:text-2xl text-white/90 mb-8 drop-shadow">
-            Aluguel de itens para festas e eventos com qualidade e excelência
+            Aqui seu sonho vira realidade!
           </p>
           <a 
             href="/catalog" 
@@ -61,7 +61,7 @@ export default function Home() {
               Nosso Portfólio
             </h2>
             <p className="text-lg text-gray-600">
-              Confira fotos de festas e eventos que realizamos
+              Confira fotos de festa, personalizados e doces que realizamos
             </p>
           </div>
 
