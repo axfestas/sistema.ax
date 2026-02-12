@@ -6,8 +6,9 @@ import { useState } from 'react'
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, clearCart, total } = useCart()
-  const { showSuccess } = useToast()
+  const { showSuccess, showError } = useToast()
   const [showQuoteForm, setShowQuoteForm] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -16,12 +17,49 @@ export default function CartPage() {
     message: ''
   })
 
-  const handleSubmitQuote = (e: React.FormEvent) => {
+  const handleSubmitQuote = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Here you would send the quote request to your backend
-    showSuccess('Orçamento solicitado com sucesso! Entraremos em contato em breve.')
-    setShowQuoteForm(false)
-    // Cart is NOT cleared so user can request multiple quotes or modify
+    setIsSubmitting(true)
+    
+    try {
+      const response = await fetch('/api/reservation-request', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          eventDate: formData.eventDate,
+          message: formData.message,
+          items: items,
+          total: total
+        })
+      })
+      
+      const result = await response.json()
+      
+      if (response.ok && result.success) {
+        showSuccess('Solicitação de reserva enviada com sucesso! Entraremos em contato em breve.')
+        setShowQuoteForm(false)
+        clearCart()
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          eventDate: '',
+          message: ''
+        })
+      } else {
+        showError(result.error || 'Erro ao enviar solicitação. Por favor, tente novamente.')
+      }
+    } catch (error) {
+      console.error('Error submitting reservation request:', error)
+      showError('Erro ao enviar solicitação. Por favor, tente novamente ou entre em contato diretamente.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   if (items.length === 0 && !showQuoteForm) {
@@ -37,7 +75,7 @@ export default function CartPage() {
             Seu carrinho está vazio
           </h1>
           <p className="text-gray-600 mb-8">
-            Adicione itens do nosso catálogo para solicitar um orçamento
+            Adicione itens do nosso catálogo para solicitar uma reserva
           </p>
           <a
             href="/#portfolio"
@@ -119,7 +157,7 @@ export default function CartPage() {
                   onClick={() => setShowQuoteForm(true)}
                   className="flex-1 bg-brand-yellow hover:bg-brand-yellow/90 text-white font-bold py-3 px-6 rounded-full transition-colors"
                 >
-                  Solicitar Orçamento
+                  Solicitar Reserva
                 </button>
               </div>
             </div>
@@ -128,7 +166,7 @@ export default function CartPage() {
           /* Quote Form */
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-2xl font-bold text-brand-gray mb-6">
-              Solicitar Orçamento
+              Solicitar Reserva
             </h2>
             
             <form onSubmit={handleSubmitQuote} className="space-y-4">
@@ -207,9 +245,10 @@ export default function CartPage() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-brand-yellow hover:bg-brand-yellow/90 text-white font-bold py-3 px-6 rounded-full transition-colors"
+                  disabled={isSubmitting}
+                  className="flex-1 bg-brand-yellow hover:bg-brand-yellow/90 text-white font-bold py-3 px-6 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Enviar Solicitação
+                  {isSubmitting ? 'Enviando...' : 'Enviar Solicitação'}
                 </button>
               </div>
             </form>
