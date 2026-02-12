@@ -103,13 +103,6 @@ export default function Header() {
                 Início
               </Link>
               <Link
-                href="/#portfolio"
-                className="px-4 py-2 hover:bg-brand-yellow/10 rounded-md transition text-brand-gray"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Catálogo
-              </Link>
-              <Link
                 href="/catalog"
                 className="px-4 py-2 hover:bg-brand-yellow/10 rounded-md transition text-brand-gray"
                 onClick={() => setIsMenuOpen(false)}

@@ -71,7 +71,7 @@ export async function onRequestPut(context: {
     } catch (error) {
       return new Response(
         JSON.stringify({
-          error: 'Acesso negado. Apenas administradores podem atualizar configurações.',
+          error: 'Acesso negado. Apenas administradories podem atualizar configurações.',
         }),
         {
           status: 403,

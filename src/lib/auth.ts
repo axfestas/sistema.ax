@@ -60,7 +60,7 @@ export function verifyPassword(password: string, hash: string, salt: string): bo
 // ==================== GERENCIAMENTO DE USUÁRIOS ====================
 
 /**
- * Busca usuário por email
+ * Busca usuárie por email
  */
 export async function getUserByEmail(db: D1Database, email: string): Promise<User | null> {
   const result = await db
@@ -72,7 +72,7 @@ export async function getUserByEmail(db: D1Database, email: string): Promise<Use
 }
 
 /**
- * Busca usuário por ID
+ * Busca usuárie por ID
  */
 export async function getUserById(db: D1Database, userId: number): Promise<User | null> {
   const result = await db
@@ -84,7 +84,7 @@ export async function getUserById(db: D1Database, userId: number): Promise<User 
 }
 
 /**
- * Registra novo usuário
+ * Registra novo usuárie
  */
 export async function registerUser(
   db: D1Database,
@@ -108,7 +108,7 @@ export async function registerUser(
   // Verificar se email já existe
   const existingUser = await getUserByEmail(db, input.email);
   if (existingUser) {
-    return { error: 'Email já cadastrado' };
+    return { error: 'Email já cadastrade' };
   }
 
   // Hash da senha
@@ -125,7 +125,7 @@ export async function registerUser(
 
     return { user: result as unknown as User };
   } catch (error: any) {
-    return { error: 'Erro ao criar usuário' };
+    return { error: 'Erro ao criar usuárie' };
   }
 }
 
@@ -138,7 +138,7 @@ export async function loginUser(
   db: D1Database,
   input: LoginInput
 ): Promise<{ user: User; error?: never } | { error: string; user?: never }> {
-  // Buscar usuário
+  // Buscar usuárie
   const userQuery = await db
     .prepare('SELECT id, email, name, role, password_hash, created_at FROM users WHERE email = ?')
     .bind(input.email.toLowerCase())
@@ -239,7 +239,7 @@ export async function deleteSession(db: D1Database, sessionId: string): Promise<
 }
 
 /**
- * Deleta todas as sessões de um usuário
+ * Deleta todas as sessões de usuárie
  */
 export async function deleteAllUserSessions(db: D1Database, userId: number): Promise<boolean> {
   const result = await db
@@ -270,7 +270,7 @@ export function getSessionIdFromRequest(request: Request): string | null {
 
 /**
  * Valida autenticação
- * Retorna usuário ou null se não autenticado
+ * Retorna usuárie ou null se não autenticade
  */
 export async function getAuthenticatedUser(
   db: D1Database,
@@ -284,7 +284,7 @@ export async function getAuthenticatedUser(
 }
 
 /**
- * Requer autenticação (lança erro se não autenticado)
+ * Requer autenticação (lança erro se não autenticade)
  */
 export async function requireAuth(db: D1Database, request: Request): Promise<User> {
   const user = await getAuthenticatedUser(db, request);

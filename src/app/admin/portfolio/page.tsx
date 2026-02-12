@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useToast } from '@/hooks/useToast'
 import Image from 'next/image'
 
 interface PortfolioImage {
@@ -39,6 +40,7 @@ export default function AdminPortfolioPage() {
     is_active: 1
   })
   const router = useRouter()
+  const { showSuccess, showError } = useToast()
 
   useEffect(() => {
     checkAuth()
@@ -100,12 +102,13 @@ export default function AdminPortfolioPage() {
           is_active: 1
         })
         loadImages()
+        showSuccess(editingImage ? 'Imagem atualizada com sucesso!' : 'Imagem adicionada com sucesso!')
       } else {
-        alert('Erro ao salvar imagem')
+        showError('Erro ao salvar imagem')
       }
     } catch (error) {
       console.error('Error saving image:', error)
-      alert('Erro ao salvar imagem')
+      showError('Erro ao salvar imagem')
     }
   }
 
@@ -131,12 +134,13 @@ export default function AdminPortfolioPage() {
 
       if (response.ok) {
         loadImages()
+        showSuccess('Imagem excluída com sucesso!')
       } else {
-        alert('Erro ao excluir imagem')
+        showError('Erro ao excluir imagem')
       }
     } catch (error) {
       console.error('Error deleting image:', error)
-      alert('Erro ao excluir imagem')
+      showError('Erro ao excluir imagem')
     }
   }
 
@@ -169,9 +173,9 @@ export default function AdminPortfolioPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold">Gerenciar Catálogo</h1>
+            <h1 className="text-3xl font-bold">Gerenciar Portfólio</h1>
             <p className="text-gray-600 mt-2">
-              Adicione e gerencie as imagens que aparecem na página inicial
+              Adicione e gerencie fotos da galeria que aparecem na página inicial
             </p>
           </div>
           <button

@@ -1,28 +1,32 @@
 /**
- * Cloudflare Pages Function para gerenciar itens
+ * Cloudflare Pages Function para gerenciar kits
  * 
  * Endpoints:
- * - GET /api/items - Lista todos os itens
- * - GET /api/items?id=1 - Busca um item específico
- * - POST /api/items - Cria novo item
- * - PUT /api/items?id=1 - Atualiza um item
- * - DELETE /api/items?id=1 - Deleta um item
+ * - GET /api/kits - Lista todos os kits
+ * - GET /api/kits?id=1 - Busca um kit específico (com itens)
+ * - POST /api/kits - Cria novo kit
+ * - PUT /api/kits?id=1 - Atualiza um kit
+ * - DELETE /api/kits?id=1 - Deleta um kit
  */
 
-import type { D1Database, R2Bucket } from '@cloudflare/workers-types';
+import type { D1Database } from '@cloudflare/workers-types';
 import {
-  getItems,
-  getItemById,
-  createItem,
-  updateItem,
-  deleteItem,
-  type ItemInput,
-  type Item,
+  getKits,
+  getKitById,
+  getKitWithItems,
+  createKit,
+  updateKit,
+  deleteKit,
+  addItemToKit,
+  removeItemFromKit,
+  updateKitItem,
+  getKitItems,
+  type KitInput,
+  type KitItemInput,
 } from '../../src/lib/db';
 
 interface Env {
   DB: D1Database;
-  STORAGE?: R2Bucket; // Optional for backward compatibility
 }
 
 export async function onRequestGet(context: {
@@ -33,19 +37,19 @@ export async function onRequestGet(context: {
     const url = new URL(context.request.url);
     const db = context.env.DB;
 
-    const itemId = url.searchParams.get('id');
+    const kitId = url.searchParams.get('id');
 
-    if (itemId) {
-      const item = await getItemById(db, Number(itemId));
+    if (kitId) {
+      const kit = await getKitWithItems(db, Number(kitId));
 
-      if (!item) {
-        return new Response(JSON.stringify({ error: 'Item not found' }), {
+      if (!kit) {
+        return new Response(JSON.stringify({ error: 'Kit not found' }), {
           status: 404,
           headers: { 'Content-Type': 'application/json' },
         });
       }
 
-      return new Response(JSON.stringify(item), {
+      return new Response(JSON.stringify(kit), {
         headers: {
           'Content-Type': 'application/json',
           'Cache-Control': 'public, max-age=60',
@@ -53,31 +57,25 @@ export async function onRequestGet(context: {
       });
     }
 
-    const status = url.searchParams.get('status') as
-      | 'available'
-      | 'reserved'
-      | 'maintenance'
-      | null;
-    const catalogOnly = url.searchParams.get('catalogOnly') === 'true';
+    const activeOnly = url.searchParams.get('activeOnly') === 'true';
     const maxRecords = url.searchParams.get('maxRecords');
 
-    const items = await getItems(db, {
-      status: status || undefined,
-      catalogOnly,
+    const kits = await getKits(db, {
+      activeOnly,
       maxRecords: maxRecords ? Number(maxRecords) : undefined,
     });
 
-    return new Response(JSON.stringify(items), {
+    return new Response(JSON.stringify(kits), {
       headers: {
         'Content-Type': 'application/json',
         'Cache-Control': 'public, max-age=60',
       },
     });
   } catch (error: any) {
-    console.error('Error fetching items:', error);
+    console.error('Error fetching kits:', error);
     return new Response(
       JSON.stringify({
-        error: 'Failed to fetch items',
+        error: 'Failed to fetch kits',
         message: error.message,
       }),
       {
@@ -94,12 +92,12 @@ export async function onRequestPost(context: {
 }) {
   try {
     const db = context.env.DB;
-    const body = (await context.request.json()) as ItemInput;
+    const body = (await context.request.json()) as KitInput;
 
-    if (!body.name || body.price === undefined || body.quantity === undefined) {
+    if (!body.name || !body.price) {
       return new Response(
         JSON.stringify({
-          error: 'Missing required fields: name, price, quantity',
+          error: 'Missing required fields: name, price',
         }),
         {
           status: 400,
@@ -108,17 +106,17 @@ export async function onRequestPost(context: {
       );
     }
 
-    const newItem = await createItem(db, body);
+    const newKit = await createKit(db, body);
 
-    return new Response(JSON.stringify(newItem), {
+    return new Response(JSON.stringify(newKit), {
       status: 201,
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error: any) {
-    console.error('Error creating item:', error);
+    console.error('Error creating kit:', error);
     return new Response(
       JSON.stringify({
-        error: 'Failed to create item',
+        error: 'Failed to create kit',
         message: error.message,
       }),
       {
@@ -136,11 +134,11 @@ export async function onRequestPut(context: {
   try {
     const url = new URL(context.request.url);
     const db = context.env.DB;
-    const itemId = url.searchParams.get('id');
+    const kitId = url.searchParams.get('id');
 
-    if (!itemId) {
+    if (!kitId) {
       return new Response(
-        JSON.stringify({ error: 'Missing item ID in query params' }),
+        JSON.stringify({ error: 'Missing kit ID in query params' }),
         {
           status: 400,
           headers: { 'Content-Type': 'application/json' },
@@ -148,24 +146,24 @@ export async function onRequestPut(context: {
       );
     }
 
-    const body = (await context.request.json()) as Partial<ItemInput>;
-    const updatedItem = await updateItem(db, Number(itemId), body);
+    const body = (await context.request.json()) as Partial<KitInput>;
+    const updatedKit = await updateKit(db, Number(kitId), body);
 
-    if (!updatedItem) {
-      return new Response(JSON.stringify({ error: 'Item not found' }), {
+    if (!updatedKit) {
+      return new Response(JSON.stringify({ error: 'Kit not found' }), {
         status: 404,
         headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    return new Response(JSON.stringify(updatedItem), {
+    return new Response(JSON.stringify(updatedKit), {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error: any) {
-    console.error('Error updating item:', error);
+    console.error('Error updating kit:', error);
     return new Response(
       JSON.stringify({
-        error: 'Failed to update item',
+        error: 'Failed to update kit',
         message: error.message,
       }),
       {
@@ -183,11 +181,11 @@ export async function onRequestDelete(context: {
   try {
     const url = new URL(context.request.url);
     const db = context.env.DB;
-    const itemId = url.searchParams.get('id');
+    const kitId = url.searchParams.get('id');
 
-    if (!itemId) {
+    if (!kitId) {
       return new Response(
-        JSON.stringify({ error: 'Missing item ID in query params' }),
+        JSON.stringify({ error: 'Missing kit ID in query params' }),
         {
           status: 400,
           headers: { 'Content-Type': 'application/json' },
@@ -195,24 +193,23 @@ export async function onRequestDelete(context: {
       );
     }
 
-    const success = await deleteItem(db, Number(itemId));
+    const success = await deleteKit(db, Number(kitId));
 
     if (!success) {
-      return new Response(JSON.stringify({ error: 'Item not found' }), {
+      return new Response(JSON.stringify({ error: 'Kit not found' }), {
         status: 404,
         headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    return new Response(JSON.stringify({ message: 'Item deleted successfully' }), {
-      status: 200,
+    return new Response(JSON.stringify({ success: true }), {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error: any) {
-    console.error('Error deleting item:', error);
+    console.error('Error deleting kit:', error);
     return new Response(
       JSON.stringify({
-        error: 'Failed to delete item',
+        error: 'Failed to delete kit',
         message: error.message,
       }),
       {

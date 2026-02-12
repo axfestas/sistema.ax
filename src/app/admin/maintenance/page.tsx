@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useToast } from '@/hooks/useToast';
 
 interface Item {
   id: number;
@@ -27,6 +28,7 @@ export default function MaintenancePage() {
     date: '',
     cost: '',
   });
+  const { showSuccess, showError } = useToast();
 
   useEffect(() => {
     loadMaintenance();
@@ -91,13 +93,14 @@ export default function MaintenancePage() {
           date: '',
           cost: '',
         });
+        showSuccess(editingMaintenance ? 'Manutenção atualizada com sucesso!' : 'Manutenção registrada com sucesso!');
       } else {
         const error: any = await response.json();
-        alert('Erro: ' + (error.error || 'Falha ao salvar manutenção'));
+        showError(error.error || 'Erro ao salvar manutenção');
       }
     } catch (error) {
       console.error('Error saving maintenance:', error);
-      alert('Erro ao salvar manutenção');
+      showError('Erro ao salvar manutenção');
     }
   };
 
@@ -123,12 +126,13 @@ export default function MaintenancePage() {
 
       if (response.ok) {
         await loadMaintenance();
+        showSuccess('Manutenção deletada com sucesso!');
       } else {
-        alert('Erro ao deletar manutenção');
+        showError('Erro ao deletar manutenção');
       }
     } catch (error) {
       console.error('Error deleting maintenance:', error);
-      alert('Erro ao deletar manutenção');
+      showError('Erro ao deletar manutenção');
     }
   };
 

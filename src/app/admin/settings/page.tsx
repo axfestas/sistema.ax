@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/useToast';
 
 interface SiteSettings {
   id: number;
@@ -19,9 +20,8 @@ export default function SettingsPage() {
   const [settings, setSettings] = useState<SiteSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
   const router = useRouter();
+  const { showSuccess, showError } = useToast();
 
   const [formData, setFormData] = useState({
     company_name: '',
@@ -67,10 +67,10 @@ export default function SettingsPage() {
           whatsapp_url: data.whatsapp_url || '',
         });
       } else {
-        setError('Erro ao carregar configurações');
+        showError('Erro ao carregar configurações');
       }
     } catch (err) {
-      setError('Erro ao carregar configurações');
+      showError('Erro ao carregar configurações');
     } finally {
       setLoading(false);
     }
@@ -79,8 +79,6 @@ export default function SettingsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    setMessage('');
-    setError('');
 
     try {
       const response = await fetch('/api/settings', {
@@ -94,14 +92,13 @@ export default function SettingsPage() {
       if (response.ok) {
         const data = (await response.json()) as SiteSettings;
         setSettings(data);
-        setMessage('Configurações salvas com sucesso!');
-        setTimeout(() => setMessage(''), 3000);
+        showSuccess('Configurações salvas com sucesso!');
       } else {
         const errorData = (await response.json()) as { error?: string };
-        setError(errorData.error || 'Erro ao salvar configurações');
+        showError(errorData.error || 'Erro ao salvar configurações');
       }
     } catch (err) {
-      setError('Erro ao salvar configurações');
+      showError('Erro ao salvar configurações');
     } finally {
       setSaving(false);
     }
@@ -139,18 +136,6 @@ export default function SettingsPage() {
             Voltar
           </a>
         </div>
-
-        {message && (
-          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-            {message}
-          </div>
-        )}
-
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {error}
-          </div>
-        )}
 
         <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow">
           {/* Company Information */}

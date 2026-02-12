@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useToast } from '@/hooks/useToast';
 
 interface Item {
   id: number;
@@ -31,6 +32,7 @@ export default function ReservationsPage() {
     date_to: '',
     status: 'pending' as 'pending' | 'confirmed' | 'completed' | 'cancelled',
   });
+  const { showSuccess, showError } = useToast();
 
   useEffect(() => {
     loadReservations();
@@ -99,13 +101,14 @@ export default function ReservationsPage() {
           date_to: '',
           status: 'pending',
         });
+        showSuccess(editingReservation ? 'Reserva atualizada com sucesso!' : 'Reserva criada com sucesso!');
       } else {
         const error: any = await response.json();
-        alert('Erro: ' + (error.error || 'Falha ao salvar reserva'));
+        showError(error.error || 'Erro ao salvar reserva');
       }
     } catch (error) {
       console.error('Error saving reservation:', error);
-      alert('Erro ao salvar reserva');
+      showError('Erro ao salvar reserva');
     }
   };
 
@@ -132,12 +135,13 @@ export default function ReservationsPage() {
 
       if (response.ok) {
         await loadReservations();
+        showSuccess('Reserva deletada com sucesso!');
       } else {
-        alert('Erro ao deletar reserva');
+        showError('Erro ao deletar reserva');
       }
     } catch (error) {
       console.error('Error deleting reservation:', error);
-      alert('Erro ao deletar reserva');
+      showError('Erro ao deletar reserva');
     }
   };
 

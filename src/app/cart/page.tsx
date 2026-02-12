@@ -1,10 +1,12 @@
 'use client'
 
 import { useCart } from '@/components/CartContext'
+import { useToast } from '@/hooks/useToast'
 import { useState } from 'react'
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, clearCart, total } = useCart()
+  const { showSuccess } = useToast()
   const [showQuoteForm, setShowQuoteForm] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
@@ -17,9 +19,9 @@ export default function CartPage() {
   const handleSubmitQuote = (e: React.FormEvent) => {
     e.preventDefault()
     // Here you would send the quote request to your backend
-    alert('Orçamento solicitado com sucesso! Entraremos em contato em breve.')
+    showSuccess('Orçamento solicitado com sucesso! Entraremos em contato em breve.')
     setShowQuoteForm(false)
-    clearCart()
+    // Cart is NOT cleared so user can request multiple quotes or modify
   }
 
   if (items.length === 0 && !showQuoteForm) {
