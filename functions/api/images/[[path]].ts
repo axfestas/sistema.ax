@@ -20,13 +20,13 @@ interface Env {
 export async function onRequest(context: {
   request: Request;
   env: Env;
-  params: { path: string[] };
+  params: { path?: string };
 }) {
   try {
     // Extract the full image path from parameters
-    const pathParts = context.params.path || [];
+    const key = context.params.path || '';
     
-    if (pathParts.length === 0) {
+    if (!key) {
       return new Response(
         JSON.stringify({ error: 'Image path required' }),
         {
@@ -35,9 +35,6 @@ export async function onRequest(context: {
         }
       );
     }
-
-    // Reconstruct the full key (folder/filename)
-    const key = pathParts.join('/');
 
     // Fetch object from R2
     const object = await context.env.STORAGE.get(key);
