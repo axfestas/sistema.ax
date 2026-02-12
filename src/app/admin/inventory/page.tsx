@@ -79,7 +79,7 @@ export default function InventoryPage() {
         await loadItems();
         setShowForm(false);
         setEditingItem(null);
-        setFormData({ name: '', description: '', price: '', quantity: '', image_url: '', show_in_catalog: 1 });
+        setFormData({ name: '', description: '', price: '', quantity: '', image_url: '', category: '', show_in_catalog: 1 });
         showSuccess(editingItem ? 'Item atualizado com sucesso!' : 'Item salvo com sucesso!');
       } else {
         const error: any = await response.json();
@@ -137,7 +137,7 @@ export default function InventoryPage() {
           onClick={() => {
             setShowForm(true);
             setEditingItem(null);
-            setFormData({ name: '', description: '', price: '', quantity: '', image_url: '', show_in_catalog: 1 });
+            setFormData({ name: '', description: '', price: '', quantity: '', image_url: '', category: '', show_in_catalog: 1 });
           }}
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
         >
