@@ -166,9 +166,20 @@ export default function ReservationsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validate selected_item format
+    if (!formData.selected_item || !formData.selected_item.includes(':')) {
+      showError('Por favor, selecione um item válido');
+      return;
+    }
+
     // Parse selected item
     const [itemType, itemIdStr] = formData.selected_item.split(':');
     const itemId = parseInt(itemIdStr);
+    
+    if (isNaN(itemId)) {
+      showError('Item selecionado inválido');
+      return;
+    }
 
     const reservationData: any = {
       customer_name: formData.customer_name,
@@ -187,6 +198,9 @@ export default function ReservationsPage() {
       reservationData.sweet_id = itemId;
     } else if (itemType === 'design') {
       reservationData.design_id = itemId;
+    } else {
+      showError('Tipo de item inválido');
+      return;
     }
 
     // Add client_id if selected
