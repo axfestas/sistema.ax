@@ -46,7 +46,12 @@ export default function KitsPage() {
     image_url: '',
     is_active: 1,
   })
+  const [formKitItems, setFormKitItems] = useState<Array<{ item_id: number; item_name: string; quantity: number }>>([])
   const [newKitItem, setNewKitItem] = useState({
+    item_id: '',
+    quantity: '1',
+  })
+  const [newFormItem, setNewFormItem] = useState({
     item_id: '',
     quantity: '1',
   })
@@ -96,6 +101,41 @@ export default function KitsPage() {
     }
   }
 
+  const handleAddFormItem = (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!newFormItem.item_id || !newFormItem.quantity) return
+    
+    const itemId = parseInt(newFormItem.item_id)
+    const quantity = parseInt(newFormItem.quantity)
+    const item = items.find(i => i.id === itemId)
+    
+    if (!item) return
+    
+    // Check if item already exists in the list
+    const existingIndex = formKitItems.findIndex(i => i.item_id === itemId)
+    
+    if (existingIndex >= 0) {
+      // Update quantity
+      const updated = [...formKitItems]
+      updated[existingIndex].quantity = quantity
+      setFormKitItems(updated)
+    } else {
+      // Add new item
+      setFormKitItems([...formKitItems, {
+        item_id: itemId,
+        item_name: item.name,
+        quantity: quantity
+      }])
+    }
+    
+    setNewFormItem({ item_id: '', quantity: '1' })
+  }
+
+  const handleRemoveFormItem = (itemId: number) => {
+    setFormKitItems(formKitItems.filter(i => i.item_id !== itemId))
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -118,10 +158,52 @@ export default function KitsPage() {
       })
 
       if (response.ok) {
+        const savedKit = await response.json() as { id: number }
+        const kitId = editingKit ? editingKit.id : savedKit.id
+        
+        // Save kit items for new kits or when editing
+        if (formKitItems.length > 0) {
+          // If editing, first get current items to avoid duplicates
+          if (editingKit) {
+            const currentKit = await fetch(`/api/kits?id=${kitId}`).then(r => r.json()) as KitWithItems
+            
+            // Add new items that don't exist yet
+            for (const formItem of formKitItems) {
+              const exists = currentKit.items?.some((i: any) => i.item_id === formItem.item_id)
+              
+              if (!exists) {
+                await fetch('/api/kit-items', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    kit_id: kitId,
+                    item_id: formItem.item_id,
+                    quantity: formItem.quantity,
+                  }),
+                })
+              }
+            }
+          } else {
+            // For new kits, add all items
+            for (const item of formKitItems) {
+              await fetch('/api/kit-items', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  kit_id: kitId,
+                  item_id: item.item_id,
+                  quantity: item.quantity,
+                }),
+              })
+            }
+          }
+        }
+        
         await loadKits()
         setShowForm(false)
         setEditingKit(null)
         setFormData({ name: '', description: '', price: '', image_url: '', is_active: 1 })
+        setFormKitItems([])
         showSuccess(editingKit ? 'Kit atualizado com sucesso!' : 'Kit criado com sucesso!')
       } else {
         const error: any = await response.json()
@@ -142,6 +224,22 @@ export default function KitsPage() {
       image_url: kit.image_url || '',
       is_active: kit.is_active,
     })
+    
+    // Load kit items for editing
+    fetch(`/api/kits?id=${kit.id}`)
+      .then(r => r.json())
+      .then((data) => {
+        const kitData = data as KitWithItems
+        if (kitData.items) {
+          setFormKitItems(kitData.items.map(item => ({
+            item_id: item.item_id,
+            item_name: item.item_name,
+            quantity: item.quantity
+          })))
+        }
+      })
+      .catch(err => console.error('Error loading kit items for edit:', err))
+    
     setShowForm(true)
   }
 
@@ -232,6 +330,7 @@ export default function KitsPage() {
             setShowForm(true)
             setEditingKit(null)
             setFormData({ name: '', description: '', price: '', image_url: '', is_active: 1 })
+            setFormKitItems([])
           }}
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
         >
@@ -281,6 +380,76 @@ export default function KitsPage() {
                 className="w-full px-3 py-2 border rounded"
               />
             </div>
+            
+            {/* Section to add items to the kit */}
+            <div className="border-t pt-4 mt-4">
+              <h4 className="font-semibold mb-3">Itens do Kit</h4>
+              
+              {/* Form to add item */}
+              <div className="mb-4 p-4 bg-gray-50 rounded">
+                <div className="grid grid-cols-2 gap-3 mb-3">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Selecione um Item</label>
+                    <select
+                      value={newFormItem.item_id}
+                      onChange={(e) => setNewFormItem({ ...newFormItem, item_id: e.target.value })}
+                      className="w-full px-3 py-2 border rounded"
+                    >
+                      <option value="">Selecione um item</option>
+                      {items.map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {item.name} (Estoque: {item.quantity})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Quantidade</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={newFormItem.quantity}
+                      onChange={(e) => setNewFormItem({ ...newFormItem, quantity: e.target.value })}
+                      className="w-full px-3 py-2 border rounded"
+                    />
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleAddFormItem}
+                  disabled={!newFormItem.item_id}
+                  className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-sm disabled:bg-gray-300 disabled:cursor-not-allowed"
+                >
+                  + Adicionar Item
+                </button>
+              </div>
+              
+              {/* List of selected items */}
+              <div>
+                {formKitItems.length === 0 ? (
+                  <p className="text-gray-500 text-sm">Nenhum item adicionado ao kit</p>
+                ) : (
+                  <ul className="space-y-2">
+                    {formKitItems.map((item) => (
+                      <li key={item.item_id} className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                        <div>
+                          <span className="font-medium">{item.item_name}</span>
+                          <span className="text-gray-600 ml-2">× {item.quantity}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveFormItem(item.item_id)}
+                          className="text-red-500 hover:text-red-700 text-sm"
+                        >
+                          🗑️ Remover
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+            
             <div className="flex items-center">
               <input
                 type="checkbox"
@@ -303,6 +472,7 @@ export default function KitsPage() {
                 onClick={() => {
                   setShowForm(false)
                   setEditingKit(null)
+                  setFormKitItems([])
                 }}
                 className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
               >
