@@ -74,6 +74,7 @@ export interface Reservation {
   client_id?: number; // Optional: link to client record
   customer_name: string;
   customer_email?: string;
+  customer_phone?: string;
   date_from: string; // YYYY-MM-DD
   date_to: string;   // YYYY-MM-DD
   status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
@@ -88,6 +89,7 @@ export interface ReservationInput {
   client_id?: number; // Optional: link to client record
   customer_name: string;
   customer_email?: string;
+  customer_phone?: string;
   date_from: string;
   date_to: string;
   status?: 'pending' | 'confirmed' | 'completed' | 'cancelled';
@@ -503,10 +505,10 @@ export async function createReservation(
   let newReservation: Reservation;
 
   try {
-    // Try to insert with all fields including sweet_id, design_id, and client_id
+    // Try to insert with all fields including sweet_id, design_id, client_id, and customer_phone
     const result = await db
       .prepare(
-        'INSERT INTO reservations (item_id, kit_id, sweet_id, design_id, client_id, quantity, customer_name, customer_email, date_from, date_to, status, custom_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *'
+        'INSERT INTO reservations (item_id, kit_id, sweet_id, design_id, client_id, quantity, customer_name, customer_email, customer_phone, date_from, date_to, status, custom_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *'
       )
       .bind(
         reservation.item_id || null,
@@ -517,6 +519,7 @@ export async function createReservation(
         quantity,
         reservation.customer_name,
         reservation.customer_email || null,
+        reservation.customer_phone || null,
         reservation.date_from,
         reservation.date_to,
         status,
@@ -531,7 +534,8 @@ export async function createReservation(
       error.message.includes('custom_id') ||
       error.message.includes('sweet_id') ||
       error.message.includes('design_id') ||
-      error.message.includes('client_id')
+      error.message.includes('client_id') ||
+      error.message.includes('customer_phone')
     );
     
     if (isColumnError) {
@@ -628,6 +632,10 @@ export async function updateReservation(
   if (updates.customer_email !== undefined) {
     fields.push('customer_email = ?');
     values.push(updates.customer_email);
+  }
+  if (updates.customer_phone !== undefined) {
+    fields.push('customer_phone = ?');
+    values.push(updates.customer_phone);
   }
   if (updates.date_from !== undefined) {
     fields.push('date_from = ?');

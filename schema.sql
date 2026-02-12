@@ -141,6 +141,49 @@ CREATE TABLE password_reset_tokens (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+-- Tabela de Clientes
+CREATE TABLE clients (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  email TEXT,
+  phone TEXT NOT NULL,
+  cpf TEXT,
+  address TEXT,
+  city TEXT,
+  state TEXT,
+  zip_code TEXT,
+  notes TEXT,
+  is_active INTEGER DEFAULT 1,
+  created_at INTEGER DEFAULT (strftime('%s', 'now'))
+);
+
+-- Tabela de Doces
+CREATE TABLE sweets (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  description TEXT,
+  price REAL NOT NULL,
+  quantity INTEGER NOT NULL DEFAULT 0,
+  image_url TEXT,
+  category TEXT,
+  is_active INTEGER DEFAULT 1,
+  show_in_catalog INTEGER DEFAULT 1,
+  created_at INTEGER DEFAULT (strftime('%s', 'now'))
+);
+
+-- Tabela de Design/Decoração
+CREATE TABLE designs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  description TEXT,
+  price REAL NOT NULL,
+  image_url TEXT,
+  category TEXT,
+  is_active INTEGER DEFAULT 1,
+  show_in_catalog INTEGER DEFAULT 1,
+  created_at INTEGER DEFAULT (strftime('%s', 'now'))
+);
+
 -- Índices para melhorar performance
 CREATE INDEX idx_items_show_in_catalog ON items(show_in_catalog);
 CREATE INDEX idx_items_custom_id ON items(custom_id);
@@ -155,6 +198,10 @@ CREATE INDEX idx_reservation_items_item_dates ON reservation_items(item_id, date
 CREATE INDEX idx_reservations_dates ON reservations(date_from, date_to);
 CREATE INDEX idx_reservations_kit_id ON reservations(kit_id);
 CREATE INDEX idx_password_reset_tokens_token ON password_reset_tokens(token);
+CREATE INDEX idx_clients_phone ON clients(phone);
+CREATE INDEX idx_clients_email ON clients(email);
+CREATE INDEX idx_sweets_catalog ON sweets(show_in_catalog, is_active);
+CREATE INDEX idx_designs_catalog ON designs(show_in_catalog, is_active);
 
 -- Sample data: Add Kit Festa Completo to catalog
 INSERT OR IGNORE INTO items (id, name, description, price, quantity) 
