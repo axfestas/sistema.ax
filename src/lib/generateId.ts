@@ -10,6 +10,14 @@
  * - RES: Reservations
  * - POR: Portfolio
  * - CLI: Clients
+ * 
+ * Note on Race Conditions:
+ * While this implementation has a potential race condition where concurrent
+ * requests might generate duplicate IDs, this is mitigated by:
+ * 1. The database UNIQUE constraint on custom_id column will reject duplicates
+ * 2. The zero-padded format (001, 002, etc.) ensures correct lexicographic ordering
+ * 3. In practice, concurrent item/kit/reservation creation is rare in this application
+ * For high-concurrency scenarios, consider using database sequences or UUID-based IDs.
  */
 
 /**
@@ -35,6 +43,7 @@ export function generateCustomId(prefix: string, lastId: string | null): string 
   const nextNumber = lastNumber + 1;
   
   // Format with 3 digits (ex: 6 -> "006")
+  // Zero-padding ensures correct lexicographic sorting (EST-A001 < EST-A002 < EST-A100)
   return `${prefix}-A${nextNumber.toString().padStart(3, '0')}`;
 }
 

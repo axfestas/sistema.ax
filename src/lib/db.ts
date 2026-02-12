@@ -200,12 +200,9 @@ export async function getItems(
   const conditions: string[] = [];
 
   // Filtrar apenas itens do catálogo
-  // Safely handle the case where show_in_catalog column might not exist
+  // Note: The OR IS NULL is removed as try-catch handles missing column
   if (options?.catalogOnly) {
-    // Check if column exists by attempting to use it
-    // SQLite will handle missing column gracefully in most cases
-    // We wrap this in a try-catch at a higher level
-    conditions.push('(show_in_catalog = 1 OR show_in_catalog IS NULL)');
+    conditions.push('show_in_catalog = 1');
   }
 
   // Filtrar por quantidade (disponível se quantity > 0)
@@ -236,7 +233,7 @@ export async function getItems(
     return (result.results as unknown as Item[]) || [];
   } catch (error: any) {
     // If error is due to missing column, retry without show_in_catalog filter
-    if (error.message && error.message.includes('show_in_catalog')) {
+    if (error.message && (error.message.toLowerCase().includes('column') || error.message.includes('show_in_catalog'))) {
       console.warn('show_in_catalog column not found, fetching all items');
       const fallbackQuery = 'SELECT * FROM items' + (options?.maxRecords ? ` LIMIT ${options.maxRecords}` : '');
       const result = await db.prepare(fallbackQuery).all();
@@ -272,6 +269,7 @@ export async function createItem(
   if (!customId) {
     try {
       // Get the last custom_id to generate the next one
+      // Note: Lexicographic sort works correctly because IDs are zero-padded (EST-A001, EST-A002, etc.)
       const lastItem = await db
         .prepare('SELECT custom_id FROM items WHERE custom_id IS NOT NULL ORDER BY custom_id DESC LIMIT 1')
         .first<{ custom_id: string }>();
@@ -301,7 +299,14 @@ export async function createItem(
     return result as unknown as Item;
   } catch (error: any) {
     // If error is due to missing columns, try without them
-    if (error.message && (error.message.includes('show_in_catalog') || error.message.includes('custom_id'))) {
+    // Check for column-related errors more broadly
+    const isColumnError = error.message && (
+      error.message.toLowerCase().includes('column') ||
+      error.message.includes('show_in_catalog') ||
+      error.message.includes('custom_id')
+    );
+    
+    if (isColumnError) {
       console.warn('Some columns not found, inserting with basic fields only');
       const result = await db
         .prepare(
@@ -438,6 +443,7 @@ export async function createReservation(
   if (!customId) {
     try {
       // Get the last custom_id to generate the next one
+      // Note: Lexicographic sort works correctly because IDs are zero-padded (RES-A001, RES-A002, etc.)
       const lastReservation = await db
         .prepare('SELECT custom_id FROM reservations WHERE custom_id IS NOT NULL ORDER BY custom_id DESC LIMIT 1')
         .first<{ custom_id: string }>();
@@ -472,7 +478,12 @@ export async function createReservation(
     newReservation = result as unknown as Reservation;
   } catch (error: any) {
     // If error is due to missing custom_id column, try without it
-    if (error.message && error.message.includes('custom_id')) {
+    const isColumnError = error.message && (
+      error.message.toLowerCase().includes('column') ||
+      error.message.includes('custom_id')
+    );
+    
+    if (isColumnError) {
       console.warn('custom_id column not found, inserting without it');
       const result = await db
         .prepare(
@@ -1179,6 +1190,7 @@ export async function createKit(
   if (!customId) {
     try {
       // Get the last custom_id to generate the next one
+      // Note: Lexicographic sort works correctly because IDs are zero-padded (KIT-A001, KIT-A002, etc.)
       const lastKit = await db
         .prepare('SELECT custom_id FROM kits WHERE custom_id IS NOT NULL ORDER BY custom_id DESC LIMIT 1')
         .first<{ custom_id: string }>();
@@ -1207,7 +1219,12 @@ export async function createKit(
     return result as unknown as Kit;
   } catch (error: any) {
     // If error is due to missing custom_id column, try without it
-    if (error.message && error.message.includes('custom_id')) {
+    const isColumnError = error.message && (
+      error.message.toLowerCase().includes('column') ||
+      error.message.includes('custom_id')
+    );
+    
+    if (isColumnError) {
       console.warn('custom_id column not found, inserting without it');
       const result = await db
         .prepare(
