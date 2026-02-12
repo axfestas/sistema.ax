@@ -1193,18 +1193,52 @@ export async function getKitsWithItems(
     maxRecords?: number;
   }
 ): Promise<KitWithItems[]> {
+  // First, get all kits
   const kits = await getKits(db, options);
   
-  const kitsWithItems: KitWithItems[] = [];
-  
-  for (const kit of kits) {
-    const kitWithItems = await getKitWithItems(db, kit.id);
-    if (kitWithItems) {
-      kitsWithItems.push(kitWithItems);
-    }
+  if (kits.length === 0) {
+    return [];
   }
   
-  return kitsWithItems;
+  // Get all kit IDs
+  const kitIds = kits.map(kit => kit.id);
+  
+  // Fetch all kit items in a single query
+  const kitItemsQuery = `
+    SELECT 
+      ki.kit_id,
+      ki.id,
+      ki.item_id,
+      ki.quantity,
+      i.name as item_name
+    FROM kit_items ki
+    JOIN items i ON ki.item_id = i.id
+    WHERE ki.kit_id IN (${kitIds.map(() => '?').join(',')})
+    ORDER BY ki.kit_id, i.name
+  `;
+  
+  const itemsResult = await db.prepare(kitItemsQuery).bind(...kitIds).all();
+  
+  // Group items by kit_id
+  const itemsByKitId: { [kitId: number]: Array<any> } = {};
+  for (const row of itemsResult.results) {
+    const kitId = (row as any).kit_id;
+    if (!itemsByKitId[kitId]) {
+      itemsByKitId[kitId] = [];
+    }
+    itemsByKitId[kitId].push({
+      id: (row as any).id,
+      item_id: (row as any).item_id,
+      item_name: (row as any).item_name,
+      quantity: (row as any).quantity,
+    });
+  }
+  
+  // Combine kits with their items
+  return kits.map(kit => ({
+    ...kit,
+    items: itemsByKitId[kit.id] || [],
+  }));
 }
 
 /**
