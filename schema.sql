@@ -33,6 +33,7 @@ CREATE TABLE reservations (
 
 CREATE TABLE maintenance (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  custom_id TEXT UNIQUE,
   item_id INTEGER,
   description TEXT,
   date DATE NOT NULL,
@@ -145,6 +146,7 @@ CREATE INDEX idx_items_show_in_catalog ON items(show_in_catalog);
 CREATE INDEX idx_items_custom_id ON items(custom_id);
 CREATE INDEX idx_kits_custom_id ON kits(custom_id);
 CREATE INDEX idx_reservations_custom_id ON reservations(custom_id);
+CREATE INDEX idx_maintenance_custom_id ON maintenance(custom_id);
 CREATE INDEX idx_kit_items_kit_id ON kit_items(kit_id);
 CREATE INDEX idx_kit_items_item_id ON kit_items(item_id);
 CREATE INDEX idx_reservation_items_reservation_id ON reservation_items(reservation_id);

@@ -87,6 +87,7 @@ export interface ReservationInput {
 
 export interface MaintenanceRecord {
   id: number;
+  custom_id?: string; // MAN-A001, MAN-A002, etc.
   item_id: number;
   description: string;
   date: string; // YYYY-MM-DD
@@ -98,6 +99,7 @@ export interface MaintenanceInput {
   description: string;
   date: string;
   cost?: number;
+  custom_id?: string; // Optional - will be auto-generated if not provided
 }
 
 export interface FinancialRecord {
@@ -682,18 +684,61 @@ export async function createMaintenance(
   db: D1Database,
   maintenance: MaintenanceInput
 ): Promise<MaintenanceRecord> {
-  const result = await db
-    .prepare(
-      'INSERT INTO maintenance (item_id, description, date, cost) VALUES (?, ?, ?, ?) RETURNING *'
-    )
-    .bind(
-      maintenance.item_id,
-      maintenance.description,
-      maintenance.date,
-      maintenance.cost || null
-    )
-    .first();
-  return result as unknown as MaintenanceRecord;
+  // Generate custom_id if not provided
+  let customId = maintenance.custom_id;
+  if (!customId) {
+    try {
+      // Get the last custom_id to generate the next one
+      const lastMaintenance = await db
+        .prepare('SELECT custom_id FROM maintenance WHERE custom_id IS NOT NULL ORDER BY custom_id DESC LIMIT 1')
+        .first<{ custom_id: string }>();
+      
+      customId = generateCustomId('MAN', lastMaintenance?.custom_id || null);
+    } catch (error) {
+      // If custom_id column doesn't exist, generate a new ID anyway
+      customId = generateCustomId('MAN', null);
+    }
+  }
+
+  try {
+    // Try to insert with custom_id
+    const result = await db
+      .prepare(
+        'INSERT INTO maintenance (item_id, description, date, cost, custom_id) VALUES (?, ?, ?, ?, ?) RETURNING *'
+      )
+      .bind(
+        maintenance.item_id,
+        maintenance.description,
+        maintenance.date,
+        maintenance.cost || null,
+        customId
+      )
+      .first();
+    return result as unknown as MaintenanceRecord;
+  } catch (error: any) {
+    // If error is due to missing custom_id column, try without it
+    const isColumnError = error.message && (
+      error.message.toLowerCase().includes('column') ||
+      error.message.includes('custom_id')
+    );
+    
+    if (isColumnError) {
+      console.warn('custom_id column not found in maintenance table, inserting without it');
+      const result = await db
+        .prepare(
+          'INSERT INTO maintenance (item_id, description, date, cost) VALUES (?, ?, ?, ?) RETURNING *'
+        )
+        .bind(
+          maintenance.item_id,
+          maintenance.description,
+          maintenance.date,
+          maintenance.cost || null
+        )
+        .first();
+      return result as unknown as MaintenanceRecord;
+    }
+    throw error;
+  }
 }
 
 /**

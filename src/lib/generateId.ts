@@ -8,6 +8,7 @@
  * - EST: Items (Estoque)
  * - KIT: Kits
  * - RES: Reservations
+ * - MAN: Maintenance (Manutenção)
  * - POR: Portfolio
  * - CLI: Clients
  * 
@@ -22,7 +23,7 @@
 
 /**
  * Generate a custom ID with the specified prefix
- * @param prefix - The 3-letter prefix (EST, KIT, RES, POR, CLI)
+ * @param prefix - The 3-letter prefix (EST, KIT, RES, MAN, POR, CLI)
  * @param lastId - The last custom ID used, or null if this is the first
  * @returns A new custom ID in the format PREFIX-A###
  */
