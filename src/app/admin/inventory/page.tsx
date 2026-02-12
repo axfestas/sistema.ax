@@ -9,6 +9,7 @@ interface Item {
   description?: string;
   price: number;
   quantity: number;
+  show_in_catalog?: number; // 1 = show, 0 = hide
 }
 
 export default function InventoryPage() {
@@ -21,6 +22,7 @@ export default function InventoryPage() {
     description: '',
     price: '',
     quantity: '',
+    show_in_catalog: 1, // Default to showing in catalog
   });
   const { showSuccess, showError } = useToast();
 
@@ -50,6 +52,7 @@ export default function InventoryPage() {
       description: formData.description || undefined,
       price: parseFloat(formData.price),
       quantity: parseInt(formData.quantity),
+      show_in_catalog: formData.show_in_catalog,
     };
 
     try {
@@ -68,7 +71,7 @@ export default function InventoryPage() {
         await loadItems();
         setShowForm(false);
         setEditingItem(null);
-        setFormData({ name: '', description: '', price: '', quantity: '' });
+        setFormData({ name: '', description: '', price: '', quantity: '', show_in_catalog: 1 });
         showSuccess(editingItem ? 'Item atualizado com sucesso!' : 'Item salve com sucesso!');
       } else {
         const error: any = await response.json();
@@ -87,6 +90,7 @@ export default function InventoryPage() {
       description: item.description || '',
       price: item.price.toString(),
       quantity: item.quantity.toString(),
+      show_in_catalog: item.show_in_catalog !== undefined ? item.show_in_catalog : 1,
     });
     setShowForm(true);
   };
@@ -123,7 +127,7 @@ export default function InventoryPage() {
           onClick={() => {
             setShowForm(true);
             setEditingItem(null);
-            setFormData({ name: '', description: '', price: '', quantity: '' });
+            setFormData({ name: '', description: '', price: '', quantity: '', show_in_catalog: 1 });
           }}
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
         >
@@ -179,6 +183,23 @@ export default function InventoryPage() {
                 />
               </div>
             </div>
+            <div className="flex items-center p-3 bg-blue-50 rounded">
+              <input
+                type="checkbox"
+                id="show_in_catalog"
+                checked={formData.show_in_catalog === 1}
+                onChange={(e) => setFormData({ ...formData, show_in_catalog: e.target.checked ? 1 : 0 })}
+                className="mr-3 w-4 h-4"
+              />
+              <div>
+                <label htmlFor="show_in_catalog" className="text-sm font-semibold text-blue-900 cursor-pointer">
+                  Mostrar no Catálogo Público
+                </label>
+                <p className="text-xs text-blue-700">
+                  Se marcado, este item aparecerá no catálogo para os clientes
+                </p>
+              </div>
+            </div>
             <div className="flex gap-2">
               <button
                 type="submit"
@@ -212,7 +233,18 @@ export default function InventoryPage() {
               <li key={item.id} className="px-6 py-4">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold">{item.name}</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-lg font-semibold">{item.name}</h3>
+                      {item.show_in_catalog === 1 ? (
+                        <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded font-semibold">
+                          No Catálogo
+                        </span>
+                      ) : (
+                        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                          Só Estoque
+                        </span>
+                      )}
+                    </div>
                     {item.description && (
                       <p className="text-sm text-gray-600">{item.description}</p>
                     )}
