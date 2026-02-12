@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useToast } from '@/hooks/useToast'
 import ImageUpload from '@/components/ImageUpload'
+import { formatKitId } from '@/lib/formatId'
 
 interface Kit {
   id: number
@@ -495,6 +496,9 @@ export default function KitsPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
+                      <span className="text-xs font-mono bg-purple-100 text-purple-800 px-2 py-1 rounded font-semibold">
+                        {formatKitId(kit.id)}
+                      </span>
                       <h3 className="text-lg font-semibold">{kit.name}</h3>
                       {kit.is_active === 0 && (
                         <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded">

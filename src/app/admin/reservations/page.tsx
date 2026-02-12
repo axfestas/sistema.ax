@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/useToast';
+import { formatReservationId } from '@/lib/formatId';
 
 interface Item {
   id: number;
@@ -318,6 +319,9 @@ export default function ReservationsPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
+                      <span className="text-xs font-mono bg-green-100 text-green-800 px-2 py-1 rounded font-semibold">
+                        {formatReservationId(reservation.id)}
+                      </span>
                       <h3 className="text-lg font-semibold">
                         {reservation.customer_name}
                       </h3>

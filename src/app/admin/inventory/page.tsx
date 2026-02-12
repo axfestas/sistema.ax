@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/useToast';
 import ImageUpload from '@/components/ImageUpload';
+import { formatItemId } from '@/lib/formatId';
 
 interface Item {
   id: number;
@@ -246,6 +247,9 @@ export default function InventoryPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
+                      <span className="text-xs font-mono bg-blue-100 text-blue-800 px-2 py-1 rounded font-semibold">
+                        {formatItemId(item.id)}
+                      </span>
                       <h3 className="text-lg font-semibold">{item.name}</h3>
                       {item.show_in_catalog === 1 ? (
                         <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded font-semibold">

@@ -13,7 +13,7 @@ interface CatalogItem {
   quantity: number
   price: number
   image_url?: string
-  type?: 'item' | 'kit'
+  type?: 'item' | 'kit' | 'sweet' | 'design'
 }
 
 interface Kit {
@@ -32,11 +32,32 @@ interface Kit {
   }>
 }
 
-type TabType = 'kits' | 'units'
+interface Sweet {
+  id: number
+  name: string
+  description?: string
+  price: number
+  quantity: number
+  image_url?: string
+  category?: string
+}
+
+interface Design {
+  id: number
+  name: string
+  description?: string
+  price: number
+  image_url?: string
+  category?: string
+}
+
+type TabType = 'items' | 'kits' | 'sweets' | 'designs'
 
 export default function CatalogPage() {
   const [items, setItems] = useState<CatalogItem[]>([])
   const [kits, setKits] = useState<Kit[]>([])
+  const [sweets, setSweets] = useState<Sweet[]>([])
+  const [designs, setDesigns] = useState<Design[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<TabType>('kits')
   const [quantities, setQuantities] = useState<{ [key: number]: number }>({})
@@ -48,19 +69,33 @@ export default function CatalogPage() {
 
   const loadCatalog = async () => {
     try {
-      // Carregar apenas itens do catálogo (show_in_catalog=true)
-      const itemsResponse = await fetch('/api/items?catalogOnly=true')
+      // Carregar todos os dados em paralelo
+      const [itemsResponse, kitsResponse, sweetsResponse, designsResponse] = await Promise.all([
+        fetch('/api/items?catalogOnly=true'),
+        fetch('/api/kits?activeOnly=true'),
+        fetch('/api/sweets?catalog=true'),
+        fetch('/api/designs?catalog=true'),
+      ])
+
       if (itemsResponse.ok) {
         const itemsData = await itemsResponse.json() as CatalogItem[]
         itemsData.forEach(item => item.type = 'item')
         setItems(itemsData)
       }
 
-      // Carregar kits ativos
-      const kitsResponse = await fetch('/api/kits?activeOnly=true')
       if (kitsResponse.ok) {
         const kitsData = await kitsResponse.json() as Kit[]
         setKits(kitsData)
+      }
+
+      if (sweetsResponse.ok) {
+        const sweetsData = await sweetsResponse.json() as Sweet[]
+        setSweets(sweetsData)
+      }
+
+      if (designsResponse.ok) {
+        const designsData = await designsResponse.json() as Design[]
+        setDesigns(designsData)
       }
     } catch (error) {
       console.error('Error loading catalog:', error)
@@ -114,26 +149,46 @@ export default function CatalogPage() {
       <section className="py-8 px-4 bg-gray-50">
         <div className="max-w-7xl mx-auto">
           {/* Tabs */}
-          <div className="flex justify-center mb-8 border-b border-gray-200">
+          <div className="flex justify-center mb-8 border-b border-gray-200 flex-wrap">
             <button
               onClick={() => setActiveTab('kits')}
-              className={`px-8 py-4 font-bold text-lg transition-all duration-300 ${
+              className={`px-6 py-4 font-bold text-base md:text-lg transition-all duration-300 ${
                 activeTab === 'kits'
                   ? 'border-b-4 border-brand-yellow text-brand-yellow'
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              🎁 Kits
+              🎁 Kits ({kits.length})
             </button>
             <button
-              onClick={() => setActiveTab('units')}
-              className={`px-8 py-4 font-bold text-lg transition-all duration-300 ${
-                activeTab === 'units'
+              onClick={() => setActiveTab('items')}
+              className={`px-6 py-4 font-bold text-base md:text-lg transition-all duration-300 ${
+                activeTab === 'items'
                   ? 'border-b-4 border-brand-yellow text-brand-yellow'
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              📦 Unidades
+              📦 Estoque ({items.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('sweets')}
+              className={`px-6 py-4 font-bold text-base md:text-lg transition-all duration-300 ${
+                activeTab === 'sweets'
+                  ? 'border-b-4 border-brand-yellow text-brand-yellow'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              🍰 Doces ({sweets.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('designs')}
+              className={`px-6 py-4 font-bold text-base md:text-lg transition-all duration-300 ${
+                activeTab === 'designs'
+                  ? 'border-b-4 border-brand-yellow text-brand-yellow'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              🎨 Design ({designs.length})
             </button>
           </div>
 
@@ -229,7 +284,7 @@ export default function CatalogPage() {
               )}
 
               {/* Units Tab Content */}
-              {activeTab === 'units' && (
+              {activeTab === 'items' && (
                 <div>
                   <div className="text-center mb-12">
                     <h2 className="text-3xl md:text-4xl font-bold text-brand-gray mb-4">
@@ -321,6 +376,168 @@ export default function CatalogPage() {
                                 }`}
                               >
                                 {item.quantity > 0 ? 'Adicionar ao Carrinho' : 'Indisponível'}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Sweets Tab Content */}
+              {activeTab === 'sweets' && (
+                <div>
+                  <div className="text-center mb-12">
+                    <h2 className="text-3xl md:text-4xl font-bold text-brand-gray mb-4">
+                      Doces e Sobremesas
+                    </h2>
+                    <p className="text-lg text-gray-600">
+                      Deliciosos doces para adoçar sua festa
+                    </p>
+                  </div>
+
+                  {sweets.length === 0 ? (
+                    <div className="text-center py-12">
+                      <p className="text-gray-600 text-lg">Nenhum doce disponível no momento.</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                      {sweets.map((sweet) => (
+                        <div 
+                          key={sweet.id} 
+                          className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300"
+                        >
+                          {/* Image */}
+                          <div className="h-64 bg-gradient-to-br from-pink-300 to-purple-400 flex items-center justify-center relative overflow-hidden">
+                            {sweet.image_url ? (
+                              <Image 
+                                src={sweet.image_url} 
+                                alt={sweet.name}
+                                fill
+                                className="object-cover"
+                              />
+                            ) : (
+                              <span className="text-white text-6xl">🍰</span>
+                            )}
+                          </div>
+                          
+                          <div className="p-6">
+                            <h3 className="text-xl font-bold text-brand-gray mb-2">
+                              {sweet.name}
+                            </h3>
+                            {sweet.description && (
+                              <p className="text-gray-600 mb-4 text-sm">
+                                {sweet.description}
+                              </p>
+                            )}
+                            {sweet.category && (
+                              <p className="text-xs text-gray-500 mb-2">
+                                Categoria: {sweet.category}
+                              </p>
+                            )}
+                            <p className="text-xs text-gray-500 mb-4">
+                              {sweet.quantity > 0 ? `${sweet.quantity} disponível(is)` : 'Indisponível'}
+                            </p>
+                            
+                            <div className="flex justify-between items-center">
+                              <span className="text-2xl font-bold text-brand-yellow">
+                                R$ {sweet.price.toFixed(2)}
+                              </span>
+                              <button
+                                onClick={() => addItem({
+                                  id: `sweet-${sweet.id}`,
+                                  name: sweet.name,
+                                  description: sweet.description || '',
+                                  price: sweet.price,
+                                  image: sweet.image_url
+                                })}
+                                disabled={sweet.quantity === 0}
+                                className={`font-bold py-2 px-4 rounded-full transition-colors duration-300 ${
+                                  sweet.quantity > 0
+                                    ? 'bg-brand-yellow hover:bg-brand-yellow/90 text-white'
+                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                }`}
+                              >
+                                {sweet.quantity > 0 ? 'Adicionar ao Carrinho' : 'Indisponível'}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Designs Tab Content */}
+              {activeTab === 'designs' && (
+                <div>
+                  <div className="text-center mb-12">
+                    <h2 className="text-3xl md:text-4xl font-bold text-brand-gray mb-4">
+                      Design e Decoração
+                    </h2>
+                    <p className="text-lg text-gray-600">
+                      Designs exclusivos para tornar sua festa única
+                    </p>
+                  </div>
+
+                  {designs.length === 0 ? (
+                    <div className="text-center py-12">
+                      <p className="text-gray-600 text-lg">Nenhum design disponível no momento.</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                      {designs.map((design) => (
+                        <div 
+                          key={design.id} 
+                          className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300"
+                        >
+                          {/* Image */}
+                          <div className="h-64 bg-gradient-to-br from-purple-400 to-indigo-500 flex items-center justify-center relative overflow-hidden">
+                            {design.image_url ? (
+                              <Image 
+                                src={design.image_url} 
+                                alt={design.name}
+                                fill
+                                className="object-cover"
+                              />
+                            ) : (
+                              <span className="text-white text-6xl">🎨</span>
+                            )}
+                          </div>
+                          
+                          <div className="p-6">
+                            <h3 className="text-xl font-bold text-brand-gray mb-2">
+                              {design.name}
+                            </h3>
+                            {design.description && (
+                              <p className="text-gray-600 mb-4 text-sm">
+                                {design.description}
+                              </p>
+                            )}
+                            {design.category && (
+                              <p className="text-xs text-gray-500 mb-4">
+                                Categoria: {design.category}
+                              </p>
+                            )}
+                            
+                            <div className="flex justify-between items-center">
+                              <span className="text-2xl font-bold text-brand-yellow">
+                                R$ {design.price.toFixed(2)}
+                              </span>
+                              <button
+                                onClick={() => addItem({
+                                  id: `design-${design.id}`,
+                                  name: design.name,
+                                  description: design.description || '',
+                                  price: design.price,
+                                  image: design.image_url
+                                })}
+                                className="bg-brand-yellow hover:bg-brand-yellow/90 text-white font-bold py-2 px-4 rounded-full transition-colors duration-300"
+                              >
+                                Adicionar ao Carrinho
                               </button>
                             </div>
                           </div>
