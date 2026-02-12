@@ -55,7 +55,7 @@ export default function ClientsPage() {
     try {
       const res = await fetch('/api/clients');
       if (res.ok) {
-        const data = await res.json();
+        const data = await res.json() as Client[];
         setClients(data);
       }
     } catch (error) {

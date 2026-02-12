@@ -47,7 +47,7 @@ export default function DesignsPage() {
     try {
       const res = await fetch('/api/designs');
       if (res.ok) {
-        const data = await res.json();
+        const data = await res.json() as Design[];
         setDesigns(data);
       }
     } catch (error) {

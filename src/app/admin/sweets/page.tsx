@@ -50,7 +50,7 @@ export default function SweetsPage() {
     try {
       const res = await fetch('/api/sweets');
       if (res.ok) {
-        const data = await res.json();
+        const data = await res.json() as Sweet[];
         setSweets(data);
       }
     } catch (error) {
