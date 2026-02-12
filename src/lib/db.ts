@@ -10,6 +10,8 @@
  * - Portfolio Images (imagens do portfólio)
  */
 
+import { generateCustomId } from './generateId';
+
 // Interface para o ambiente do Cloudflare
 interface Env {
   DB: D1Database;
@@ -19,6 +21,7 @@ interface Env {
 
 export interface Item {
   id: number;
+  custom_id?: string; // EST-A001, EST-A002, etc.
   name: string;
   description?: string;
   price: number;
@@ -32,6 +35,7 @@ export interface ItemInput {
   price: number;
   quantity: number;
   show_in_catalog?: number;
+  custom_id?: string; // Optional - will be auto-generated if not provided
 }
 
 export interface PortfolioImage {
@@ -55,6 +59,7 @@ export interface PortfolioImageInput {
 
 export interface Reservation {
   id: number;
+  custom_id?: string; // RES-A001, RES-A002, etc.
   item_id: number;
   kit_id?: number;  // Optional: if reserving a kit instead of item
   quantity: number; // Quantity of items/kits reserved
@@ -74,6 +79,7 @@ export interface ReservationInput {
   date_from: string;
   date_to: string;
   status?: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+  custom_id?: string; // Optional - will be auto-generated if not provided
 }
 
 export interface MaintenanceRecord {
@@ -120,6 +126,7 @@ export interface FinancialSummary {
 
 export interface Kit {
   id: number;
+  custom_id?: string; // KIT-A001, KIT-A002, etc.
   name: string;
   description?: string;
   price: number;
@@ -133,6 +140,7 @@ export interface KitInput {
   description?: string;
   price: number;
   is_active?: number;
+  custom_id?: string; // Optional - will be auto-generated if not provided
 }
 
 export interface KitItem {
@@ -244,16 +252,28 @@ export async function createItem(
   db: D1Database,
   item: ItemInput
 ): Promise<Item> {
+  // Generate custom_id if not provided
+  let customId = item.custom_id;
+  if (!customId) {
+    // Get the last custom_id to generate the next one
+    const lastItem = await db
+      .prepare('SELECT custom_id FROM items WHERE custom_id IS NOT NULL ORDER BY custom_id DESC LIMIT 1')
+      .first<{ custom_id: string }>();
+    
+    customId = generateCustomId('EST', lastItem?.custom_id || null);
+  }
+
   const result = await db
     .prepare(
-      'INSERT INTO items (name, description, price, quantity, show_in_catalog) VALUES (?, ?, ?, ?, ?) RETURNING *'
+      'INSERT INTO items (name, description, price, quantity, show_in_catalog, custom_id) VALUES (?, ?, ?, ?, ?, ?) RETURNING *'
     )
     .bind(
       item.name,
       item.description || null,
       item.price,
       item.quantity,
-      item.show_in_catalog !== undefined ? item.show_in_catalog : 1
+      item.show_in_catalog !== undefined ? item.show_in_catalog : 1,
+      customId
     )
     .first();
   return result as unknown as Item;
@@ -372,9 +392,20 @@ export async function createReservation(
     throw new Error('Deve fornecer item_id ou kit_id');
   }
 
+  // Generate custom_id if not provided
+  let customId = reservation.custom_id;
+  if (!customId) {
+    // Get the last custom_id to generate the next one
+    const lastReservation = await db
+      .prepare('SELECT custom_id FROM reservations WHERE custom_id IS NOT NULL ORDER BY custom_id DESC LIMIT 1')
+      .first<{ custom_id: string }>();
+    
+    customId = generateCustomId('RES', lastReservation?.custom_id || null);
+  }
+
   const result = await db
     .prepare(
-      'INSERT INTO reservations (item_id, kit_id, quantity, customer_name, customer_email, date_from, date_to, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING *'
+      'INSERT INTO reservations (item_id, kit_id, quantity, customer_name, customer_email, date_from, date_to, status, custom_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *'
     )
     .bind(
       reservation.item_id || null,
@@ -384,7 +415,8 @@ export async function createReservation(
       reservation.customer_email || null,
       reservation.date_from,
       reservation.date_to,
-      status
+      status,
+      customId
     )
     .first();
 
@@ -1069,15 +1101,27 @@ export async function createKit(
   db: D1Database,
   kit: KitInput
 ): Promise<Kit> {
+  // Generate custom_id if not provided
+  let customId = kit.custom_id;
+  if (!customId) {
+    // Get the last custom_id to generate the next one
+    const lastKit = await db
+      .prepare('SELECT custom_id FROM kits WHERE custom_id IS NOT NULL ORDER BY custom_id DESC LIMIT 1')
+      .first<{ custom_id: string }>();
+    
+    customId = generateCustomId('KIT', lastKit?.custom_id || null);
+  }
+
   const result = await db
     .prepare(
-      'INSERT INTO kits (name, description, price, is_active) VALUES (?, ?, ?, ?) RETURNING *'
+      'INSERT INTO kits (name, description, price, is_active, custom_id) VALUES (?, ?, ?, ?, ?) RETURNING *'
     )
     .bind(
       kit.name,
       kit.description || null,
       kit.price,
-      kit.is_active !== undefined ? kit.is_active : 1
+      kit.is_active !== undefined ? kit.is_active : 1,
+      customId
     )
     .first();
   return result as unknown as Kit;
