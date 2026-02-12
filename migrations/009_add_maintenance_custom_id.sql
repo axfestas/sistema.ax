@@ -4,4 +4,5 @@
 -- Add custom_id to maintenance table
 ALTER TABLE maintenance ADD COLUMN custom_id TEXT UNIQUE;
 
--- Note: Index for custom_id column will be defined in schema.sql
+-- Create index for better performance on custom_id lookups
+CREATE INDEX IF NOT EXISTS idx_maintenance_custom_id ON maintenance(custom_id);

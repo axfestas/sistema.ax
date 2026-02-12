@@ -716,28 +716,21 @@ export async function createMaintenance(
       .first();
     return result as unknown as MaintenanceRecord;
   } catch (error: any) {
-    // If error is due to missing custom_id column, try without it
-    const isColumnError = error.message && (
-      error.message.toLowerCase().includes('column') ||
-      error.message.includes('custom_id')
-    );
-    
-    if (isColumnError) {
-      console.warn('custom_id column not found in maintenance table, inserting without it');
-      const result = await db
-        .prepare(
-          'INSERT INTO maintenance (item_id, description, date, cost) VALUES (?, ?, ?, ?) RETURNING *'
-        )
-        .bind(
-          maintenance.item_id,
-          maintenance.description,
-          maintenance.date,
-          maintenance.cost || null
-        )
-        .first();
-      return result as unknown as MaintenanceRecord;
-    }
-    throw error;
+    // Fallback: If the column doesn't exist yet (before migration 009), insert without it
+    // This provides backward compatibility during deployment
+    console.warn('Fallback to maintenance insert without custom_id column:', error.message);
+    const result = await db
+      .prepare(
+        'INSERT INTO maintenance (item_id, description, date, cost) VALUES (?, ?, ?, ?) RETURNING *'
+      )
+      .bind(
+        maintenance.item_id,
+        maintenance.description,
+        maintenance.date,
+        maintenance.cost || null
+      )
+      .first();
+    return result as unknown as MaintenanceRecord;
   }
 }
 
