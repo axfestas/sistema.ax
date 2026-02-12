@@ -37,6 +37,7 @@ export default function CatalogPage() {
   const [kits, setKits] = useState<Kit[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<TabType>('kits')
+  const [quantities, setQuantities] = useState<{ [key: number]: number }>({})
   const { addItem } = useCart()
 
   useEffect(() => {
@@ -67,13 +68,19 @@ export default function CatalogPage() {
   }
 
   const handleAddToCart = (item: CatalogItem) => {
-    addItem({
-      id: item.type === 'kit' ? `kit-${item.id}` : item.id.toString(),
-      name: item.name,
-      description: item.description || '',
-      price: item.price,
-      image: item.imageUrl
-    })
+    const quantity = quantities[item.id] || 1
+    // Add the item with the selected quantity
+    for (let i = 0; i < quantity; i++) {
+      addItem({
+        id: item.type === 'kit' ? `kit-${item.id}` : item.id.toString(),
+        name: item.name,
+        description: item.description || '',
+        price: item.price,
+        image: item.imageUrl
+      })
+    }
+    // Reset quantity to 1 after adding
+    setQuantities({ ...quantities, [item.id]: 1 })
   }
 
   const handleAddKitToCart = (kit: Kit) => {
@@ -275,7 +282,8 @@ export default function CatalogPage() {
                                 type="number"
                                 min="1"
                                 max={item.quantity}
-                                defaultValue="1"
+                                value={quantities[item.id] || 1}
+                                onChange={(e) => setQuantities({ ...quantities, [item.id]: parseInt(e.target.value) || 1 })}
                                 className="w-20 px-3 py-2 border border-gray-300 rounded-md text-center"
                                 disabled={item.quantity === 0}
                               />
