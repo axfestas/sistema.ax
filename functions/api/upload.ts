@@ -41,6 +41,7 @@ export async function onRequestPost(context: {
     const formData = await context.request.formData();
     const file = formData.get('file') as File | null;
     const folder = (formData.get('folder') as string) || 'general';
+    const imageType = (formData.get('imageType') as string) || 'general'; // 'item', 'portfolio', 'general'
 
     if (!file) {
       return new Response(
@@ -65,6 +66,9 @@ export async function onRequestPost(context: {
         }
       );
     }
+
+    // Note: Image aspect ratio validation is done on the client side
+    // The imageType parameter indicates what validation was performed
 
     // Gerar nome único para o arquivo
     const timestamp = Date.now();
@@ -91,6 +95,7 @@ export async function onRequestPost(context: {
         filename: file.name,
         size: file.size,
         type: file.type,
+        imageType: imageType,
       }),
       {
         status: 201,

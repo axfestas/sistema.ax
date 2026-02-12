@@ -6,6 +6,7 @@ import { useCart } from '@/components/CartContext'
 
 interface CatalogItem {
   id: number
+  custom_id?: string
   name: string
   description?: string
   category?: string
@@ -17,6 +18,7 @@ interface CatalogItem {
 
 interface Kit {
   id: number
+  custom_id?: string
   name: string
   description?: string
   price: number
@@ -178,6 +180,14 @@ export default function CatalogPage() {
                           </div>
                           
                           <div className="p-6">
+                            {/* Custom ID Badge */}
+                            {kit.custom_id && (
+                              <div className="mb-2">
+                                <span className="inline-block bg-brand-purple text-white text-xs font-bold px-2 py-1 rounded">
+                                  {kit.custom_id}
+                                </span>
+                              </div>
+                            )}
                             <h3 className="text-xl font-bold text-brand-gray mb-2">
                               {kit.name}
                             </h3>
@@ -256,6 +266,14 @@ export default function CatalogPage() {
                           </div>
                           
                           <div className="p-6">
+                            {/* Custom ID Badge */}
+                            {item.custom_id && (
+                              <div className="mb-2">
+                                <span className="inline-block bg-brand-blue text-white text-xs font-bold px-2 py-1 rounded">
+                                  {item.custom_id}
+                                </span>
+                              </div>
+                            )}
                             <h3 className="text-xl font-bold text-brand-gray mb-2">
                               {item.name}
                             </h3>
