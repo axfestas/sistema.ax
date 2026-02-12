@@ -87,7 +87,7 @@ export async function onRequestPost(context: {
       JSON.stringify({
         success: true,
         key: key,
-        url: `/api/upload?key=${encodeURIComponent(key)}`,
+        url: `/api/images/${key}`,
         filename: file.name,
         size: file.size,
         type: file.type,
