@@ -77,7 +77,7 @@ export default function UsersPage() {
         setShowForm(false)
         setEditingUser(null)
         setFormData({ email: '', name: '', password: '', role: 'user', active: 1, phone: '' })
-        showSuccess(editingUser ? 'Usuárie atualizade com sucesso!' : 'Usuárie criado com sucesso!')
+        showSuccess(editingUser ? 'Usuárie atualizade com sucesso!' : 'Usuárie criade com sucesso!')
       } else {
         const error: any = await response.json()
         showError('Erro: ' + (error.error || 'Falha ao salvar usuárie'))

@@ -320,7 +320,7 @@ export default function AdminPortfolioPage() {
                     onClick={() => handleEdit(image)}
                     className="flex-1 bg-blue-500 hover:bg-blue-600 text-white text-sm py-1 px-3 rounded"
                   >
-                    Editar
+                    ✏️ Editar
                   </button>
                   <button
                     onClick={() => toggleActive(image)}
@@ -330,13 +330,13 @@ export default function AdminPortfolioPage() {
                         : 'bg-green-500 hover:bg-green-600'
                     } text-white text-sm py-1 px-3 rounded`}
                   >
-                    {image.is_active ? 'Desativar' : 'Ativar'}
+                    {image.is_active ? '🔒 Desativar' : '✓ Ativar'}
                   </button>
                   <button
                     onClick={() => handleDelete(image.id)}
                     className="flex-1 bg-red-500 hover:bg-red-600 text-white text-sm py-1 px-3 rounded"
                   >
-                    Excluir
+                    🗑️ Excluir
                   </button>
                 </div>
               </div>
