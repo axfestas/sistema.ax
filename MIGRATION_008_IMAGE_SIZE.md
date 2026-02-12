@@ -29,6 +29,12 @@ Old values are still supported:
 ### Option 1: Using the Migration Helper Script (Recommended)
 
 ```bash
+npm run db:migrate:file migrations/008_add_portfolio_image_size.sql
+```
+
+Or directly:
+
+```bash
 node scripts/run-migration.js migrations/008_add_portfolio_image_size.sql
 ```
 
