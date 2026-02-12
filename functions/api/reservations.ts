@@ -98,7 +98,6 @@ export async function onRequestPost(context: {
     const body = (await context.request.json()) as ReservationInput;
 
     if (
-      !body.item_id ||
       !body.customer_name ||
       !body.date_from ||
       !body.date_to
@@ -106,7 +105,7 @@ export async function onRequestPost(context: {
       return new Response(
         JSON.stringify({
           error:
-            'Missing required fields: item_id, customer_name, date_from, date_to',
+            'Missing required fields: customer_name, date_from, date_to. Note: An item identifier (item_id, kit_id, sweet_id, or design_id) is also required.',
         }),
         {
           status: 400,

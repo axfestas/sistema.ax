@@ -27,6 +27,7 @@ interface Reservation {
   client_id?: number;
   customer_name: string;
   customer_email?: string;
+  customer_phone?: string;
   date_from: string;
   date_to: string;
   status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
@@ -44,6 +45,7 @@ export default function ReservationsPage() {
     client_id: '',
     customer_name: '',
     customer_email: '',
+    customer_phone: '',
     date_from: '',
     date_to: '',
     status: 'pending' as 'pending' | 'confirmed' | 'completed' | 'cancelled',
@@ -151,6 +153,7 @@ export default function ReservationsPage() {
           client_id: clientId,
           customer_name: client.name,
           customer_email: client.email || '',
+          customer_phone: client.phone || '',
         });
       }
     } else {
@@ -159,6 +162,7 @@ export default function ReservationsPage() {
         client_id: '',
         customer_name: '',
         customer_email: '',
+        customer_phone: '',
       });
     }
   };
@@ -184,6 +188,7 @@ export default function ReservationsPage() {
     const reservationData: any = {
       customer_name: formData.customer_name,
       customer_email: formData.customer_email || undefined,
+      customer_phone: formData.customer_phone || undefined,
       date_from: formData.date_from,
       date_to: formData.date_to,
       status: formData.status,
@@ -229,6 +234,7 @@ export default function ReservationsPage() {
           client_id: '',
           customer_name: '',
           customer_email: '',
+          customer_phone: '',
           date_from: '',
           date_to: '',
           status: 'pending',
@@ -264,6 +270,7 @@ export default function ReservationsPage() {
       client_id: reservation.client_id?.toString() || '',
       customer_name: reservation.customer_name,
       customer_email: reservation.customer_email || '',
+      customer_phone: reservation.customer_phone || '',
       date_from: reservation.date_from,
       date_to: reservation.date_to,
       status: reservation.status,
@@ -345,6 +352,7 @@ export default function ReservationsPage() {
               client_id: '',
               customer_name: '',
               customer_email: '',
+              customer_phone: '',
               date_from: '',
               date_to: '',
               status: 'pending',
@@ -420,6 +428,18 @@ export default function ReservationsPage() {
                   setFormData({ ...formData, customer_email: e.target.value })
                 }
                 className="w-full px-3 py-2 border rounded"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Telefone do Cliente</label>
+              <input
+                type="tel"
+                value={formData.customer_phone}
+                onChange={(e) =>
+                  setFormData({ ...formData, customer_phone: e.target.value })
+                }
+                className="w-full px-3 py-2 border rounded"
+                placeholder="(00) 00000-0000"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -518,6 +538,11 @@ export default function ReservationsPage() {
                     {reservation.customer_email && (
                       <p className="text-sm text-gray-600">
                         Email: {reservation.customer_email}
+                      </p>
+                    )}
+                    {reservation.customer_phone && (
+                      <p className="text-sm text-gray-600">
+                        Telefone: {reservation.customer_phone}
                       </p>
                     )}
                     <p className="text-sm text-gray-600 mt-1">

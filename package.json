@@ -9,7 +9,9 @@
     "start": "next start",
     "lint": "next lint",
     "db:init": "node scripts/init-database.js",
-    "db:check": "wrangler d1 execute sistema --command=\"SELECT name FROM sqlite_master WHERE type='table';\""
+    "db:check": "wrangler d1 execute sistema --command=\"SELECT name FROM sqlite_master WHERE type='table';\"",
+    "db:migrate:file": "node scripts/run-migration.js",
+    "db:migrate:008": "wrangler d1 execute sistema --file=./migrations/008_add_portfolio_image_size.sql"
   },
   "dependencies": {
     "@types/node": "^20",

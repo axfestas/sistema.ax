@@ -76,7 +76,7 @@ CREATE TABLE portfolio_images (
   image_url TEXT NOT NULL,
   display_order INTEGER DEFAULT 0,
   is_active INTEGER DEFAULT 1, -- 1 for active, 0 for inactive
-  image_size TEXT DEFAULT 'medium', -- 'small', 'medium', 'large'
+  image_size TEXT DEFAULT 'feed-square', -- 'feed-vertical', 'feed-square', 'story', 'profile'
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -141,6 +141,49 @@ CREATE TABLE password_reset_tokens (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+-- Tabela de Clientes
+CREATE TABLE clients (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  email TEXT,
+  phone TEXT NOT NULL,
+  cpf TEXT,
+  address TEXT,
+  city TEXT,
+  state TEXT,
+  zip_code TEXT,
+  notes TEXT,
+  is_active INTEGER DEFAULT 1,
+  created_at INTEGER DEFAULT (strftime('%s', 'now'))
+);
+
+-- Tabela de Doces
+CREATE TABLE sweets (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  description TEXT,
+  price REAL NOT NULL,
+  quantity INTEGER NOT NULL DEFAULT 0,
+  image_url TEXT,
+  category TEXT,
+  is_active INTEGER DEFAULT 1,
+  show_in_catalog INTEGER DEFAULT 1,
+  created_at INTEGER DEFAULT (strftime('%s', 'now'))
+);
+
+-- Tabela de Design/Decoração
+CREATE TABLE designs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  description TEXT,
+  price REAL NOT NULL,
+  image_url TEXT,
+  category TEXT,
+  is_active INTEGER DEFAULT 1,
+  show_in_catalog INTEGER DEFAULT 1,
+  created_at INTEGER DEFAULT (strftime('%s', 'now'))
+);
+
 -- Índices para melhorar performance
 CREATE INDEX idx_items_show_in_catalog ON items(show_in_catalog);
 CREATE INDEX idx_items_custom_id ON items(custom_id);
@@ -155,6 +198,30 @@ CREATE INDEX idx_reservation_items_item_dates ON reservation_items(item_id, date
 CREATE INDEX idx_reservations_dates ON reservations(date_from, date_to);
 CREATE INDEX idx_reservations_kit_id ON reservations(kit_id);
 CREATE INDEX idx_password_reset_tokens_token ON password_reset_tokens(token);
+CREATE INDEX idx_clients_phone ON clients(phone);
+CREATE INDEX idx_clients_email ON clients(email);
+CREATE INDEX idx_sweets_catalog ON sweets(show_in_catalog, is_active);
+CREATE INDEX idx_designs_catalog ON designs(show_in_catalog, is_active);
+
+-- Tabela de Solicitações de Reserva (do Carrinho)
+CREATE TABLE reservation_requests (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  custom_id TEXT UNIQUE,
+  customer_name TEXT NOT NULL,
+  customer_email TEXT NOT NULL,
+  customer_phone TEXT NOT NULL,
+  event_date DATE NOT NULL,
+  message TEXT,
+  items_json TEXT NOT NULL,
+  total_amount REAL NOT NULL,
+  status TEXT DEFAULT 'pending',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_reservation_requests_status ON reservation_requests(status);
+CREATE INDEX idx_reservation_requests_created_at ON reservation_requests(created_at);
+CREATE INDEX idx_reservation_requests_custom_id ON reservation_requests(custom_id);
 
 -- Sample data: Add Kit Festa Completo to catalog
 INSERT OR IGNORE INTO items (id, name, description, price, quantity) 
