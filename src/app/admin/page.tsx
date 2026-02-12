@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import LogoutButton from '@/components/LogoutButton';
+import { getReservationRequestStatusInfo } from '@/lib/reservationRequestUtils';
 
 interface ReservationRequest {
   id: number;
@@ -55,15 +56,9 @@ export default function AdminPage() {
   }, [user]);
 
   const getStatusBadge = (status: string) => {
-    const statusMap: Record<string, { label: string; color: string }> = {
-      pending: { label: 'Pendente', color: 'bg-yellow-100 text-yellow-800' },
-      contacted: { label: 'Contactado', color: 'bg-blue-100 text-blue-800' },
-      converted: { label: 'Convertido', color: 'bg-green-100 text-green-800' },
-      cancelled: { label: 'Cancelado', color: 'bg-red-100 text-red-800' },
-    };
-    const statusInfo = statusMap[status] || { label: status, color: 'bg-gray-100 text-gray-800' };
+    const statusInfo = getReservationRequestStatusInfo(status);
     return (
-      <span className={`px-2 py-1 text-xs rounded ${statusInfo.color}`}>
+      <span className={`px-2 py-1 text-xs rounded font-semibold ${statusInfo.color}`}>
         {statusInfo.label}
       </span>
     );
