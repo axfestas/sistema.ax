@@ -1,10 +1,10 @@
 /**
- * Cloudflare Pages Function para servir imagens do R2
+ * Cloudflare Pages Function to serve images from R2
  * 
  * Endpoint:
- * GET /api/images/folder/filename.ext - Serve imagem do R2 storage
+ * GET /api/images/folder/filename.ext - Serve image from R2 storage
  * 
- * Este é um endpoint público otimizado para servir imagens com cache.
+ * This is a public endpoint optimized for serving images with caching.
  */
 
 import type { R2Bucket } from '@cloudflare/workers-types';
@@ -14,7 +14,7 @@ interface Env {
 }
 
 /**
- * Serve arquivo de imagem do R2
+ * Serve image file from R2
  * Path pattern: /api/images/folder/timestamp-filename.ext
  */
 export async function onRequest(context: {
@@ -23,7 +23,7 @@ export async function onRequest(context: {
   params: { path: string[] };
 }) {
   try {
-    // Extrair o caminho completo da imagem dos parâmetros
+    // Extract the full image path from parameters
     const pathParts = context.params.path || [];
     
     if (pathParts.length === 0) {
@@ -36,10 +36,10 @@ export async function onRequest(context: {
       );
     }
 
-    // Reconstruir o key completo (folder/filename)
+    // Reconstruct the full key (folder/filename)
     const key = pathParts.join('/');
 
-    // Buscar objeto do R2
+    // Fetch object from R2
     const object = await context.env.STORAGE.get(key);
 
     if (!object) {
@@ -52,15 +52,15 @@ export async function onRequest(context: {
       );
     }
 
-    // Configurar headers para a imagem
-    const headers = new Headers() as Headers;
-    object.writeHttpMetadata(headers as any);
+    // Configure headers for the image
+    const headers = new Headers();
+    (object.writeHttpMetadata as any)(headers);
     headers.set('etag', object.httpEtag);
     
-    // Cache agressivo - arquivos têm timestamp no nome para cache busting
+    // Aggressive caching - files have timestamp in name for cache busting
     headers.set('cache-control', 'public, max-age=31536000, immutable');
     
-    // CORS headers para permitir uso em outras origens
+    // CORS headers to allow usage from other origins
     headers.set('access-control-allow-origin', '*');
     headers.set('access-control-allow-methods', 'GET, HEAD, OPTIONS');
 
