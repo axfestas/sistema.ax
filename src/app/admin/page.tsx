@@ -31,7 +31,7 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
+    <>
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Painel Administrativo</h1>
         <LogoutButton />
@@ -45,53 +45,6 @@ export default function AdminPage() {
           Cargo: <strong>{user.role}</strong>
         </p>
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <a href="/admin/clients" className="bg-blue-50 p-4 rounded-lg shadow hover:shadow-lg transition-shadow">
-          <h2 className="font-bold text-lg mb-2">👥 Clientes</h2>
-          <p className="text-gray-600">Gerenciar cadastro de clientes</p>
-        </a>
-        <a href="/admin/inventory" className="bg-cyan-50 p-4 rounded-lg shadow hover:shadow-lg transition-shadow">
-          <h2 className="font-bold text-lg mb-2">📦 Estoque</h2>
-          <p className="text-gray-600">Gerenciar todos os itens disponíveis</p>
-        </a>
-        <a href="/admin/kits" className="bg-indigo-50 p-4 rounded-lg shadow hover:shadow-lg transition-shadow">
-          <h2 className="font-bold text-lg mb-2">🎁 Kits</h2>
-          <p className="text-gray-600">Criar e gerenciar kits de itens</p>
-        </a>
-        <a href="/admin/sweets" className="bg-pink-50 p-4 rounded-lg shadow hover:shadow-lg transition-shadow">
-          <h2 className="font-bold text-lg mb-2">🍰 Doces</h2>
-          <p className="text-gray-600">Gerenciar doces e sobremesas</p>
-        </a>
-        <a href="/admin/designs" className="bg-purple-50 p-4 rounded-lg shadow hover:shadow-lg transition-shadow">
-          <h2 className="font-bold text-lg mb-2">🎨 Design</h2>
-          <p className="text-gray-600">Gerenciar designs e decorações</p>
-        </a>
-        <a href="/admin/reservations" className="bg-green-50 p-4 rounded-lg shadow hover:shadow-lg transition-shadow">
-          <h2 className="font-bold text-lg mb-2">📅 Reservas</h2>
-          <p className="text-gray-600">Gerenciar reservas de clientes</p>
-        </a>
-        <a href="/admin/users" className="bg-teal-50 p-4 rounded-lg shadow hover:shadow-lg transition-shadow">
-          <h2 className="font-bold text-lg mb-2">👤 Usuários</h2>
-          <p className="text-gray-600">Gerenciar contas de usuários</p>
-        </a>
-        <a href="/admin/maintenance" className="bg-yellow-50 p-4 rounded-lg shadow hover:shadow-lg transition-shadow">
-          <h2 className="font-bold text-lg mb-2">🔧 Manutenção</h2>
-          <p className="text-gray-600">Controlar manutenções</p>
-        </a>
-        <a href="/admin/finance" className="bg-emerald-50 p-4 rounded-lg shadow hover:shadow-lg transition-shadow">
-          <h2 className="font-bold text-lg mb-2">💰 Financeiro</h2>
-          <p className="text-gray-600">Resumo financeiro</p>
-        </a>
-        <a href="/admin/portfolio" className="bg-violet-50 p-4 rounded-lg shadow hover:shadow-lg transition-shadow">
-          <h2 className="font-bold text-lg mb-2">🖼️ Portfólio</h2>
-          <p className="text-gray-600">Gerenciar fotos da galeria</p>
-        </a>
-        <a href="/admin/settings" className="bg-orange-50 p-4 rounded-lg shadow hover:shadow-lg transition-shadow">
-          <h2 className="font-bold text-lg mb-2">⚙️ Configurações</h2>
-          <p className="text-gray-600">Editar informações do site</p>
-        </a>
-      </div>
-    </div>
+    </>
   );
 }

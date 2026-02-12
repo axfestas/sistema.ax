@@ -4,14 +4,27 @@ import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/useToast';
 import { formatReservationId } from '@/lib/formatId';
 
-interface Item {
+interface SelectableItem {
   id: number;
   name: string;
+  type: 'item' | 'kit' | 'sweet' | 'design';
+  displayName: string;
+}
+
+interface Client {
+  id: number;
+  name: string;
+  email?: string;
+  phone: string;
 }
 
 interface Reservation {
   id: number;
-  item_id: number;
+  item_id?: number;
+  kit_id?: number;
+  sweet_id?: number;
+  design_id?: number;
+  client_id?: number;
   customer_name: string;
   customer_email?: string;
   date_from: string;
@@ -21,12 +34,14 @@ interface Reservation {
 
 export default function ReservationsPage() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
-  const [items, setItems] = useState<Item[]>([]);
+  const [allItems, setAllItems] = useState<SelectableItem[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingReservation, setEditingReservation] = useState<Reservation | null>(null);
   const [formData, setFormData] = useState({
-    item_id: '',
+    selected_item: '', // formato: "type:id" ex: "item:1", "kit:2", "sweet:3", "design:4"
+    client_id: '',
     customer_name: '',
     customer_email: '',
     date_from: '',
@@ -37,7 +52,8 @@ export default function ReservationsPage() {
 
   useEffect(() => {
     loadReservations();
-    loadItems();
+    loadAllItems();
+    loadClients();
   }, []);
 
   const loadReservations = async () => {
@@ -54,29 +70,143 @@ export default function ReservationsPage() {
     }
   };
 
-  const loadItems = async () => {
+  const loadAllItems = async () => {
     try {
-      const response = await fetch('/api/items');
-      if (response.ok) {
-        const data: any = await response.json();
-        setItems(data);
+      const items: SelectableItem[] = [];
+      
+      // Load inventory items
+      const itemsRes = await fetch('/api/items');
+      if (itemsRes.ok) {
+        const data: any[] = await itemsRes.json();
+        data.forEach(item => items.push({
+          id: item.id,
+          name: item.name,
+          type: 'item',
+          displayName: `[Estoque] ${item.name}`
+        }));
       }
+      
+      // Load kits
+      const kitsRes = await fetch('/api/kits');
+      if (kitsRes.ok) {
+        const data: any[] = await kitsRes.json();
+        data.forEach(kit => items.push({
+          id: kit.id,
+          name: kit.name,
+          type: 'kit',
+          displayName: `[Kit] ${kit.name}`
+        }));
+      }
+      
+      // Load sweets
+      const sweetsRes = await fetch('/api/sweets');
+      if (sweetsRes.ok) {
+        const data: any[] = await sweetsRes.json();
+        data.forEach(sweet => items.push({
+          id: sweet.id,
+          name: sweet.name,
+          type: 'sweet',
+          displayName: `[Doce] ${sweet.name}`
+        }));
+      }
+      
+      // Load designs
+      const designsRes = await fetch('/api/designs');
+      if (designsRes.ok) {
+        const data: any[] = await designsRes.json();
+        data.forEach(design => items.push({
+          id: design.id,
+          name: design.name,
+          type: 'design',
+          displayName: `[Design] ${design.name}`
+        }));
+      }
+      
+      setAllItems(items);
     } catch (error) {
       console.error('Error loading items:', error);
+    }
+  };
+
+  const loadClients = async () => {
+    try {
+      const response = await fetch('/api/clients');
+      if (response.ok) {
+        const data: any = await response.json();
+        setClients(data);
+      }
+    } catch (error) {
+      console.error('Error loading clients:', error);
+    }
+  };
+
+  const handleClientChange = (clientId: string) => {
+    setFormData({ ...formData, client_id: clientId });
+    
+    if (clientId) {
+      const client = clients.find(c => c.id.toString() === clientId);
+      if (client) {
+        setFormData({
+          ...formData,
+          client_id: clientId,
+          customer_name: client.name,
+          customer_email: client.email || '',
+        });
+      }
+    } else {
+      setFormData({
+        ...formData,
+        client_id: '',
+        customer_name: '',
+        customer_email: '',
+      });
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const reservationData = {
-      item_id: parseInt(formData.item_id),
+    // Validate selected_item format
+    if (!formData.selected_item || !formData.selected_item.includes(':')) {
+      showError('Por favor, selecione um item válido');
+      return;
+    }
+
+    // Parse selected item
+    const [itemType, itemIdStr] = formData.selected_item.split(':');
+    const itemId = parseInt(itemIdStr);
+    
+    if (isNaN(itemId)) {
+      showError('Item selecionado inválido');
+      return;
+    }
+
+    const reservationData: any = {
       customer_name: formData.customer_name,
       customer_email: formData.customer_email || undefined,
       date_from: formData.date_from,
       date_to: formData.date_to,
       status: formData.status,
     };
+
+    // Add the appropriate ID field based on type
+    if (itemType === 'item') {
+      reservationData.item_id = itemId;
+    } else if (itemType === 'kit') {
+      reservationData.kit_id = itemId;
+    } else if (itemType === 'sweet') {
+      reservationData.sweet_id = itemId;
+    } else if (itemType === 'design') {
+      reservationData.design_id = itemId;
+    } else {
+      showError('Tipo de item inválido');
+      return;
+    }
+
+    // Add client_id if selected
+    if (formData.client_id) {
+      reservationData.client_id = parseInt(formData.client_id);
+    }
 
     try {
       const url = editingReservation
@@ -95,7 +225,8 @@ export default function ReservationsPage() {
         setShowForm(false);
         setEditingReservation(null);
         setFormData({
-          item_id: '',
+          selected_item: '',
+          client_id: '',
           customer_name: '',
           customer_email: '',
           date_from: '',
@@ -115,8 +246,22 @@ export default function ReservationsPage() {
 
   const handleEdit = (reservation: Reservation) => {
     setEditingReservation(reservation);
+    
+    // Determine selected item type and create the composite ID
+    let selectedItem = '';
+    if (reservation.item_id) {
+      selectedItem = `item:${reservation.item_id}`;
+    } else if (reservation.kit_id) {
+      selectedItem = `kit:${reservation.kit_id}`;
+    } else if (reservation.sweet_id) {
+      selectedItem = `sweet:${reservation.sweet_id}`;
+    } else if (reservation.design_id) {
+      selectedItem = `design:${reservation.design_id}`;
+    }
+    
     setFormData({
-      item_id: reservation.item_id.toString(),
+      selected_item: selectedItem,
+      client_id: reservation.client_id?.toString() || '',
       customer_name: reservation.customer_name,
       customer_email: reservation.customer_email || '',
       date_from: reservation.date_from,
@@ -146,9 +291,21 @@ export default function ReservationsPage() {
     }
   };
 
-  const getItemName = (itemId: number) => {
-    const item = items.find((i) => i.id === itemId);
-    return item ? item.name : `Item #${itemId}`;
+  const getReservationItemName = (reservation: Reservation) => {
+    if (reservation.item_id) {
+      const item = allItems.find(i => i.type === 'item' && i.id === reservation.item_id);
+      return item ? item.displayName : `Item #${reservation.item_id}`;
+    } else if (reservation.kit_id) {
+      const item = allItems.find(i => i.type === 'kit' && i.id === reservation.kit_id);
+      return item ? item.displayName : `Kit #${reservation.kit_id}`;
+    } else if (reservation.sweet_id) {
+      const item = allItems.find(i => i.type === 'sweet' && i.id === reservation.sweet_id);
+      return item ? item.displayName : `Doce #${reservation.sweet_id}`;
+    } else if (reservation.design_id) {
+      const item = allItems.find(i => i.type === 'design' && i.id === reservation.design_id);
+      return item ? item.displayName : `Design #${reservation.design_id}`;
+    }
+    return 'Item não especificado';
   };
 
   const getStatusColor = (status: string) => {
@@ -184,7 +341,8 @@ export default function ReservationsPage() {
             setShowForm(true);
             setEditingReservation(null);
             setFormData({
-              item_id: '',
+              selected_item: '',
+              client_id: '',
               customer_name: '',
               customer_email: '',
               date_from: '',
@@ -205,23 +363,44 @@ export default function ReservationsPage() {
           </h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Item</label>
+              <label className="block text-sm font-medium mb-1">Item *</label>
               <select
-                value={formData.item_id}
-                onChange={(e) => setFormData({ ...formData, item_id: e.target.value })}
+                value={formData.selected_item}
+                onChange={(e) => setFormData({ ...formData, selected_item: e.target.value })}
                 required
                 className="w-full px-3 py-2 border rounded"
               >
                 <option value="">Selecione um item</option>
-                {items.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.name}
+                {allItems.map((item) => (
+                  <option key={`${item.type}:${item.id}`} value={`${item.type}:${item.id}`}>
+                    {item.displayName}
                   </option>
                 ))}
               </select>
+              <p className="text-xs text-gray-500 mt-1">
+                Selecione de Estoque, Kits, Doces ou Designs
+              </p>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Nome do Cliente</label>
+              <label className="block text-sm font-medium mb-1">Cliente</label>
+              <select
+                value={formData.client_id}
+                onChange={(e) => handleClientChange(e.target.value)}
+                className="w-full px-3 py-2 border rounded"
+              >
+                <option value="">Selecione um cliente ou digite manualmente abaixo</option>
+                {clients.map((client) => (
+                  <option key={client.id} value={client.id}>
+                    {client.name} - {client.phone}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-500 mt-1">
+                Ou preencha os dados manualmente abaixo
+              </p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Nome do Cliente *</label>
               <input
                 type="text"
                 value={formData.customer_name}
@@ -334,7 +513,7 @@ export default function ReservationsPage() {
                       </span>
                     </div>
                     <p className="text-sm text-gray-600">
-                      Item: {getItemName(reservation.item_id)}
+                      Item: {getReservationItemName(reservation)}
                     </p>
                     {reservation.customer_email && (
                       <p className="text-sm text-gray-600">

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { formatDesignId } from '@/lib/formatId';
 import Image from 'next/image';
+import ImageUpload from '@/components/ImageUpload';
 
 interface Design {
   id: number;
@@ -251,13 +252,11 @@ export default function DesignsPage() {
                   />
                 </div>
                 <div className="col-span-2">
-                  <label className="block text-sm font-medium mb-1">URL da Imagem</label>
-                  <input
-                    type="url"
-                    value={formData.image_url}
-                    onChange={(e) => setFormData({...formData, image_url: e.target.value})}
-                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                    placeholder="https://..."
+                  <ImageUpload
+                    currentImage={formData.image_url}
+                    onUpload={(url) => setFormData({...formData, image_url: url})}
+                    folder="designs"
+                    label="Imagem do Design"
                   />
                 </div>
                 <div>

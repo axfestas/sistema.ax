@@ -197,13 +197,13 @@ export default function ClientsPage() {
                         onClick={() => handleEdit(client)}
                         className="text-blue-600 hover:underline mr-3"
                       >
-                        Editar
+                        ✏️ Editar
                       </button>
                       <button 
                         onClick={() => handleDelete(client.id)}
                         className="text-red-600 hover:underline"
                       >
-                        Excluir
+                        🗑️ Excluir
                       </button>
                     </td>
                   </tr>
