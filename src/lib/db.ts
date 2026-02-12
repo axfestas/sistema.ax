@@ -27,6 +27,7 @@ export interface Item {
   price: number;
   quantity: number;
   image_url?: string;
+  category?: string;
   show_in_catalog?: number; // 1 = show in catalog, 0 = hide
 }
 
@@ -36,6 +37,7 @@ export interface ItemInput {
   price: number;
   quantity: number;
   show_in_catalog?: number;
+  category?: string;
   custom_id?: string; // Optional - will be auto-generated if not provided
 }
 
@@ -308,10 +310,10 @@ export async function createItem(
   }
 
   try {
-    // Try to insert with all columns including show_in_catalog and custom_id
+    // Try to insert with all columns including show_in_catalog, custom_id, and category
     const result = await db
       .prepare(
-        'INSERT INTO items (name, description, price, quantity, show_in_catalog, custom_id) VALUES (?, ?, ?, ?, ?, ?) RETURNING *'
+        'INSERT INTO items (name, description, price, quantity, show_in_catalog, custom_id, category, image_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING *'
       )
       .bind(
         item.name,
@@ -319,7 +321,9 @@ export async function createItem(
         item.price,
         item.quantity,
         item.show_in_catalog !== undefined ? item.show_in_catalog : 1,
-        customId
+        customId,
+        item.category || null,
+        item.image_url || null
       )
       .first();
     return result as unknown as Item;
@@ -381,6 +385,14 @@ export async function updateItem(
   if (updates.show_in_catalog !== undefined) {
     fields.push('show_in_catalog = ?');
     values.push(updates.show_in_catalog);
+  }
+  if (updates.category !== undefined) {
+    fields.push('category = ?');
+    values.push(updates.category);
+  }
+  if (updates.image_url !== undefined) {
+    fields.push('image_url = ?');
+    values.push(updates.image_url);
   }
 
   if (fields.length === 0) {

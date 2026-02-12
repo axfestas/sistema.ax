@@ -12,6 +12,7 @@ interface Item {
   price: number;
   quantity: number;
   image_url?: string;
+  category?: string;
   show_in_catalog?: number; // 1 = show, 0 = hide
 }
 
@@ -26,6 +27,7 @@ export default function InventoryPage() {
     price: '',
     quantity: '',
     image_url: '',
+    category: '',
     show_in_catalog: 1, // Default to showing in catalog
   });
   const { showSuccess, showError } = useToast();
@@ -57,6 +59,7 @@ export default function InventoryPage() {
       price: parseFloat(formData.price),
       quantity: parseInt(formData.quantity),
       image_url: formData.image_url || undefined,
+      category: formData.category || undefined,
       show_in_catalog: formData.show_in_catalog,
     };
 
@@ -96,6 +99,7 @@ export default function InventoryPage() {
       price: item.price.toString(),
       quantity: item.quantity.toString(),
       image_url: item.image_url || '',
+      category: item.category || '',
       show_in_catalog: item.show_in_catalog !== undefined ? item.show_in_catalog : 1,
     });
     setShowForm(true);
@@ -166,6 +170,16 @@ export default function InventoryPage() {
                 rows={3}
               />
             </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Categoria</label>
+              <input
+                type="text"
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                className="w-full px-3 py-2 border rounded"
+                placeholder="Ex: Mesas, Cadeiras, Decoração, etc."
+              />
+            </div>
             <ImageUpload
               currentImage={formData.image_url}
               onUpload={(url) => setFormData({ ...formData, image_url: url })}
@@ -224,7 +238,7 @@ export default function InventoryPage() {
                 onClick={() => {
                   setShowForm(false);
                   setEditingItem(null);
-                  setFormData({ name: '', description: '', price: '', quantity: '', image_url: '', show_in_catalog: 1 });
+                  setFormData({ name: '', description: '', price: '', quantity: '', image_url: '', category: '', show_in_catalog: 1 });
                 }}
                 className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
               >
@@ -263,6 +277,9 @@ export default function InventoryPage() {
                     </div>
                     {item.description && (
                       <p className="text-sm text-gray-600">{item.description}</p>
+                    )}
+                    {item.category && (
+                      <p className="text-xs text-gray-500 mt-1">Categoria: {item.category}</p>
                     )}
                     <div className="mt-2 flex gap-4 text-sm">
                       <span className="text-green-600 font-semibold">
