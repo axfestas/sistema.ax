@@ -12,6 +12,8 @@ export interface User {
   email: string;
   name: string;
   role: 'admin' | 'user';
+  active?: number;
+  phone?: string;
   created_at: string;
 }
 
@@ -76,7 +78,7 @@ export async function getUserByEmail(db: D1Database, email: string): Promise<Use
  */
 export async function getUserById(db: D1Database, userId: number): Promise<User | null> {
   const result = await db
-    .prepare('SELECT id, email, name, role, created_at FROM users WHERE id = ?')
+    .prepare('SELECT id, email, name, role, active, phone, created_at FROM users WHERE id = ?')
     .bind(userId)
     .first();
 

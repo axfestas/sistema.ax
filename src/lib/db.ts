@@ -26,6 +26,7 @@ export interface Item {
   description?: string;
   price: number;
   quantity: number;
+  image_url?: string;
   show_in_catalog?: number; // 1 = show in catalog, 0 = hide
 }
 
@@ -45,6 +46,7 @@ export interface PortfolioImage {
   image_url: string;
   display_order: number;
   is_active: number;
+  image_size?: string; // 'small', 'medium', 'large'
   created_at?: string;
   updated_at?: string;
 }
@@ -55,6 +57,7 @@ export interface PortfolioImageInput {
   image_url: string;
   display_order?: number;
   is_active?: number;
+  image_size?: string; // 'small', 'medium', 'large'
 }
 
 export interface Reservation {
@@ -84,6 +87,7 @@ export interface ReservationInput {
 
 export interface MaintenanceRecord {
   id: number;
+  custom_id?: string; // MAN-A001, MAN-A002, etc.
   item_id: number;
   description: string;
   date: string; // YYYY-MM-DD
@@ -95,6 +99,7 @@ export interface MaintenanceInput {
   description: string;
   date: string;
   cost?: number;
+  custom_id?: string; // Optional - will be auto-generated if not provided
 }
 
 export interface FinancialRecord {
@@ -130,6 +135,7 @@ export interface Kit {
   name: string;
   description?: string;
   price: number;
+  image_url?: string;
   is_active: number;
   created_at?: string;
   updated_at?: string;
@@ -163,6 +169,23 @@ export interface KitWithItems extends Kit {
     item_name: string;
     quantity: number;
   }>;
+}
+
+// Type alias for kit item with name
+type KitItemWithName = {
+  id: number;
+  item_id: number;
+  item_name: string;
+  quantity: number;
+};
+
+// Type for kit items query result
+interface KitItemQueryResult {
+  kit_id: number;
+  id: number;
+  item_id: number;
+  item_name: string;
+  quantity: number;
 }
 
 export interface ReservationItem {
@@ -661,18 +684,54 @@ export async function createMaintenance(
   db: D1Database,
   maintenance: MaintenanceInput
 ): Promise<MaintenanceRecord> {
-  const result = await db
-    .prepare(
-      'INSERT INTO maintenance (item_id, description, date, cost) VALUES (?, ?, ?, ?) RETURNING *'
-    )
-    .bind(
-      maintenance.item_id,
-      maintenance.description,
-      maintenance.date,
-      maintenance.cost || null
-    )
-    .first();
-  return result as unknown as MaintenanceRecord;
+  // Generate custom_id if not provided
+  let customId = maintenance.custom_id;
+  if (!customId) {
+    try {
+      // Get the last custom_id to generate the next one
+      const lastMaintenance = await db
+        .prepare('SELECT custom_id FROM maintenance WHERE custom_id IS NOT NULL ORDER BY custom_id DESC LIMIT 1')
+        .first<{ custom_id: string }>();
+      
+      customId = generateCustomId('MAN', lastMaintenance?.custom_id || null);
+    } catch (error) {
+      // If custom_id column doesn't exist, generate a new ID anyway
+      customId = generateCustomId('MAN', null);
+    }
+  }
+
+  try {
+    // Try to insert with custom_id
+    const result = await db
+      .prepare(
+        'INSERT INTO maintenance (item_id, description, date, cost, custom_id) VALUES (?, ?, ?, ?, ?) RETURNING *'
+      )
+      .bind(
+        maintenance.item_id,
+        maintenance.description,
+        maintenance.date,
+        maintenance.cost || null,
+        customId
+      )
+      .first();
+    return result as unknown as MaintenanceRecord;
+  } catch (error: any) {
+    // Fallback: If the column doesn't exist yet (before migration 009), insert without it
+    // This provides backward compatibility during deployment
+    console.warn('Fallback to maintenance insert without custom_id column:', error.message);
+    const result = await db
+      .prepare(
+        'INSERT INTO maintenance (item_id, description, date, cost) VALUES (?, ?, ?, ?) RETURNING *'
+      )
+      .bind(
+        maintenance.item_id,
+        maintenance.description,
+        maintenance.date,
+        maintenance.cost || null
+      )
+      .first();
+    return result as unknown as MaintenanceRecord;
+  }
 }
 
 /**
@@ -934,20 +993,42 @@ export async function createPortfolioImage(
 ): Promise<PortfolioImage> {
   const displayOrder = image.display_order ?? 0;
   const isActive = image.is_active ?? 1;
+  const imageSize = image.image_size || 'medium';
   
-  const result = await db
-    .prepare(
-      'INSERT INTO portfolio_images (title, description, image_url, display_order, is_active) VALUES (?, ?, ?, ?, ?) RETURNING *'
-    )
-    .bind(
-      image.title,
-      image.description || null,
-      image.image_url,
-      displayOrder,
-      isActive
-    )
-    .first();
-  return result as unknown as PortfolioImage;
+  try {
+    // Try to insert with image_size column
+    const result = await db
+      .prepare(
+        'INSERT INTO portfolio_images (title, description, image_url, display_order, is_active, image_size) VALUES (?, ?, ?, ?, ?, ?) RETURNING *'
+      )
+      .bind(
+        image.title,
+        image.description || null,
+        image.image_url,
+        displayOrder,
+        isActive,
+        imageSize
+      )
+      .first();
+    return result as unknown as PortfolioImage;
+  } catch (error: any) {
+    // Fallback: If the column doesn't exist yet (before migration 008), insert without it
+    // This provides backward compatibility during deployment
+    console.warn('Fallback to portfolio insert without image_size column:', error.message);
+    const result = await db
+      .prepare(
+        'INSERT INTO portfolio_images (title, description, image_url, display_order, is_active) VALUES (?, ?, ?, ?, ?) RETURNING *'
+      )
+      .bind(
+        image.title,
+        image.description || null,
+        image.image_url,
+        displayOrder,
+        isActive
+      )
+      .first();
+    return result as unknown as PortfolioImage;
+  }
 }
 
 /**
@@ -980,6 +1061,10 @@ export async function updatePortfolioImage(
   if (updates.is_active !== undefined) {
     fields.push('is_active = ?');
     values.push(updates.is_active);
+  }
+  if (updates.image_size !== undefined) {
+    fields.push('image_size = ?');
+    values.push(updates.image_size);
   }
   
   if (fields.length === 0) {
@@ -1179,6 +1264,64 @@ export async function getKitWithItems(
     ...kit,
     items,
   };
+}
+
+/**
+ * Fetches all kits with their items
+ */
+export async function getKitsWithItems(
+  db: D1Database,
+  options?: {
+    activeOnly?: boolean;
+    maxRecords?: number;
+  }
+): Promise<KitWithItems[]> {
+  // First, get all kits
+  const kits = await getKits(db, options);
+  
+  if (kits.length === 0) {
+    return [];
+  }
+  
+  // Get all kit IDs
+  const kitIds = kits.map(kit => kit.id);
+  
+  // Fetch all kit items in a single query
+  const kitItemsQuery = `
+    SELECT 
+      ki.kit_id,
+      ki.id,
+      ki.item_id,
+      ki.quantity,
+      i.name as item_name
+    FROM kit_items ki
+    JOIN items i ON ki.item_id = i.id
+    WHERE ki.kit_id IN (${kitIds.map(() => '?').join(',')})
+    ORDER BY ki.kit_id, i.name
+  `;
+  
+  const itemsResult = await db.prepare(kitItemsQuery).bind(...kitIds).all();
+  
+  // Group items by kit_id
+  const itemsByKitId: { [kitId: number]: KitItemWithName[] } = {};
+  for (const row of itemsResult.results) {
+    const kitItemRow = row as unknown as KitItemQueryResult;
+    if (!itemsByKitId[kitItemRow.kit_id]) {
+      itemsByKitId[kitItemRow.kit_id] = [];
+    }
+    itemsByKitId[kitItemRow.kit_id].push({
+      id: kitItemRow.id,
+      item_id: kitItemRow.item_id,
+      item_name: kitItemRow.item_name,
+      quantity: kitItemRow.quantity,
+    });
+  }
+  
+  // Combine kits with their items
+  return kits.map(kit => ({
+    ...kit,
+    items: itemsByKitId[kit.id] || [],
+  }));
 }
 
 /**

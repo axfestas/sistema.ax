@@ -12,7 +12,7 @@ interface CatalogItem {
   category?: string
   quantity: number
   price: number
-  imageUrl?: string
+  image_url?: string
   type?: 'item' | 'kit'
 }
 
@@ -78,7 +78,7 @@ export default function CatalogPage() {
         name: item.name,
         description: item.description || '',
         price: item.price,
-        image: item.imageUrl
+        image: item.image_url
       })
     }
     // Reset quantity to 1 after adding
@@ -253,9 +253,9 @@ export default function CatalogPage() {
                         >
                           {/* Image */}
                           <div className="h-64 bg-gradient-to-br from-brand-blue to-brand-purple flex items-center justify-center relative overflow-hidden">
-                            {item.imageUrl ? (
+                            {item.image_url ? (
                               <Image 
-                                src={item.imageUrl} 
+                                src={item.image_url} 
                                 alt={item.name}
                                 fill
                                 className="object-cover"
