@@ -173,9 +173,9 @@ export default function AdminPortfolioPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold">Gerenciar Catálogo</h1>
+            <h1 className="text-3xl font-bold">Gerenciar Portfólio</h1>
             <p className="text-gray-600 mt-2">
-              Adicione e gerencie as imagens que aparecem na página inicial
+              Adicione e gerencie fotos da galeria que aparecem na página inicial
             </p>
           </div>
           <button

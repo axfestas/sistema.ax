@@ -23,6 +23,7 @@ export interface Item {
   description?: string;
   price: number;
   quantity: number;
+  show_in_catalog?: number; // 1 = show in catalog, 0 = hide
 }
 
 export interface ItemInput {
@@ -30,6 +31,7 @@ export interface ItemInput {
   description?: string;
   price: number;
   quantity: number;
+  show_in_catalog?: number;
 }
 
 export interface PortfolioImage {
@@ -54,6 +56,8 @@ export interface PortfolioImageInput {
 export interface Reservation {
   id: number;
   item_id: number;
+  kit_id?: number;  // Optional: if reserving a kit instead of item
+  quantity: number; // Quantity of items/kits reserved
   customer_name: string;
   customer_email?: string;
   date_from: string; // YYYY-MM-DD
@@ -62,7 +66,9 @@ export interface Reservation {
 }
 
 export interface ReservationInput {
-  item_id: number;
+  item_id?: number;  // Optional if kit_id is provided
+  kit_id?: number;   // Optional if item_id is provided
+  quantity?: number; // Default to 1 if not provided
   customer_name: string;
   customer_email?: string;
   date_from: string;
@@ -177,24 +183,35 @@ export async function getItems(
   db: D1Database,
   options?: {
     status?: 'available' | 'reserved' | 'maintenance';
+    catalogOnly?: boolean; // Filtrar apenas itens do catálogo
     maxRecords?: number;
   }
 ): Promise<Item[]> {
   let query = 'SELECT * FROM items';
   const params: any[] = [];
+  const conditions: string[] = [];
+
+  // Filtrar apenas itens do catálogo
+  if (options?.catalogOnly) {
+    conditions.push('show_in_catalog = 1');
+  }
 
   // Filtrar por quantidade (disponível se quantity > 0)
   if (options?.status === 'available') {
-    query += ' WHERE quantity > 0';
+    conditions.push('quantity > 0');
   } else if (options?.status === 'maintenance') {
     // Items em manutenção são aqueles que estão em manutenção ativa
-    query += ` WHERE id IN (
+    conditions.push(`id IN (
       SELECT DISTINCT item_id FROM maintenance 
       WHERE date <= date('now') AND (
         SELECT COUNT(*) FROM maintenance m2 
         WHERE m2.item_id = maintenance.item_id AND m2.date > date('now')
       ) > 0
-    )`;
+    )`);
+  }
+
+  if (conditions.length > 0) {
+    query += ' WHERE ' + conditions.join(' AND ');
   }
 
   // Adicionar limite
@@ -229,9 +246,15 @@ export async function createItem(
 ): Promise<Item> {
   const result = await db
     .prepare(
-      'INSERT INTO items (name, description, price, quantity) VALUES (?, ?, ?, ?) RETURNING *'
+      'INSERT INTO items (name, description, price, quantity, show_in_catalog) VALUES (?, ?, ?, ?, ?) RETURNING *'
     )
-    .bind(item.name, item.description || null, item.price, item.quantity)
+    .bind(
+      item.name,
+      item.description || null,
+      item.price,
+      item.quantity,
+      item.show_in_catalog !== undefined ? item.show_in_catalog : 1
+    )
     .first();
   return result as unknown as Item;
 }
@@ -262,6 +285,10 @@ export async function updateItem(
   if (updates.quantity !== undefined) {
     fields.push('quantity = ?');
     values.push(updates.quantity);
+  }
+  if (updates.show_in_catalog !== undefined) {
+    fields.push('show_in_catalog = ?');
+    values.push(updates.show_in_catalog);
   }
 
   if (fields.length === 0) {
@@ -330,18 +357,29 @@ export async function getReservationById(
 
 /**
  * Cria uma nova reserva
+ * Suporta reserva de item individual ou kit
+ * Se kit_id for fornecido, cria automaticamente os reservation_items
  */
 export async function createReservation(
   db: D1Database,
   reservation: ReservationInput
 ): Promise<Reservation> {
   const status = reservation.status || 'pending';
+  const quantity = reservation.quantity || 1;
+  
+  // Validação: deve ter item_id OU kit_id, não ambos
+  if (!reservation.item_id && !reservation.kit_id) {
+    throw new Error('Deve fornecer item_id ou kit_id');
+  }
+
   const result = await db
     .prepare(
-      'INSERT INTO reservations (item_id, customer_name, customer_email, date_from, date_to, status) VALUES (?, ?, ?, ?, ?, ?) RETURNING *'
+      'INSERT INTO reservations (item_id, kit_id, quantity, customer_name, customer_email, date_from, date_to, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING *'
     )
     .bind(
-      reservation.item_id,
+      reservation.item_id || null,
+      reservation.kit_id || null,
+      quantity,
       reservation.customer_name,
       reservation.customer_email || null,
       reservation.date_from,
@@ -349,7 +387,36 @@ export async function createReservation(
       status
     )
     .first();
-  return result as unknown as Reservation;
+
+  const newReservation = result as unknown as Reservation;
+
+  // Se for reserva de kit, criar entradas em reservation_items
+  if (reservation.kit_id) {
+    await createReservationItemsForKit(
+      db,
+      newReservation.id,
+      reservation.kit_id,
+      reservation.date_from,
+      reservation.date_to,
+      quantity
+    );
+  } else if (reservation.item_id) {
+    // Se for item individual, também criar entrada em reservation_items
+    await db
+      .prepare(
+        'INSERT INTO reservation_items (reservation_id, item_id, quantity, date_from, date_to) VALUES (?, ?, ?, ?, ?)'
+      )
+      .bind(
+        newReservation.id,
+        reservation.item_id,
+        quantity,
+        reservation.date_from,
+        reservation.date_to
+      )
+      .run();
+  }
+
+  return newReservation;
 }
 
 /**
@@ -366,6 +433,14 @@ export async function updateReservation(
   if (updates.item_id !== undefined) {
     fields.push('item_id = ?');
     values.push(updates.item_id);
+  }
+  if (updates.kit_id !== undefined) {
+    fields.push('kit_id = ?');
+    values.push(updates.kit_id);
+  }
+  if (updates.quantity !== undefined) {
+    fields.push('quantity = ?');
+    values.push(updates.quantity);
   }
   if (updates.customer_name !== undefined) {
     fields.push('customer_name = ?');

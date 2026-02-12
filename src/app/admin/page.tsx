@@ -48,8 +48,8 @@ export default function AdminPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <a href="/admin/inventory" className="bg-blue-50 p-4 rounded-lg shadow hover:shadow-lg transition-shadow">
-          <h2 className="font-bold text-lg mb-2">📦 Itens</h2>
-          <p className="text-gray-600">Gerenciar catálogo de itens</p>
+          <h2 className="font-bold text-lg mb-2">📦 Estoque</h2>
+          <p className="text-gray-600">Gerenciar todos os itens disponíveis</p>
         </a>
         <a href="/admin/kits" className="bg-indigo-50 p-4 rounded-lg shadow hover:shadow-lg transition-shadow">
           <h2 className="font-bold text-lg mb-2">🎁 Kits</h2>
@@ -68,8 +68,8 @@ export default function AdminPage() {
           <p className="text-gray-600">Resumo financeiro</p>
         </a>
         <a href="/admin/portfolio" className="bg-pink-50 p-4 rounded-lg shadow hover:shadow-lg transition-shadow">
-          <h2 className="font-bold text-lg mb-2">🖼️ Catálogo</h2>
-          <p className="text-gray-600">Gerenciar imagens do catálogo</p>
+          <h2 className="font-bold text-lg mb-2">🖼️ Portfólio</h2>
+          <p className="text-gray-600">Gerenciar fotos da galeria</p>
         </a>
         <a href="/admin/settings" className="bg-orange-50 p-4 rounded-lg shadow hover:shadow-lg transition-shadow">
           <h2 className="font-bold text-lg mb-2">⚙️ Configurações</h2>
