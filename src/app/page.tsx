@@ -37,13 +37,13 @@ export default function Home() {
   const getImageHeightClass = (size?: string) => {
     switch (size) {
       case 'feed-vertical':
-        return 'h-80' // 320px - Vertical feed (4:5 aspect ratio)
+        return 'h-80' // 320px - Vertical feed (4:5 aspect ratio).
       case 'story':
-        return 'h-96' // 384px - Stories/Reels (9:16 aspect ratio)
+        return 'h-96' // 384px - Stories/Reels (9:16 aspect ratio).
       case 'profile':
-        return 'h-48' // 192px - Profile photo (smaller, 1:1)
+        return 'h-48' // 192px - Profile photo (smaller, 1:1).
       case 'feed-square':
-        return 'h-64' // 256px - Square feed (1:1 aspect ratio)
+        return 'h-64' // 256px - Square feed (1:1 aspect ratio).
       // Backward compatibility with old values
       case 'small':
         return 'h-48' // 192px
