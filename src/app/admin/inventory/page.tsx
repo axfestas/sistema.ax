@@ -237,7 +237,7 @@ export default function InventoryPage() {
       <div className="bg-white shadow overflow-hidden sm:rounded-md">
         {items.length === 0 ? (
           <div className="px-6 py-4">
-            <p className="text-gray-500">Nenhum item cadastrade</p>
+            <p className="text-gray-500">Nenhum item cadastrado</p>
           </div>
         ) : (
           <ul role="list" className="divide-y divide-gray-200">

@@ -108,7 +108,7 @@ export async function registerUser(
   // Verificar se email já existe
   const existingUser = await getUserByEmail(db, input.email);
   if (existingUser) {
-    return { error: 'Email já cadastrade' };
+    return { error: 'Email já em uso' };
   }
 
   // Hash da senha
