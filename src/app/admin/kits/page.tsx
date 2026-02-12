@@ -150,7 +150,7 @@ export default function KitsPage() {
 
       if (response.ok) {
         await loadKits()
-        showSuccess('Kit deletado com sucesso!')
+        showSuccess('Kit deletade com sucesso!')
       } else {
         showError('Erro ao deletar kit')
       }
@@ -305,7 +305,7 @@ export default function KitsPage() {
       <div className="bg-white rounded-lg shadow">
         {kits.length === 0 ? (
           <div className="p-8 text-center">
-            <p className="text-gray-500">Nenhum kit cadastrado</p>
+            <p className="text-gray-500">Nenhum kit cadastrade</p>
           </div>
         ) : (
           <ul role="list" className="divide-y divide-gray-200">
