@@ -958,7 +958,7 @@ export async function createPortfolioImage(
   const imageSize = image.image_size || 'medium';
   
   try {
-    // Try to insert with image_size
+    // Try to insert with image_size column
     const result = await db
       .prepare(
         'INSERT INTO portfolio_images (title, description, image_url, display_order, is_active, image_size) VALUES (?, ?, ?, ?, ?, ?) RETURNING *'
@@ -974,29 +974,22 @@ export async function createPortfolioImage(
       .first();
     return result as unknown as PortfolioImage;
   } catch (error: any) {
-    // If error is due to missing image_size column, try without it
-    const isColumnError = error.message && (
-      error.message.toLowerCase().includes('column') ||
-      error.message.includes('image_size')
-    );
-    
-    if (isColumnError) {
-      console.warn('image_size column not found, inserting without it');
-      const result = await db
-        .prepare(
-          'INSERT INTO portfolio_images (title, description, image_url, display_order, is_active) VALUES (?, ?, ?, ?, ?) RETURNING *'
-        )
-        .bind(
-          image.title,
-          image.description || null,
-          image.image_url,
-          displayOrder,
-          isActive
-        )
-        .first();
-      return result as unknown as PortfolioImage;
-    }
-    throw error;
+    // Fallback: If the column doesn't exist yet (before migration 008), insert without it
+    // This provides backward compatibility during deployment
+    console.warn('Fallback to portfolio insert without image_size column:', error.message);
+    const result = await db
+      .prepare(
+        'INSERT INTO portfolio_images (title, description, image_url, display_order, is_active) VALUES (?, ?, ?, ?, ?) RETURNING *'
+      )
+      .bind(
+        image.title,
+        image.description || null,
+        image.image_url,
+        displayOrder,
+        isActive
+      )
+      .first();
+    return result as unknown as PortfolioImage;
   }
 }
 

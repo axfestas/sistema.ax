@@ -10,7 +10,5 @@ ALTER TABLE kits ADD COLUMN custom_id TEXT UNIQUE;
 -- Add custom_id to reservations table
 ALTER TABLE reservations ADD COLUMN custom_id TEXT UNIQUE;
 
--- Create indices for better performance on custom_id lookups
-CREATE INDEX IF NOT EXISTS idx_items_custom_id ON items(custom_id);
-CREATE INDEX IF NOT EXISTS idx_kits_custom_id ON kits(custom_id);
-CREATE INDEX IF NOT EXISTS idx_reservations_custom_id ON reservations(custom_id);
+-- Note: Indices for custom_id columns are defined in schema.sql
+-- They will be created when running the full schema initialization
