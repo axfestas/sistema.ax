@@ -167,6 +167,23 @@ export interface KitWithItems extends Kit {
   }>;
 }
 
+// Type alias for kit item with name
+type KitItemWithName = {
+  id: number;
+  item_id: number;
+  item_name: string;
+  quantity: number;
+};
+
+// Type for kit items query result
+interface KitItemQueryResult {
+  kit_id: number;
+  id: number;
+  item_id: number;
+  item_name: string;
+  quantity: number;
+}
+
 export interface ReservationItem {
   id: number;
   reservation_id: number;
@@ -1184,7 +1201,7 @@ export async function getKitWithItems(
 }
 
 /**
- * Busca todos os kits com seus itens
+ * Fetches all kits with their items
  */
 export async function getKitsWithItems(
   db: D1Database,
@@ -1220,17 +1237,17 @@ export async function getKitsWithItems(
   const itemsResult = await db.prepare(kitItemsQuery).bind(...kitIds).all();
   
   // Group items by kit_id
-  const itemsByKitId: { [kitId: number]: Array<any> } = {};
+  const itemsByKitId: { [kitId: number]: KitItemWithName[] } = {};
   for (const row of itemsResult.results) {
-    const kitId = (row as any).kit_id;
-    if (!itemsByKitId[kitId]) {
-      itemsByKitId[kitId] = [];
+    const kitItemRow = row as unknown as KitItemQueryResult;
+    if (!itemsByKitId[kitItemRow.kit_id]) {
+      itemsByKitId[kitItemRow.kit_id] = [];
     }
-    itemsByKitId[kitId].push({
-      id: (row as any).id,
-      item_id: (row as any).item_id,
-      item_name: (row as any).item_name,
-      quantity: (row as any).quantity,
+    itemsByKitId[kitItemRow.kit_id].push({
+      id: kitItemRow.id,
+      item_id: kitItemRow.item_id,
+      item_name: kitItemRow.item_name,
+      quantity: kitItemRow.quantity,
     });
   }
   
