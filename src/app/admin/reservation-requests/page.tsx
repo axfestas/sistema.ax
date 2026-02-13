@@ -45,7 +45,7 @@ export default function ReservationRequestsPage() {
     try {
       const response = await fetch('/api/settings');
       if (response.ok) {
-        const data = await response.json();
+        const data = await response.json() as SiteSettings;
         setSettings(data);
       }
     } catch (error) {
@@ -392,7 +392,7 @@ export default function ReservationRequestsPage() {
                         Marcar como Contactado
                       </button>
                     )}
-                    {selectedRequest.status === 'approved' && selectedRequest.status !== 'converted' && (
+                    {!['converted', 'cancelled', 'rejected', 'pending'].includes(selectedRequest.status) && (
                       <button
                         onClick={() => updateStatus(selectedRequest.id, 'converted')}
                         className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded text-sm"
