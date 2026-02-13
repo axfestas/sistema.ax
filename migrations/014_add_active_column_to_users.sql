@@ -12,11 +12,10 @@
 BEGIN TRANSACTION;
 
 -- Add active column with default value 1 (active)
--- If the column already exists, this will fail but not affect data
+-- SQLite's ALTER TABLE ADD COLUMN with DEFAULT automatically sets
+-- the default value for all existing rows, so no UPDATE is needed.
+-- If the column already exists, this will fail with "duplicate column name"
+-- error, but this is safe and means the migration was already applied.
 ALTER TABLE users ADD COLUMN active INTEGER DEFAULT 1;
-
--- Ensure all existing users are set to active
--- This UPDATE will work whether the column existed before or not
-UPDATE users SET active = 1 WHERE active IS NULL;
 
 COMMIT;
