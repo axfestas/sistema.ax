@@ -191,7 +191,12 @@ export default function ReservationRequestsPage() {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {requests.map((request) => (
-                <tr key={request.id} className="hover:bg-gray-50">
+                <tr 
+                  key={request.id} 
+                  onClick={() => viewDetails(request)}
+                  className="hover:bg-gray-100 cursor-pointer transition-colors"
+                  title="Clique para ver detalhes"
+                >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="text-xs font-mono bg-green-100 text-green-800 px-2 py-1 rounded font-semibold">
                       {request.custom_id}
@@ -226,8 +231,11 @@ export default function ReservationRequestsPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <button
-                      onClick={() => viewDetails(request)}
-                      className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent row click event
+                        viewDetails(request);
+                      }}
+                      className="text-blue-600 hover:text-blue-800 font-medium text-sm hover:underline"
                     >
                       Ver Detalhes
                     </button>
