@@ -34,11 +34,11 @@ export async function onRequestGet(context: {
   env: Env;
 }) {
   const timestamp = new Date().toISOString();
+  const isProduction = context.env.ENVIRONMENT === 'production';
   console.log('[API Users] GET request received', { timestamp, url: context.request.url });
   
   try {
     const db = context.env.DB;
-    const isProduction = context.env.ENVIRONMENT === 'production';
     
     // Testar conexão com o banco (útil para debugging - pode ser removido em produção se causar latência)
     try {
@@ -144,7 +144,6 @@ export async function onRequestGet(context: {
       success: result.success,
       count: result.results?.length || 0 
     });
-    console.log('[API Users] Number of users found:', result.results?.length || 0);
     
     return new Response(JSON.stringify(result.results || []), {
       status: 200,
@@ -161,24 +160,6 @@ export async function onRequestGet(context: {
       name: error.name,
       timestamp
     });
-    
-    if (error.message?.includes('Forbidden') || error.message?.includes('Unauthorized')) {
-      return new Response(
-        JSON.stringify({
-          error: 'Acesso negado. Apenas administradories podem gerenciar usuáries.',
-          message: error.message,
-          timestamp
-        }),
-        {
-          status: 403,
-          headers: { 
-            'Content-Type': 'application/json',
-            'X-Debug-Timestamp': timestamp,
-            'X-Debug-Handler': 'users-get'
-          },
-        }
-      );
-    }
     
     return new Response(
       JSON.stringify({
@@ -207,11 +188,11 @@ export async function onRequestPost(context: {
   env: Env;
 }) {
   const timestamp = new Date().toISOString();
+  const isProduction = context.env.ENVIRONMENT === 'production';
   console.log('[API Users] POST request received', { timestamp, url: context.request.url });
   
   try {
     const db = context.env.DB;
-    const isProduction = context.env.ENVIRONMENT === 'production';
     
     // Testar conexão com o banco (útil para debugging - pode ser removido em produção se causar latência)
     try {
@@ -408,24 +389,6 @@ export async function onRequestPost(context: {
       timestamp
     });
     
-    if (error.message?.includes('Forbidden') || error.message?.includes('Unauthorized')) {
-      return new Response(
-        JSON.stringify({
-          error: 'Acesso negado. Apenas administradories podem criar usuáries.',
-          message: error.message,
-          timestamp
-        }),
-        {
-          status: 403,
-          headers: { 
-            'Content-Type': 'application/json',
-            'X-Debug-Timestamp': timestamp,
-            'X-Debug-Handler': 'users-post'
-          },
-        }
-      );
-    }
-    
     return new Response(
       JSON.stringify({
         error: 'Falha ao criar usuárie',
@@ -453,11 +416,11 @@ export async function onRequestPut(context: {
   env: Env;
 }) {
   const timestamp = new Date().toISOString();
+  const isProduction = context.env.ENVIRONMENT === 'production';
   console.log('[API Users] PUT request received', { timestamp, url: context.request.url });
   
   try {
     const db = context.env.DB;
-    const isProduction = context.env.ENVIRONMENT === 'production';
     
     // Testar conexão com o banco (útil para debugging - pode ser removido em produção se causar latência)
     try {
@@ -709,24 +672,6 @@ export async function onRequestPut(context: {
       timestamp
     });
     
-    if (error.message?.includes('Forbidden') || error.message?.includes('Unauthorized')) {
-      return new Response(
-        JSON.stringify({
-          error: 'Acesso negado. Apenas administradories podem atualizar usuáries.',
-          message: error.message,
-          timestamp
-        }),
-        {
-          status: 403,
-          headers: { 
-            'Content-Type': 'application/json',
-            'X-Debug-Timestamp': timestamp,
-            'X-Debug-Handler': 'users-put'
-          },
-        }
-      );
-    }
-    
     return new Response(
       JSON.stringify({
         error: 'Falha ao atualizar usuárie',
@@ -754,11 +699,11 @@ export async function onRequestDelete(context: {
   env: Env;
 }) {
   const timestamp = new Date().toISOString();
+  const isProduction = context.env.ENVIRONMENT === 'production';
   console.log('[API Users] DELETE request received', { timestamp, url: context.request.url });
   
   try {
     const db = context.env.DB;
-    const isProduction = context.env.ENVIRONMENT === 'production';
     
     // Testar conexão com o banco (útil para debugging - pode ser removido em produção se causar latência)
     try {
@@ -919,24 +864,6 @@ export async function onRequestDelete(context: {
       name: error.name,
       timestamp
     });
-    
-    if (error.message?.includes('Forbidden') || error.message?.includes('Unauthorized')) {
-      return new Response(
-        JSON.stringify({
-          error: 'Acesso negado. Apenas administradories podem deletar usuáries.',
-          message: error.message,
-          timestamp
-        }),
-        {
-          status: 403,
-          headers: { 
-            'Content-Type': 'application/json',
-            'X-Debug-Timestamp': timestamp,
-            'X-Debug-Handler': 'users-delete'
-          },
-        }
-      );
-    }
     
     return new Response(
       JSON.stringify({
