@@ -76,6 +76,7 @@ export default function FinancePage() {
         const year = parseInt(monthFilter.substring(0, 4));
         const month = parseInt(monthFilter.substring(5, 7));
         const startDate = `${monthFilter}-01`;
+        // Get last day of month: new Date(year, month, 0) gives day 0 of next month = last day of current month
         const lastDay = new Date(year, month, 0).getDate();
         const endDate = `${monthFilter}-${lastDay.toString().padStart(2, '0')}`;
         url += `?startDate=${startDate}&endDate=${endDate}`;
@@ -126,11 +127,6 @@ export default function FinancePage() {
   };
 
   const handleExportCSV = () => {
-    if (records.length === 0) {
-      showError('Não há registros para exportar');
-      return;
-    }
-
     // Prepare CSV content
     const headers = ['Data', 'Tipo', 'Descrição', 'Valor'];
     const rows = records.map((record) => [
@@ -160,9 +156,7 @@ export default function FinancePage() {
     const monthSuffix = selectedMonth ? `-${selectedMonth}` : '';
     link.download = `relatorio-financeiro${monthSuffix}.csv`;
     
-    document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
     URL.revokeObjectURL(url);
 
     showSuccess('Relatório exportado com sucesso!');
