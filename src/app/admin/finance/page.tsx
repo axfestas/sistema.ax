@@ -32,6 +32,7 @@ export default function FinancePage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingRecord, setEditingRecord] = useState<FinancialRecord | null>(null);
+  const [selectedMonth, setSelectedMonth] = useState<string>(''); // '' = all periods
   const [formData, setFormData] = useState({
     type: 'income' as 'income' | 'expense',
     description: '',
@@ -40,13 +41,22 @@ export default function FinancePage() {
   });
   const { showSuccess, showError } = useToast();
 
-  const loadRecords = useCallback(async () => {
+  const loadRecords = useCallback(async (monthFilter?: string) => {
     try {
       const response = await fetch('/api/finance');
       if (!response.ok) {
         throw new Error(`Erro HTTP: ${response.status}`);
       }
-      const data: FinancialRecord[] = await response.json();
+      let data: FinancialRecord[] = await response.json();
+      
+      // Filter by month if selected
+      if (monthFilter) {
+        data = data.filter((record) => {
+          const recordMonth = record.date.substring(0, 7); // YYYY-MM
+          return recordMonth === monthFilter;
+        });
+      }
+      
       setRecords(data);
     } catch (error) {
       console.error('Error loading financial records:', error);
@@ -57,9 +67,22 @@ export default function FinancePage() {
     }
   }, [showError]);
 
-  const loadSummary = useCallback(async () => {
+  const loadSummary = useCallback(async (monthFilter?: string) => {
     try {
-      const response = await fetch('/api/finance/summary');
+      let url = '/api/finance/summary';
+      
+      // Add date filters if month is selected
+      if (monthFilter) {
+        const year = parseInt(monthFilter.substring(0, 4));
+        const month = parseInt(monthFilter.substring(5, 7));
+        const startDate = `${monthFilter}-01`;
+        // Get last day of month: new Date(year, month, 0) gives day 0 of next month = last day of current month
+        const lastDay = new Date(year, month, 0).getDate();
+        const endDate = `${monthFilter}-${lastDay.toString().padStart(2, '0')}`;
+        url += `?startDate=${startDate}&endDate=${endDate}`;
+      }
+      
+      const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`Erro HTTP: ${response.status}`);
       }
@@ -71,9 +94,9 @@ export default function FinancePage() {
   }, []);
 
   useEffect(() => {
-    loadRecords();
-    loadSummary();
-  }, [loadRecords, loadSummary]);
+    loadRecords(selectedMonth);
+    loadSummary(selectedMonth);
+  }, [loadRecords, loadSummary, selectedMonth]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -85,6 +108,58 @@ export default function FinancePage() {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString + 'T00:00:00');
     return date.toLocaleDateString('pt-BR');
+  };
+
+  // Generate available months from records
+  const getAvailableMonths = () => {
+    const months = new Set<string>();
+    records.forEach((record) => {
+      const month = record.date.substring(0, 7); // YYYY-MM
+      months.add(month);
+    });
+    return Array.from(months).sort().reverse(); // Most recent first
+  };
+
+  const formatMonthLabel = (monthStr: string) => {
+    const [year, month] = monthStr.split('-');
+    const date = new Date(parseInt(year), parseInt(month) - 1);
+    return date.toLocaleDateString('pt-BR', { year: 'numeric', month: 'long' });
+  };
+
+  const handleExportCSV = () => {
+    // Prepare CSV content
+    const headers = ['Data', 'Tipo', 'Descrição', 'Valor'];
+    const rows = records.map((record) => [
+      formatDate(record.date),
+      record.type === 'income' ? 'Receita' : 'Despesa',
+      `"${record.description.replace(/"/g, '""')}"`, // Escape quotes
+      record.amount.toFixed(2),
+    ]);
+
+    // Add summary rows
+    rows.push(['', '', '', '']);
+    rows.push(['', '', 'Total de Receitas', summary.totalIncome.toFixed(2)]);
+    rows.push(['', '', 'Total de Despesas', summary.totalExpense.toFixed(2)]);
+    rows.push(['', '', 'Saldo', summary.balance.toFixed(2)]);
+
+    const csvContent = [headers, ...rows]
+      .map((row) => row.join(','))
+      .join('\n');
+
+    // Add BOM for Excel UTF-8 compatibility
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    
+    const monthSuffix = selectedMonth ? `-${selectedMonth}` : '';
+    link.download = `relatorio-financeiro${monthSuffix}.csv`;
+    
+    link.click();
+    URL.revokeObjectURL(url);
+
+    showSuccess('Relatório exportado com sucesso!');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -130,8 +205,8 @@ export default function FinancePage() {
         throw new Error(`Erro HTTP: ${response.status}`);
       }
 
-      await loadRecords();
-      await loadSummary();
+      await loadRecords(selectedMonth);
+      await loadSummary(selectedMonth);
       setShowForm(false);
       setEditingRecord(null);
       setFormData({
@@ -175,8 +250,8 @@ export default function FinancePage() {
         throw new Error(`Erro HTTP: ${response.status}`);
       }
 
-      await loadRecords();
-      await loadSummary();
+      await loadRecords(selectedMonth);
+      await loadSummary(selectedMonth);
       showSuccess('Registro deletado com sucesso!');
     } catch (error) {
       console.error('Error deleting financial record:', error);
@@ -209,6 +284,34 @@ export default function FinancePage() {
         >
           + Novo Registro
         </button>
+      </div>
+
+      {/* Filters and Export */}
+      <div className="flex gap-4 mb-6">
+        <div className="flex-1">
+          <label className="block text-sm font-medium mb-1">Filtrar por Período</label>
+          <select
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(e.target.value)}
+            className="w-full px-3 py-2 border rounded bg-white"
+          >
+            <option value="">Todos os períodos</option>
+            {getAvailableMonths().map((month) => (
+              <option key={month} value={month}>
+                {formatMonthLabel(month)}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="flex items-end">
+          <button
+            onClick={handleExportCSV}
+            className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+            disabled={records.length === 0}
+          >
+            📥 Baixar Relatório
+          </button>
+        </div>
       </div>
 
       {/* Summary Cards */}
