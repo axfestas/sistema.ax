@@ -117,20 +117,23 @@ export default function ReservationRequestsPage() {
 
   const getWhatsAppLink = (request: ReservationRequest) => {
     const phone = request.customer_phone.replace(/\D/g, '');
-    const message = `Olá ${request.customer_name}! Obrigado pela sua solicitação (${request.custom_id}). Gostaria de conversar sobre seu evento do dia ${new Date(request.event_date).toLocaleDateString('pt-BR')}. Podemos discutir algumas alternativas de data ou temas?`;
+    const message = `Olá ${request.customer_name}! Agradecemos pela sua solicitação (${request.custom_id}). Gostaria de conversar sobre seu evento do dia ${new Date(request.event_date).toLocaleDateString('pt-BR')}. Podemos discutir alternativas de data ou opções disponíveis?`;
     return `https://wa.me/55${phone}?text=${encodeURIComponent(message)}`;
   };
 
   const getEmailLink = (request: ReservationRequest) => {
     const subject = `Sobre sua solicitação ${request.custom_id} - AX Festas`;
-    const body = `Olá ${request.customer_name},\n\nObrigado pela sua solicitação de reserva (${request.custom_id}).\n\nGostaria de conversar sobre seu evento do dia ${new Date(request.event_date).toLocaleDateString('pt-BR')}.\n\nPodemos discutir algumas alternativas de data ou temas que temos disponíveis?\n\nAguardo seu retorno!\n\nAtenciosamente,\nEquipe AX Festas`;
+    const body = `Olá ${request.customer_name},\n\nAgradecemos pela sua solicitação de reserva (${request.custom_id}).\n\nGostaria de conversar sobre seu evento do dia ${new Date(request.event_date).toLocaleDateString('pt-BR')}.\n\nPodemos discutir alternativas de data ou opções que temos disponíveis?\n\nAguardo seu retorno.\n\nAtenciosamente,\nEquipe AX Festas`;
     return `mailto:${request.customer_email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
   const getStatusBadge = (status: string) => {
     const statusInfo = getReservationRequestStatusInfo(status);
     return (
-      <span className={`px-2 py-1 text-xs rounded font-semibold ${statusInfo.color}`}>
+      <span 
+        className={`px-2 py-1 text-xs rounded font-semibold ${statusInfo.color}`}
+        title={statusInfo.description}
+      >
         {statusInfo.label}
       </span>
     );
@@ -335,39 +338,50 @@ export default function ReservationRequestsPage() {
               <div className="mb-6">
                 <h3 className="text-lg font-bold mb-3">Status e Ações</h3>
                 <div className="bg-gray-50 p-4 rounded">
-                  <p className="mb-3">
-                    <strong>Status Atual:</strong> {getStatusBadge(selectedRequest.status)}
-                  </p>
+                  <div className="mb-4 p-3 bg-white border border-gray-200 rounded">
+                    <p className="mb-2">
+                      <strong>Status Atual:</strong> {getStatusBadge(selectedRequest.status)}
+                    </p>
+                    <p className="text-xs text-gray-600 italic">
+                      {getReservationRequestStatusInfo(selectedRequest.status).description}
+                    </p>
+                  </div>
                   
                   {/* Botões de Aprovação/Rejeição */}
                   {selectedRequest.status === 'pending' && (
                     <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded">
-                      <p className="text-sm font-semibold mb-2 text-blue-900">Decisão sobre a solicitação:</p>
+                      <p className="text-sm font-semibold mb-2 text-blue-900">📋 Análise da Solicitação:</p>
+                      <p className="text-xs text-gray-700 mb-3">Após analisar a disponibilidade dos itens:</p>
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleApprove(selectedRequest.id)}
                           className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded text-sm font-semibold flex items-center gap-2"
+                          title="Itens disponíveis - email automático será enviado"
                         >
                           ✓ Aprovar Solicitação
                         </button>
                         <button
                           onClick={() => handleReject(selectedRequest.id)}
                           className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded text-sm font-semibold flex items-center gap-2"
+                          title="Sem disponibilidade - email automático será enviado"
                         >
-                          ✗ Rejeitar Solicitação
+                          ✗ Sem Disponibilidade
                         </button>
                       </div>
-                      <p className="text-xs text-gray-600 mt-2">Um email será enviado automaticamente ao cliente</p>
+                      <p className="text-xs text-gray-600 mt-2 flex items-center gap-1">
+                        <span>✉️</span> Email automático será enviado ao cliente informando a decisão
+                      </p>
                     </div>
                   )}
 
                   {/* Botões de Contato */}
                   <div className="mb-4 p-3 bg-purple-50 border border-purple-200 rounded">
-                    <p className="text-sm font-semibold mb-2 text-purple-900">Entrar em contato com cliente:</p>
+                    <p className="text-sm font-semibold mb-2 text-purple-900">💬 Contato Direto com Cliente:</p>
                     <div className="flex gap-2 flex-wrap">
                       <a
                         href={getEmailLink(selectedRequest)}
                         className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm flex items-center gap-2"
+                        title="Abrir cliente de email com mensagem pré-preenchida"
                       >
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                           <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
@@ -380,6 +394,7 @@ export default function ReservationRequestsPage() {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm flex items-center gap-2"
+                        title="Abrir WhatsApp com mensagem pré-preenchida"
                       >
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
@@ -387,35 +402,52 @@ export default function ReservationRequestsPage() {
                         WhatsApp
                       </a>
                     </div>
-                    <p className="text-xs text-gray-600 mt-2">Para discutir datas alternativas ou outros temas</p>
+                    <p className="text-xs text-gray-600 mt-2">Para negociar datas, discutir opções ou esclarecer dúvidas</p>
                   </div>
 
                   {/* Outros Botões de Status */}
-                  <div className="flex gap-2 flex-wrap">
-                    {selectedRequest.status !== 'contacted' && (
-                      <button
-                        onClick={() => updateStatus(selectedRequest.id, 'contacted')}
-                        className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm"
-                      >
-                        Marcar como Contactado
-                      </button>
-                    )}
-                    {!['converted', 'cancelled', 'rejected', 'pending'].includes(selectedRequest.status) && (
-                      <button
-                        onClick={() => updateStatus(selectedRequest.id, 'converted')}
-                        className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded text-sm"
-                      >
-                        Marcar como Convertido
-                      </button>
-                    )}
-                    {selectedRequest.status !== 'cancelled' && selectedRequest.status !== 'rejected' && (
-                      <button
-                        onClick={() => updateStatus(selectedRequest.id, 'cancelled')}
-                        className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded text-sm"
-                      >
-                        Cancelar Solicitação
-                      </button>
-                    )}
+                  <div className="mb-3">
+                    <p className="text-sm font-semibold mb-2">🔄 Atualizar Status:</p>
+                    <div className="flex gap-2 flex-wrap">
+                      {selectedRequest.status !== 'contacted' && selectedRequest.status !== 'approved' && selectedRequest.status !== 'rejected' && (
+                        <button
+                          onClick={() => updateStatus(selectedRequest.id, 'contacted')}
+                          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm"
+                          title="Cliente foi contatado e estamos em negociação"
+                        >
+                          📞 Em Contato
+                        </button>
+                      )}
+                      {['contacted', 'approved'].includes(selectedRequest.status) && (
+                        <button
+                          onClick={() => updateStatus(selectedRequest.id, 'converted')}
+                          className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded text-sm"
+                          title="Cliente confirmou e reserva foi criada no sistema"
+                        >
+                          ✅ Reserva Confirmada
+                        </button>
+                      )}
+                      {selectedRequest.status !== 'cancelled' && selectedRequest.status !== 'rejected' && (
+                        <button
+                          onClick={() => updateStatus(selectedRequest.id, 'cancelled')}
+                          className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded text-sm"
+                          title="Cancelar esta solicitação"
+                        >
+                          ✖ Cancelar
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Explicação do fluxo */}
+                  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded">
+                    <p className="text-xs font-semibold text-blue-900 mb-1">💡 Fluxo Recomendado:</p>
+                    <ol className="text-xs text-gray-700 space-y-1 list-decimal list-inside">
+                      <li><strong>Aguardando Análise</strong> → Verificar disponibilidade</li>
+                      <li><strong>Aprovar</strong> ou <strong>Sem Disponibilidade</strong> → Email automático enviado</li>
+                      <li><strong>Em Contato</strong> → Negociar com cliente via WhatsApp/Email</li>
+                      <li><strong>Reserva Confirmada</strong> → Cliente aceitou e reserva foi criada</li>
+                    </ol>
                   </div>
                 </div>
               </div>

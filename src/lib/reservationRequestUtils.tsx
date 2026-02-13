@@ -7,15 +7,40 @@ export type ReservationRequestStatus = 'pending' | 'contacted' | 'approved' | 'r
 interface StatusInfo {
   label: string;
   color: string;
+  description: string;
 }
 
 const STATUS_MAP: Record<ReservationRequestStatus, StatusInfo> = {
-  pending: { label: 'Pendente', color: 'bg-yellow-100 text-yellow-800' },
-  contacted: { label: 'Contactado', color: 'bg-blue-100 text-blue-800' },
-  approved: { label: 'Aprovado', color: 'bg-green-100 text-green-800' },
-  rejected: { label: 'Rejeitado', color: 'bg-red-100 text-red-800' },
-  converted: { label: 'Convertido', color: 'bg-purple-100 text-purple-800' },
-  cancelled: { label: 'Cancelado', color: 'bg-gray-100 text-gray-800' },
+  pending: { 
+    label: 'Aguardando Análise', 
+    color: 'bg-yellow-100 text-yellow-800',
+    description: 'Solicitação recebida e aguardando análise da equipe'
+  },
+  contacted: { 
+    label: 'Em Contato', 
+    color: 'bg-blue-100 text-blue-800',
+    description: 'Cliente foi contatado e estamos em negociação'
+  },
+  approved: { 
+    label: 'Aprovado', 
+    color: 'bg-green-100 text-green-800',
+    description: 'Solicitação aprovada - email automático enviado ao cliente'
+  },
+  rejected: { 
+    label: 'Não Disponível', 
+    color: 'bg-red-100 text-red-800',
+    description: 'Sem disponibilidade - email automático enviado com alternativas'
+  },
+  converted: { 
+    label: 'Reserva Confirmada', 
+    color: 'bg-purple-100 text-purple-800',
+    description: 'Cliente confirmou e reserva foi criada no sistema'
+  },
+  cancelled: { 
+    label: 'Cancelado', 
+    color: 'bg-gray-100 text-gray-800',
+    description: 'Solicitação cancelada (pelo cliente ou admin)'
+  },
 };
 
 /**
@@ -24,7 +49,8 @@ const STATUS_MAP: Record<ReservationRequestStatus, StatusInfo> = {
 export function getReservationRequestStatusInfo(status: string): StatusInfo {
   return STATUS_MAP[status as ReservationRequestStatus] || { 
     label: status, 
-    color: 'bg-gray-100 text-gray-800' 
+    color: 'bg-gray-100 text-gray-800',
+    description: 'Status desconhecido'
   };
 }
 
