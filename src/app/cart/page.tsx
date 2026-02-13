@@ -87,7 +87,7 @@ export default function CartPage() {
             Adicione itens do nosso catálogo para solicitar uma reserva
           </p>
           <a
-            href="/#portfolio"
+            href="/catalog"
             className="inline-block bg-brand-yellow hover:bg-brand-yellow/90 text-white font-bold py-3 px-8 rounded-full transition-colors"
           >
             Ver Catálogo
