@@ -110,7 +110,7 @@ export default function UsersPage() {
   }
 
   const handleDelete = async (id: number, userName: string) => {
-    if (!confirm(`Tem certeza que deseja deletar o usuárie ${userName}?`)) return
+    if (!confirm(`Tem certeza que deseja deletar ê usuárie ${userName}?`)) return
 
     try {
       const response = await fetch(`/api/users?id=${id}`, {
@@ -168,7 +168,7 @@ export default function UsersPage() {
         <div>
           <h2 className="text-2xl font-bold">Gerenciar Usuáries</h2>
           <p className="text-gray-600 text-sm mt-1">
-            Gerencie contas de usuáries do sistema
+            Gerencie contas des usuáries do sistema
           </p>
         </div>
         <button
@@ -179,14 +179,14 @@ export default function UsersPage() {
           }}
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
         >
-          + Novo Usuárie
+          + Nove Usuárie
         </button>
       </div>
 
       {showForm && (
         <div className="bg-white p-6 rounded-lg shadow mb-6">
           <h3 className="text-xl font-bold mb-4">
-            {editingUser ? 'Editar Usuárie' : 'Novo Usuárie'}
+            {editingUser ? 'Editar Usuárie' : 'Nove Usuárie'}
           </h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -289,7 +289,7 @@ export default function UsersPage() {
       <div className="bg-white rounded-lg shadow">
         {users.length === 0 ? (
           <div className="p-8 text-center">
-            <p className="text-gray-500">Nenhum usuárie cadastrade</p>
+            <p className="text-gray-500">Nenhume usuárie cadastrade</p>
           </div>
         ) : (
           <ul role="list" className="divide-y divide-gray-200">
