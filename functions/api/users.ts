@@ -14,6 +14,7 @@ import { requireAdmin, hashPassword, getUserById } from '../../src/lib/auth';
 
 interface Env {
   DB: D1Database;
+  ENVIRONMENT?: string; // 'production' | 'staging' | 'development'
 }
 
 interface UserInput {
@@ -37,8 +38,9 @@ export async function onRequestGet(context: {
   
   try {
     const db = context.env.DB;
+    const isProduction = context.env.ENVIRONMENT === 'production';
     
-    // Testar conexão com o banco
+    // Testar conexão com o banco (útil para debugging - pode ser removido em produção se causar latência)
     try {
       await db.prepare('SELECT 1').first();
       console.log('[API Users] Database connection successful');
@@ -52,6 +54,7 @@ export async function onRequestGet(context: {
         JSON.stringify({
           error: 'Erro de conexão com banco de dados',
           message: dbError.message,
+          ...(isProduction ? {} : { details: dbError.stack }),
           timestamp
         }),
         { 
@@ -181,7 +184,7 @@ export async function onRequestGet(context: {
       JSON.stringify({
         error: 'Falha ao buscar usuáries',
         message: error.message,
-        details: error.stack,
+        ...(isProduction ? {} : { details: error.stack }),
         timestamp
       }),
       {
@@ -208,8 +211,9 @@ export async function onRequestPost(context: {
   
   try {
     const db = context.env.DB;
+    const isProduction = context.env.ENVIRONMENT === 'production';
     
-    // Testar conexão com o banco
+    // Testar conexão com o banco (útil para debugging - pode ser removido em produção se causar latência)
     try {
       await db.prepare('SELECT 1').first();
       console.log('[API Users] Database connection successful');
@@ -223,6 +227,7 @@ export async function onRequestPost(context: {
         JSON.stringify({
           error: 'Erro de conexão com banco de dados',
           message: dbError.message,
+          ...(isProduction ? {} : { details: dbError.stack }),
           timestamp
         }),
         { 
@@ -425,7 +430,7 @@ export async function onRequestPost(context: {
       JSON.stringify({
         error: 'Falha ao criar usuárie',
         message: error.message,
-        details: error.stack,
+        ...(isProduction ? {} : { details: error.stack }),
         timestamp
       }),
       {
@@ -452,8 +457,9 @@ export async function onRequestPut(context: {
   
   try {
     const db = context.env.DB;
+    const isProduction = context.env.ENVIRONMENT === 'production';
     
-    // Testar conexão com o banco
+    // Testar conexão com o banco (útil para debugging - pode ser removido em produção se causar latência)
     try {
       await db.prepare('SELECT 1').first();
       console.log('[API Users] Database connection successful');
@@ -467,6 +473,7 @@ export async function onRequestPut(context: {
         JSON.stringify({
           error: 'Erro de conexão com banco de dados',
           message: dbError.message,
+          ...(isProduction ? {} : { details: dbError.stack }),
           timestamp
         }),
         { 
@@ -724,7 +731,7 @@ export async function onRequestPut(context: {
       JSON.stringify({
         error: 'Falha ao atualizar usuárie',
         message: error.message,
-        details: error.stack,
+        ...(isProduction ? {} : { details: error.stack }),
         timestamp
       }),
       {
@@ -751,8 +758,9 @@ export async function onRequestDelete(context: {
   
   try {
     const db = context.env.DB;
+    const isProduction = context.env.ENVIRONMENT === 'production';
     
-    // Testar conexão com o banco
+    // Testar conexão com o banco (útil para debugging - pode ser removido em produção se causar latência)
     try {
       await db.prepare('SELECT 1').first();
       console.log('[API Users] Database connection successful');
@@ -766,6 +774,7 @@ export async function onRequestDelete(context: {
         JSON.stringify({
           error: 'Erro de conexão com banco de dados',
           message: dbError.message,
+          ...(isProduction ? {} : { details: dbError.stack }),
           timestamp
         }),
         { 
@@ -933,7 +942,7 @@ export async function onRequestDelete(context: {
       JSON.stringify({
         error: 'Falha ao deletar usuárie',
         message: error.message,
-        details: error.stack,
+        ...(isProduction ? {} : { details: error.stack }),
         timestamp
       }),
       {
