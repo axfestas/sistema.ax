@@ -1,13 +1,13 @@
 -- Migration 014: Add active column to users table
--- This migration is IDEMPOTENT - can be run multiple times safely
 -- 
 -- Context: The schema.sql already defines the 'active' column,
 -- but existing databases created before this addition don't have it.
 -- This migration ensures all environments are synchronized.
-
--- SQLite doesn't support "ALTER TABLE ADD COLUMN IF NOT EXISTS"
--- But we can safely add the column - if it already exists, SQLite will error
--- but the error is harmless in this controlled migration context
+--
+-- IMPORTANT: This migration will error if the column already exists,
+-- but this is safe and expected behavior. The error does not corrupt
+-- data or affect the database - it simply means the migration was
+-- already applied. SQLite does not support "IF NOT EXISTS" for ALTER TABLE.
 
 BEGIN TRANSACTION;
 

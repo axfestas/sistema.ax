@@ -63,7 +63,7 @@ wrangler d1 execute DB --local --command "PRAGMA table_info(users);"
 ### O que faz:
 - Adiciona coluna `active INTEGER DEFAULT 1` na tabela `users`
 - Define valor padrão 1 (ativo) para usuários existentes
-- É idempotente e seguro executar múltiplas vezes
+- **Nota**: Se executado novamente quando a coluna já existe, retornará erro "duplicate column name", mas isso não afeta os dados e é comportamento esperado
 
 ### Como verificar se precisa ser aplicada:
 
