@@ -136,7 +136,7 @@ async function sendApprovalEmail(params: {
           
           <p>Olá ${params.request.customer_name},</p>
           
-          <p>Temos o prazer de informar que sua solicitação de reserva foi <strong>aprovada</strong>!</p>
+          <p>Agradecemos pela sua solicitação! Temos o prazer de informar que sua reserva foi <strong>aprovada</strong>.</p>
           
           <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
             <p style="margin: 5px 0;"><strong>ID da Solicitação:</strong> ${params.request.custom_id}</p>
@@ -170,7 +170,7 @@ async function sendApprovalEmail(params: {
             <li>Enviaremos informações sobre pagamento e contrato</li>
           </ul>
           
-          <p>Se tiver alguma dúvida, não hesite em nos contatar!</p>
+          <p>Caso tenha alguma dúvida, não hesite em nos contatar.</p>
           
           <p>Atenciosamente,<br><strong>Equipe AX Festas</strong></p>
         </div>

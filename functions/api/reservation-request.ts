@@ -189,7 +189,7 @@ async function sendCustomerConfirmation(params: {
           <div class="content">
             <p>Olá <strong>${params.requestData.name}</strong>,</p>
             
-            <p>Recebemos sua solicitação de reserva para o evento do dia <strong>${new Date(params.requestData.eventDate).toLocaleDateString('pt-BR')}</strong>.</p>
+            <p>Agradecemos pela sua solicitação de reserva para o evento do dia <strong>${new Date(params.requestData.eventDate).toLocaleDateString('pt-BR')}</strong>.</p>
             
             <h2>Resumo da Solicitação</h2>
             <table>
@@ -214,7 +214,7 @@ async function sendCustomerConfirmation(params: {
               Nossa equipe irá verificar a disponibilidade dos itens e retornar com a confirmação e detalhes finais da sua reserva.
             </p>
             
-            <p>Se tiver alguma dúvida, entre em contato conosco.</p>
+            <p>Caso tenha alguma dúvida, entre em contato conosco.</p>
             
             <p>Atenciosamente,<br>
             <strong>Equipe Ax Festas</strong></p>
