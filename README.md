@@ -230,6 +230,40 @@ git push
 4. Adicionar autenticação
 5. Implementar CRUD completo para todas as entidades
 
+## 🔍 Troubleshooting
+
+### Erro: "table users has no column named active"
+
+**Sintoma**: Ao criar/editar usuários, aparece erro D1_ERROR sobre coluna `active`.
+
+```json
+{
+  "message": "D1_ERROR: table users has no column named active: SQLITE_ERROR"
+}
+```
+
+**Causa**: O banco de dados não está sincronizado com o schema.
+
+**Solução**:
+```bash
+# 1. Verificar se a coluna existe
+wrangler d1 execute DB --command "PRAGMA table_info(users);"
+
+# 2. Se não existir, aplicar migration
+wrangler d1 execute DB --file=./migrations/014_add_active_column_to_users.sql
+
+# 3. Verificar novamente (deve mostrar coluna active)
+wrangler d1 execute DB --command "SELECT id, email, name, active FROM users LIMIT 1;"
+```
+
+**Para ambiente local**:
+```bash
+# Aplicar migration no banco local
+wrangler d1 execute DB --local --file=./migrations/014_add_active_column_to_users.sql
+```
+
+📖 Para mais detalhes, veja [migrations/README.md](./migrations/README.md)
+
 ## 📄 Licença
 
 Projeto privado - Ax Festas
