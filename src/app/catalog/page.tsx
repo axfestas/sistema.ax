@@ -272,7 +272,7 @@ export default function CatalogPage() {
                                 onClick={() => handleAddKitToCart(kit)}
                                 className="bg-brand-yellow hover:bg-brand-yellow/90 text-white font-bold py-2 px-4 rounded-full transition-colors"
                               >
-                                Reservar
+                                Adicionar ao Carrinho
                               </button>
                             </div>
                           </div>
