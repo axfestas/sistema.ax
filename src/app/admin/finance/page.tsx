@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useToast } from '@/hooks/useToast';
 
 interface FinancialRecord {
@@ -40,12 +40,7 @@ export default function FinancePage() {
   });
   const { showSuccess, showError } = useToast();
 
-  useEffect(() => {
-    loadRecords();
-    loadSummary();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const loadRecords = async () => {
+  const loadRecords = useCallback(async () => {
     try {
       const response = await fetch('/api/finance');
       if (!response.ok) {
@@ -60,9 +55,9 @@ export default function FinancePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showError]);
 
-  const loadSummary = async () => {
+  const loadSummary = useCallback(async () => {
     try {
       const response = await fetch('/api/finance/summary');
       if (!response.ok) {
@@ -73,7 +68,12 @@ export default function FinancePage() {
     } catch (error) {
       console.error('Error loading financial summary:', error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadRecords();
+    loadSummary();
+  }, [loadRecords, loadSummary]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
