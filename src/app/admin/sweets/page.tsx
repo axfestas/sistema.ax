@@ -50,12 +50,16 @@ export default function SweetsPage() {
   async function loadSweets() {
     try {
       const res = await fetch('/api/sweets');
+      if (!res.ok) {
+        throw new Error(`Erro HTTP: ${res.status}`);
+      }
       if (res.ok) {
         const data = await res.json() as Sweet[];
         setSweets(data);
       }
     } catch (error) {
       console.error('Error loading sweets:', error);
+      setSweets([]);
     } finally {
       setLoading(false);
     }
@@ -75,6 +79,10 @@ export default function SweetsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
+
+      if (!res.ok) {
+        throw new Error(`Erro HTTP: ${res.status}`);
+      }
 
       if (res.ok) {
         setShowForm(false);
@@ -122,6 +130,10 @@ export default function SweetsPage() {
       const res = await fetch(`/api/sweets?id=${id}`, {
         method: 'DELETE',
       });
+
+      if (!res.ok) {
+        throw new Error(`Erro HTTP: ${res.status}`);
+      }
 
       if (res.ok) {
         loadSweets();

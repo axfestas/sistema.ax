@@ -39,12 +39,16 @@ export default function InventoryPage() {
   const loadItems = async () => {
     try {
       const response = await fetch('/api/items');
+      if (!response.ok) {
+        throw new Error(`Erro HTTP: ${response.status}`);
+      }
       if (response.ok) {
         const data: any = await response.json();
         setItems(data);
       }
     } catch (error) {
       console.error('Error loading items:', error);
+      setItems([]);
     } finally {
       setLoading(false);
     }
@@ -74,6 +78,10 @@ export default function InventoryPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(itemData),
       });
+
+      if (!response.ok) {
+        throw new Error(`Erro HTTP: ${response.status}`);
+      }
 
       if (response.ok) {
         await loadItems();
@@ -112,6 +120,10 @@ export default function InventoryPage() {
       const response = await fetch(`/api/items?id=${id}`, {
         method: 'DELETE',
       });
+
+      if (!response.ok) {
+        throw new Error(`Erro HTTP: ${response.status}`);
+      }
 
       if (response.ok) {
         await loadItems();

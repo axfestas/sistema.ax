@@ -65,12 +65,16 @@ export default function KitsPage() {
   const loadKits = async () => {
     try {
       const response = await fetch('/api/kits')
+      if (!response.ok) {
+        throw new Error(`Erro HTTP: ${response.status}`)
+      }
       if (response.ok) {
         const data: any = await response.json()
         setKits(data)
       }
     } catch (error) {
       console.error('Error loading kits:', error)
+      setKits([])
     } finally {
       setLoading(false)
     }
@@ -79,18 +83,25 @@ export default function KitsPage() {
   const loadItems = async () => {
     try {
       const response = await fetch('/api/items')
+      if (!response.ok) {
+        throw new Error(`Erro HTTP: ${response.status}`)
+      }
       if (response.ok) {
         const data: any = await response.json()
         setItems(data)
       }
     } catch (error) {
       console.error('Error loading items:', error)
+      setItems([])
     }
   }
 
   const loadKitWithItems = async (kitId: number) => {
     try {
       const response = await fetch(`/api/kits?id=${kitId}`)
+      if (!response.ok) {
+        throw new Error(`Erro HTTP: ${response.status}`)
+      }
       if (response.ok) {
         const data: KitWithItems = await response.json()
         setSelectedKit(data)
@@ -228,7 +239,12 @@ export default function KitsPage() {
     
     // Load kit items for editing
     fetch(`/api/kits?id=${kit.id}`)
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) {
+          throw new Error(`Erro HTTP: ${r.status}`)
+        }
+        return r.json()
+      })
       .then((data) => {
         const kitData = data as KitWithItems
         if (kitData.items) {
@@ -239,7 +255,10 @@ export default function KitsPage() {
           })))
         }
       })
-      .catch(err => console.error('Error loading kit items for edit:', err))
+      .catch(err => {
+        console.error('Error loading kit items for edit:', err)
+        setFormKitItems([])
+      })
     
     setShowForm(true)
   }
@@ -251,6 +270,10 @@ export default function KitsPage() {
       const response = await fetch(`/api/kits?id=${id}`, {
         method: 'DELETE',
       })
+
+      if (!response.ok) {
+        throw new Error(`Erro HTTP: ${response.status}`)
+      }
 
       if (response.ok) {
         await loadKits()
@@ -279,6 +302,10 @@ export default function KitsPage() {
         }),
       })
 
+      if (!response.ok) {
+        throw new Error(`Erro HTTP: ${response.status}`)
+      }
+
       if (response.ok) {
         await loadKitWithItems(selectedKit.id)
         setNewKitItem({ item_id: '', quantity: '1' })
@@ -300,6 +327,10 @@ export default function KitsPage() {
       const response = await fetch(`/api/kit-items?id=${kitItemId}`, {
         method: 'DELETE',
       })
+
+      if (!response.ok) {
+        throw new Error(`Erro HTTP: ${response.status}`)
+      }
 
       if (response.ok) {
         await loadKitWithItems(selectedKit.id)

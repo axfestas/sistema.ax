@@ -47,12 +47,16 @@ export default function DesignsPage() {
   async function loadDesigns() {
     try {
       const res = await fetch('/api/designs');
+      if (!res.ok) {
+        throw new Error(`Erro HTTP: ${res.status}`);
+      }
       if (res.ok) {
         const data = await res.json() as Design[];
         setDesigns(data);
       }
     } catch (error) {
       console.error('Error loading designs:', error);
+      setDesigns([]);
     } finally {
       setLoading(false);
     }
@@ -72,6 +76,10 @@ export default function DesignsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
+
+      if (!res.ok) {
+        throw new Error(`Erro HTTP: ${res.status}`);
+      }
 
       if (res.ok) {
         setShowForm(false);
@@ -117,6 +125,10 @@ export default function DesignsPage() {
       const res = await fetch(`/api/designs?id=${id}`, {
         method: 'DELETE',
       });
+
+      if (!res.ok) {
+        throw new Error(`Erro HTTP: ${res.status}`);
+      }
 
       if (res.ok) {
         loadDesigns();

@@ -38,12 +38,16 @@ export default function MaintenancePage() {
   const loadMaintenance = async () => {
     try {
       const response = await fetch('/api/maintenance');
+      if (!response.ok) {
+        throw new Error(`Erro HTTP: ${response.status}`);
+      }
       if (response.ok) {
         const data: any = await response.json();
         setMaintenanceRecords(data);
       }
     } catch (error) {
       console.error('Error loading maintenance:', error);
+      setMaintenanceRecords([]);
     } finally {
       setLoading(false);
     }
@@ -52,12 +56,16 @@ export default function MaintenancePage() {
   const loadItems = async () => {
     try {
       const response = await fetch('/api/items');
+      if (!response.ok) {
+        throw new Error(`Erro HTTP: ${response.status}`);
+      }
       if (response.ok) {
         const data: any = await response.json();
         setItems(data);
       }
     } catch (error) {
       console.error('Error loading items:', error);
+      setItems([]);
     }
   };
 
@@ -82,6 +90,10 @@ export default function MaintenancePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(maintenanceData),
       });
+
+      if (!response.ok) {
+        throw new Error(`Erro HTTP: ${response.status}`);
+      }
 
       if (response.ok) {
         await loadMaintenance();
@@ -123,6 +135,10 @@ export default function MaintenancePage() {
       const response = await fetch(`/api/maintenance?id=${id}`, {
         method: 'DELETE',
       });
+
+      if (!response.ok) {
+        throw new Error(`Erro HTTP: ${response.status}`);
+      }
 
       if (response.ok) {
         await loadMaintenance();

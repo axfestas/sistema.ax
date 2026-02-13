@@ -28,7 +28,12 @@ export default function AdminPage() {
 
   useEffect(() => {
     fetch('/api/auth/user')
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error('Erro ao verificar autenticação');
+        }
+        return res.json();
+      })
       .then((data: any) => {
         if (data.authenticated) {
           setUser(data.user);
@@ -36,6 +41,11 @@ export default function AdminPage() {
           router.push('/login');
         }
         setLoading(false);
+      })
+      .catch((error) => {
+        console.error('Error loading user:', error);
+        setLoading(false);
+        router.push('/login');
       });
   }, [router]);
 
@@ -43,13 +53,19 @@ export default function AdminPage() {
     // Carregar solicitações de reserva recentes
     if (user) {
       fetch('/api/reservation-requests?limit=5')
-        .then((res) => res.json())
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error(`Erro HTTP: ${res.status}`);
+          }
+          return res.json();
+        })
         .then((data) => {
           setRequests(data as ReservationRequest[]);
           setLoadingRequests(false);
         })
         .catch((error) => {
           console.error('Error loading reservation requests:', error);
+          setRequests([]);
           setLoadingRequests(false);
         });
     }
