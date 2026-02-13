@@ -53,6 +53,9 @@ export default function AdminPortfolioPage() {
   const checkAuth = async () => {
     try {
       const res = await fetch('/api/auth/user')
+      if (!res.ok) {
+        throw new Error(`Erro HTTP: ${res.status}`)
+      }
       const data = await res.json() as AuthResponse
       if (data.authenticated && data.user) {
         setUser(data.user)
@@ -60,6 +63,7 @@ export default function AdminPortfolioPage() {
         router.push('/login')
       }
     } catch (error) {
+      console.error('Error checking auth:', error)
       router.push('/login')
     } finally {
       setLoading(false)
@@ -69,12 +73,16 @@ export default function AdminPortfolioPage() {
   const loadImages = async () => {
     try {
       const response = await fetch('/api/portfolio')
+      if (!response.ok) {
+        throw new Error(`Erro HTTP: ${response.status}`)
+      }
       if (response.ok) {
         const data = await response.json() as PortfolioImage[]
         setImages(data)
       }
     } catch (error) {
       console.error('Error loading images:', error)
+      setImages([])
     }
   }
 
@@ -93,6 +101,10 @@ export default function AdminPortfolioPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       })
+
+      if (!response.ok) {
+        throw new Error(`Erro HTTP: ${response.status}`)
+      }
 
       if (response.ok) {
         setShowForm(false)
@@ -137,6 +149,10 @@ export default function AdminPortfolioPage() {
         method: 'DELETE'
       })
 
+      if (!response.ok) {
+        throw new Error(`Erro HTTP: ${response.status}`)
+      }
+
       if (response.ok) {
         loadImages()
         showSuccess('Imagem excluída com sucesso!')
@@ -157,11 +173,16 @@ export default function AdminPortfolioPage() {
         body: JSON.stringify({ is_active: image.is_active ? 0 : 1 })
       })
 
+      if (!response.ok) {
+        throw new Error(`Erro HTTP: ${response.status}`)
+      }
+
       if (response.ok) {
         loadImages()
       }
     } catch (error) {
       console.error('Error toggling active status:', error)
+      showError('Erro ao atualizar status')
     }
   }
 

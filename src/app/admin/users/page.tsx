@@ -36,6 +36,9 @@ export default function UsersPage() {
   const loadUsers = async () => {
     try {
       const response = await fetch('/api/users')
+      if (!response.ok) {
+        throw new Error(`Erro HTTP: ${response.status}`)
+      }
       if (response.ok) {
         const data: User[] = await response.json()
         setUsers(data)
@@ -44,6 +47,7 @@ export default function UsersPage() {
       }
     } catch (error) {
       console.error('Error loading users:', error)
+      setUsers([])
       showError('Erro ao carregar usuáries')
     } finally {
       setLoading(false)
@@ -71,6 +75,10 @@ export default function UsersPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData),
       })
+
+      if (!response.ok) {
+        throw new Error(`Erro HTTP: ${response.status}`)
+      }
 
       if (response.ok) {
         await loadUsers()
@@ -109,6 +117,10 @@ export default function UsersPage() {
         method: 'DELETE',
       })
 
+      if (!response.ok) {
+        throw new Error(`Erro HTTP: ${response.status}`)
+      }
+
       if (response.ok) {
         await loadUsers()
         showSuccess('Usuárie deletade com sucesso!')
@@ -129,6 +141,10 @@ export default function UsersPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ active: user.active === 1 ? 0 : 1 }),
       })
+
+      if (!response.ok) {
+        throw new Error(`Erro HTTP: ${response.status}`)
+      }
 
       if (response.ok) {
         await loadUsers()

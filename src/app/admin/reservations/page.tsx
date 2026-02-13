@@ -61,12 +61,16 @@ export default function ReservationsPage() {
   const loadReservations = async () => {
     try {
       const response = await fetch('/api/reservations');
+      if (!response.ok) {
+        throw new Error(`Erro HTTP: ${response.status}`);
+      }
       if (response.ok) {
         const data: any = await response.json();
         setReservations(data);
       }
     } catch (error) {
       console.error('Error loading reservations:', error);
+      setReservations([]);
     } finally {
       setLoading(false);
     }
@@ -78,6 +82,9 @@ export default function ReservationsPage() {
       
       // Load inventory items
       const itemsRes = await fetch('/api/items');
+      if (!itemsRes.ok) {
+        throw new Error(`Erro HTTP: ${itemsRes.status}`);
+      }
       if (itemsRes.ok) {
         const data: any[] = await itemsRes.json();
         data.forEach(item => items.push({
@@ -90,6 +97,9 @@ export default function ReservationsPage() {
       
       // Load kits
       const kitsRes = await fetch('/api/kits');
+      if (!kitsRes.ok) {
+        throw new Error(`Erro HTTP: ${kitsRes.status}`);
+      }
       if (kitsRes.ok) {
         const data: any[] = await kitsRes.json();
         data.forEach(kit => items.push({
@@ -102,6 +112,9 @@ export default function ReservationsPage() {
       
       // Load sweets
       const sweetsRes = await fetch('/api/sweets');
+      if (!sweetsRes.ok) {
+        throw new Error(`Erro HTTP: ${sweetsRes.status}`);
+      }
       if (sweetsRes.ok) {
         const data: any[] = await sweetsRes.json();
         data.forEach(sweet => items.push({
@@ -114,6 +127,9 @@ export default function ReservationsPage() {
       
       // Load designs
       const designsRes = await fetch('/api/designs');
+      if (!designsRes.ok) {
+        throw new Error(`Erro HTTP: ${designsRes.status}`);
+      }
       if (designsRes.ok) {
         const data: any[] = await designsRes.json();
         data.forEach(design => items.push({
@@ -127,18 +143,23 @@ export default function ReservationsPage() {
       setAllItems(items);
     } catch (error) {
       console.error('Error loading items:', error);
+      setAllItems([]);
     }
   };
 
   const loadClients = async () => {
     try {
       const response = await fetch('/api/clients');
+      if (!response.ok) {
+        throw new Error(`Erro HTTP: ${response.status}`);
+      }
       if (response.ok) {
         const data: any = await response.json();
         setClients(data);
       }
     } catch (error) {
       console.error('Error loading clients:', error);
+      setClients([]);
     }
   };
 
@@ -225,6 +246,10 @@ export default function ReservationsPage() {
         body: JSON.stringify(reservationData),
       });
 
+      if (!response.ok) {
+        throw new Error(`Erro HTTP: ${response.status}`);
+      }
+
       if (response.ok) {
         await loadReservations();
         setShowForm(false);
@@ -285,6 +310,10 @@ export default function ReservationsPage() {
       const response = await fetch(`/api/reservations?id=${id}`, {
         method: 'DELETE',
       });
+
+      if (!response.ok) {
+        throw new Error(`Erro HTTP: ${response.status}`);
+      }
 
       if (response.ok) {
         await loadReservations();

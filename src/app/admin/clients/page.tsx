@@ -54,12 +54,16 @@ export default function ClientsPage() {
   async function loadClients() {
     try {
       const res = await fetch('/api/clients');
+      if (!res.ok) {
+        throw new Error(`Erro HTTP: ${res.status}`);
+      }
       if (res.ok) {
         const data = await res.json() as Client[];
         setClients(data);
       }
     } catch (error) {
       console.error('Error loading clients:', error);
+      setClients([]);
     } finally {
       setLoading(false);
     }
@@ -79,6 +83,10 @@ export default function ClientsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
+
+      if (!res.ok) {
+        throw new Error(`Erro HTTP: ${res.status}`);
+      }
 
       if (res.ok) {
         setShowForm(false);
@@ -130,6 +138,10 @@ export default function ClientsPage() {
       const res = await fetch(`/api/clients?id=${id}`, {
         method: 'DELETE',
       });
+
+      if (!res.ok) {
+        throw new Error(`Erro HTTP: ${res.status}`);
+      }
 
       if (res.ok) {
         loadClients();

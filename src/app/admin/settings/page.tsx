@@ -37,7 +37,12 @@ export default function SettingsPage() {
   useEffect(() => {
     // Check authentication
     fetch('/api/auth/user')
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error('Erro ao verificar autenticação');
+        }
+        return res.json();
+      })
       .then((data: any) => {
         if (!data.authenticated || data.user.role !== 'admin') {
           router.push('/login');
@@ -53,6 +58,9 @@ export default function SettingsPage() {
   const loadSettings = async () => {
     try {
       const response = await fetch('/api/settings');
+      if (!response.ok) {
+        throw new Error(`Erro HTTP: ${response.status}`);
+      }
       if (response.ok) {
         const data = (await response.json()) as SiteSettings;
         setSettings(data);
@@ -70,6 +78,7 @@ export default function SettingsPage() {
         showError('Erro ao carregar configurações');
       }
     } catch (err) {
+      console.error('Error loading settings:', err);
       showError('Erro ao carregar configurações');
     } finally {
       setLoading(false);
@@ -89,6 +98,10 @@ export default function SettingsPage() {
         body: JSON.stringify(formData),
       });
 
+      if (!response.ok) {
+        throw new Error(`Erro HTTP: ${response.status}`);
+      }
+
       if (response.ok) {
         const data = (await response.json()) as SiteSettings;
         setSettings(data);
@@ -98,6 +111,7 @@ export default function SettingsPage() {
         showError(errorData.error || 'Erro ao salvar configurações');
       }
     } catch (err) {
+      console.error('Error saving settings:', err);
       showError('Erro ao salvar configurações');
     } finally {
       setSaving(false);
