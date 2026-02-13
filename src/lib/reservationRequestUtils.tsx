@@ -2,7 +2,7 @@
  * Utility functions for reservation request status handling
  */
 
-export type ReservationRequestStatus = 'pending' | 'contacted' | 'converted' | 'cancelled';
+export type ReservationRequestStatus = 'pending' | 'contacted' | 'approved' | 'rejected' | 'converted' | 'cancelled';
 
 interface StatusInfo {
   label: string;
@@ -12,8 +12,10 @@ interface StatusInfo {
 const STATUS_MAP: Record<ReservationRequestStatus, StatusInfo> = {
   pending: { label: 'Pendente', color: 'bg-yellow-100 text-yellow-800' },
   contacted: { label: 'Contactado', color: 'bg-blue-100 text-blue-800' },
-  converted: { label: 'Convertido', color: 'bg-green-100 text-green-800' },
-  cancelled: { label: 'Cancelado', color: 'bg-red-100 text-red-800' },
+  approved: { label: 'Aprovado', color: 'bg-green-100 text-green-800' },
+  rejected: { label: 'Rejeitado', color: 'bg-red-100 text-red-800' },
+  converted: { label: 'Convertido', color: 'bg-purple-100 text-purple-800' },
+  cancelled: { label: 'Cancelado', color: 'bg-gray-100 text-gray-800' },
 };
 
 /**
