@@ -131,6 +131,7 @@ async function sendAdminNotification(params: {
     const result = await resend.emails.send({
       from: 'Ax Festas <noreply@axfestas.com.br>',
       to: params.adminEmail,
+      reply_to: params.requestData.email,
       subject: `Nova Solicitação de Reserva - ${params.requestData.name}`,
       html: html
     });
