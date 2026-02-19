@@ -24,6 +24,7 @@ export default function AdminLayout({
     { href: '/admin/maintenance', label: 'Manutenção', icon: '🔧' },
     { href: '/admin/users', label: 'Usuáries', icon: '👤' },
     { href: '/admin/settings', label: 'Configurações', icon: '⚙️' },
+    { href: '/admin/test-email', label: 'Teste Email', icon: '✉️' },
   ];
 
   return (

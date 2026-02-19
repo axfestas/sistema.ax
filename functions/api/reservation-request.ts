@@ -131,6 +131,7 @@ async function sendAdminNotification(params: {
     const result = await resend.emails.send({
       from: 'Ax Festas <noreply@axfestas.com.br>',
       to: params.adminEmail,
+      reply_to: params.requestData.email,
       subject: `Nova Solicitação de Reserva - ${params.requestData.name}`,
       html: html
     });
@@ -329,7 +330,7 @@ export async function onRequestPost(context: {
     }
     
     // Email do admin (usar variável de ambiente ou fallback)
-    const adminEmail = context.env.ADMIN_EMAIL || 'contato@axfestas.com.br';
+    const adminEmail = context.env.ADMIN_EMAIL || 'alex.fraga@axfestas.com.br';
     
     // Enviar emails em paralelo
     const [adminResult, customerResult] = await Promise.allSettled([

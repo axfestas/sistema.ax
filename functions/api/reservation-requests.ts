@@ -12,6 +12,7 @@ interface Env {
   DB: D1Database;
   RESEND_API_KEY?: string;
   SITE_URL?: string;
+  ADMIN_EMAIL?: string;
 }
 
 interface ReservationRequest {
@@ -192,6 +193,7 @@ async function sendRejectionEmail(params: {
   resendApiKey: string;
   siteUrl: string;
   reason?: string;
+  adminEmail: string;
 }) {
   try {
     const { Resend } = await import('resend');
@@ -200,6 +202,7 @@ async function sendRejectionEmail(params: {
     await resend.emails.send({
       from: 'AX Festas <noreply@axfestas.com.br>',
       to: params.request.customer_email,
+      reply_to: params.adminEmail,
       subject: `Solicitação ${params.request.custom_id} - Vamos encontrar alternativas!`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -315,6 +318,7 @@ export async function onRequestPut(context: {
     // Enviar email se status foi alterado para approved ou rejected
     const resendApiKey = context.env.RESEND_API_KEY;
     const siteUrl = context.env.SITE_URL || 'https://axfestas.com.br';
+    const adminEmail = context.env.ADMIN_EMAIL || 'alex.fraga@axfestas.com.br';
     
     if (resendApiKey && existingRequest.status !== body.status) {
       if (body.status === 'approved') {
@@ -329,6 +333,7 @@ export async function onRequestPut(context: {
           resendApiKey,
           siteUrl,
           reason: body.reason,
+          adminEmail,
         });
       }
     }
