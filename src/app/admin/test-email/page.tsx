@@ -129,10 +129,34 @@ export default function TestEmailPage() {
 
   return (
     <div className="max-w-2xl">
-      <div className="mb-6">
-        <p className="text-gray-600">
-          Use esta página para testar o envio de emails do sistema. Os emails serão enviados pelo
-          endereço <code className="bg-gray-100 px-1 rounded text-sm">noreply@axfestas.com.br</code>.
+      {/* Guia de uso */}
+      <div className="bg-white rounded-lg shadow p-6 mb-6">
+        <h2 className="text-lg font-semibold text-gray-800 mb-3">📋 Como usar</h2>
+        <ol className="list-decimal list-inside space-y-2 text-sm text-gray-700">
+          <li>
+            Digite o seu email (ex:{' '}
+            <span className="font-medium">alex.fraga@axfestas.com.br</span>) no campo abaixo.
+          </li>
+          <li>
+            Clique em <span className="font-medium">Enviar Teste</span> no tipo de email que quer
+            verificar.
+          </li>
+          <li>Aguarde alguns segundos — o resultado aparecerá na tela.</li>
+          <li>
+            <span className="text-green-700 font-medium">✅ Sucesso</span> → abra sua caixa de
+            entrada e confira o email recebido.
+          </li>
+          <li>
+            <span className="text-red-700 font-medium">❌ Erro</span> → leia a mensagem de erro; o
+            problema mais comum é a{' '}
+            <code className="bg-gray-100 px-1 rounded">RESEND_API_KEY</code> não configurada no
+            Cloudflare.
+          </li>
+        </ol>
+        <p className="mt-3 text-xs text-gray-500">
+          Os emails saem como{' '}
+          <code className="bg-gray-100 px-1 rounded">noreply@axfestas.com.br</code> e chegam na
+          caixa de entrada normal (verifique também o spam).
         </p>
       </div>
 
