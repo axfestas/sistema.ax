@@ -329,7 +329,7 @@ export async function onRequestPost(context: {
     }
     
     // Email do admin (usar variável de ambiente ou fallback)
-    const adminEmail = context.env.ADMIN_EMAIL || 'contato@axfestas.com.br';
+    const adminEmail = context.env.ADMIN_EMAIL || 'alex.fraga@axfestas.com.br';
     
     // Enviar emails em paralelo
     const [adminResult, customerResult] = await Promise.allSettled([

@@ -45,7 +45,7 @@ Ax Festas <noreply@axfestas.com.br>
 | Variável | Descrição |
 |----------|-----------|
 | `RESEND_API_KEY` | Chave de API do Resend para envio de emails |
-| `ADMIN_EMAIL` | Email do administrador para notificações de novas solicitações (padrão: `contato@axfestas.com.br`). Usado por `functions/api/reservation-request.ts`, não pela página de teste. |
+| `ADMIN_EMAIL` | Email do administrador para notificações de novas solicitações (padrão: `alex.fraga@axfestas.com.br`). Usado por `functions/api/reservation-request.ts`, não pela página de teste. |
 
 ## Arquivos de Email no Sistema
 
