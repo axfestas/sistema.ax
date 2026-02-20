@@ -48,10 +48,6 @@ export default function KitsPage() {
     is_active: 1,
   })
   const [formKitItems, setFormKitItems] = useState<Array<{ item_id: number; item_name: string; quantity: number }>>([])
-  const [newKitItem, setNewKitItem] = useState({
-    item_id: '',
-    quantity: '1',
-  })
   const [newFormItem, setNewFormItem] = useState({
     item_id: '',
     quantity: '1',
@@ -284,63 +280,6 @@ export default function KitsPage() {
     } catch (error) {
       console.error('Error deleting kit:', error)
       showError('Erro ao deletar kit')
-    }
-  }
-
-  const handleAddItemToKit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!selectedKit) return
-
-    try {
-      const response = await fetch('/api/kit-items', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          kit_id: selectedKit.id,
-          item_id: parseInt(newKitItem.item_id),
-          quantity: parseInt(newKitItem.quantity),
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error(`Erro HTTP: ${response.status}`)
-      }
-
-      if (response.ok) {
-        await loadKitWithItems(selectedKit.id)
-        setNewKitItem({ item_id: '', quantity: '1' })
-        showSuccess('Item adicionado ao kit!')
-      } else {
-        showError('Erro ao adicionar item ao kit')
-      }
-    } catch (error) {
-      console.error('Error adding item to kit:', error)
-      showError('Erro ao adicionar item ao kit')
-    }
-  }
-
-  const handleRemoveItemFromKit = async (kitItemId: number) => {
-    if (!confirm('Tem certeza que deseja remover este item do kit?')) return
-    if (!selectedKit) return
-
-    try {
-      const response = await fetch(`/api/kit-items?id=${kitItemId}`, {
-        method: 'DELETE',
-      })
-
-      if (!response.ok) {
-        throw new Error(`Erro HTTP: ${response.status}`)
-      }
-
-      if (response.ok) {
-        await loadKitWithItems(selectedKit.id)
-        showSuccess('Item removido do kit!')
-      } else {
-        showError('Erro ao remover item do kit')
-      }
-    } catch (error) {
-      console.error('Error removing item from kit:', error)
-      showError('Erro ao remover item do kit')
     }
   }
 
@@ -587,46 +526,6 @@ export default function KitsPage() {
               </button>
             </div>
 
-            {/* Formulário para adicionar item */}
-            <form onSubmit={handleAddItemToKit} className="mb-6 p-4 bg-gray-50 rounded">
-              <h4 className="font-semibold mb-3">Adicionar Item ao Kit</h4>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Item</label>
-                  <select
-                    value={newKitItem.item_id}
-                    onChange={(e) => setNewKitItem({ ...newKitItem, item_id: e.target.value })}
-                    required
-                    className="w-full px-3 py-2 border rounded"
-                  >
-                    <option value="">Selecione um item</option>
-                    {items.map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {item.name} (Qtd: {item.quantity})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Quantidade</label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={newKitItem.quantity}
-                    onChange={(e) => setNewKitItem({ ...newKitItem, quantity: e.target.value })}
-                    required
-                    className="w-full px-3 py-2 border rounded"
-                  />
-                </div>
-              </div>
-              <button
-                type="submit"
-                className="mt-3 bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded text-sm"
-              >
-                + Adicionar
-              </button>
-            </form>
-
             {/* Lista de itens do kit */}
             <div>
               <h4 className="font-semibold mb-3">Itens incluídos ({selectedKit.items.length})</h4>
@@ -635,17 +534,11 @@ export default function KitsPage() {
               ) : (
                 <ul className="space-y-2">
                   {selectedKit.items.map((kitItem) => (
-                    <li key={kitItem.id} className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                    <li key={kitItem.id} className="flex items-center p-3 bg-gray-50 rounded">
                       <div>
                         <span className="font-medium">{kitItem.item_name}</span>
                         <span className="text-gray-600 ml-2">× {kitItem.quantity}</span>
                       </div>
-                      <button
-                        onClick={() => handleRemoveItemFromKit(kitItem.id)}
-                        className="text-red-500 hover:text-red-700 text-sm"
-                      >
-                        🗑️ Remover
-                      </button>
                     </li>
                   ))}
                 </ul>
