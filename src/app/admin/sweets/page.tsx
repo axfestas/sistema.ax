@@ -155,7 +155,7 @@ export default function SweetsPage() {
         <h1 className="text-2xl font-bold">Gerenciar Doces</h1>
         <button
           onClick={handleNewSweet}
-          className="bg-pink-600 text-white px-4 py-2 rounded hover:bg-pink-700 transition-colors"
+          className="bg-brand-blue text-white px-4 py-2 rounded hover:bg-brand-blue-dark transition-colors"
         >
           + Novo Doce
         </button>
@@ -213,7 +213,7 @@ export default function SweetsPage() {
                   <div className="flex gap-2">
                     <button 
                       onClick={() => handleEdit(sweet)}
-                      className="flex-1 bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700 transition-colors"
+                      className="flex-1 bg-brand-blue text-white px-3 py-2 rounded text-sm hover:bg-brand-blue-dark transition-colors"
                     >
                       Editar
                     </button>
@@ -326,7 +326,7 @@ export default function SweetsPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-pink-600 text-white rounded hover:bg-pink-700 transition-colors"
+                  className="px-4 py-2 bg-brand-blue text-white rounded hover:bg-brand-blue-dark transition-colors"
                 >
                   {editingSweet ? 'Salvar Alterações' : 'Criar Doce'}
                 </button>

@@ -151,7 +151,7 @@ export default function InventoryPage() {
             setEditingItem(null);
             setFormData({ name: '', description: '', price: '', quantity: '', image_url: '', category: '', show_in_catalog: 1 });
           }}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded"
         >
           + Adicionar Item
         </button>
@@ -241,7 +241,7 @@ export default function InventoryPage() {
             <div className="flex gap-2">
               <button
                 type="submit"
-                className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+                className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded"
               >
                 Salvar
               </button>
@@ -305,7 +305,7 @@ export default function InventoryPage() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleEdit(item)}
-                      className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-3 rounded text-sm"
+                      className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-1 px-3 rounded text-sm"
                     >
                       Editar
                     </button>

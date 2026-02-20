@@ -364,7 +364,7 @@ export default function KitsPage() {
             setFormData({ name: '', description: '', price: '', image_url: '', is_active: 1 })
             setFormKitItems([])
           }}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded"
         >
           + Novo Kit
         </button>
@@ -450,7 +450,7 @@ export default function KitsPage() {
                   type="button"
                   onClick={handleAddFormItem}
                   disabled={!newFormItem.item_id}
-                  className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-sm disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded text-sm disabled:bg-gray-300 disabled:cursor-not-allowed"
                 >
                   + Adicionar Item
                 </button>
@@ -495,7 +495,7 @@ export default function KitsPage() {
             <div className="flex gap-2">
               <button
                 type="submit"
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded"
               >
                 Salvar
               </button>
@@ -549,13 +549,13 @@ export default function KitsPage() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => loadKitWithItems(kit.id)}
-                      className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-1 px-3 rounded text-sm"
+                      className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-1 px-3 rounded text-sm"
                     >
                       📦 Itens
                     </button>
                     <button
                       onClick={() => handleEdit(kit)}
-                      className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-3 rounded text-sm"
+                      className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-1 px-3 rounded text-sm"
                     >
                       ✏️ Editar
                     </button>
@@ -621,7 +621,7 @@ export default function KitsPage() {
               </div>
               <button
                 type="submit"
-                className="mt-3 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-sm"
+                className="mt-3 bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded text-sm"
               >
                 + Adicionar
               </button>

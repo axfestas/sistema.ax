@@ -177,7 +177,7 @@ export default function UsersPage() {
             setEditingUser(null)
             setFormData({ email: '', name: '', password: '', role: 'user', active: 1, phone: '' })
           }}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded"
         >
           + Nove Usuárie
         </button>
@@ -267,7 +267,7 @@ export default function UsersPage() {
             <div className="flex gap-2">
               <button
                 type="submit"
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded"
               >
                 Salvar
               </button>
@@ -325,7 +325,7 @@ export default function UsersPage() {
                       onClick={() => toggleActive(user)}
                       className={`${
                         user.active === 1 
-                          ? 'bg-orange-500 hover:bg-orange-700' 
+                          ? 'bg-amber-500 hover:bg-amber-600' 
                           : 'bg-green-500 hover:bg-green-700'
                       } text-white font-bold py-1 px-3 rounded text-sm`}
                       title={user.active === 1 ? 'Desativar' : 'Ativar'}
@@ -334,7 +334,7 @@ export default function UsersPage() {
                     </button>
                     <button
                       onClick={() => handleEdit(user)}
-                      className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-3 rounded text-sm"
+                      className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-1 px-3 rounded text-sm"
                     >
                       ✏️ Editar
                     </button>

@@ -150,7 +150,7 @@ export default function DesignsPage() {
         <h1 className="text-2xl font-bold">Gerenciar Design e Decoração</h1>
         <button
           onClick={handleNewDesign}
-          className="bg-pink-600 text-white px-4 py-2 rounded hover:bg-pink-700 transition-colors"
+          className="bg-brand-blue text-white px-4 py-2 rounded hover:bg-brand-blue-dark transition-colors"
         >
           + Novo Design
         </button>
@@ -205,7 +205,7 @@ export default function DesignsPage() {
                   <div className="flex gap-2">
                     <button 
                       onClick={() => handleEdit(design)}
-                      className="flex-1 bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700 transition-colors"
+                      className="flex-1 bg-brand-blue text-white px-3 py-2 rounded text-sm hover:bg-brand-blue-dark transition-colors"
                     >
                       Editar
                     </button>
@@ -307,7 +307,7 @@ export default function DesignsPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-pink-600 text-white rounded hover:bg-pink-700 transition-colors"
+                  className="px-4 py-2 bg-brand-blue text-white rounded hover:bg-brand-blue-dark transition-colors"
                 >
                   {editingDesign ? 'Salvar Alterações' : 'Criar Design'}
                 </button>

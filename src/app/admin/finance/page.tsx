@@ -280,7 +280,7 @@ export default function FinancePage() {
         <h2 className="text-2xl font-bold">Controle Financeiro</h2>
         <button
           onClick={handleNewRecord}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded"
         >
           + Novo Registro
         </button>
@@ -306,7 +306,7 @@ export default function FinancePage() {
         <div className="flex items-end">
           <button
             onClick={handleExportCSV}
-            className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+            className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded"
             disabled={records.length === 0}
           >
             📥 Baixar Relatório
@@ -405,7 +405,7 @@ export default function FinancePage() {
             <div className="flex gap-2">
               <button
                 type="submit"
-                className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+                className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded"
               >
                 Salvar
               </button>
@@ -466,7 +466,7 @@ export default function FinancePage() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleEdit(record)}
-                      className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-3 rounded text-sm"
+                      className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-1 px-3 rounded text-sm"
                     >
                       Editar
                     </button>

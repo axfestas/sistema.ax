@@ -217,7 +217,7 @@ export default function AdminPortfolioPage() {
                 image_size: 'feed-square' // Default to square feed format
               })
             }}
-            className="bg-brand-yellow hover:bg-brand-yellow/90 text-white font-bold py-2 px-6 rounded-full"
+            className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-6 rounded-full"
           >
             {showForm ? 'Cancelar' : 'Nova Imagem'}
           </button>
@@ -295,7 +295,7 @@ export default function AdminPortfolioPage() {
               <div className="flex gap-2">
                 <button
                   type="submit"
-                  className="bg-brand-yellow hover:bg-brand-yellow/90 text-white font-bold py-2 px-6 rounded-full"
+                  className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-6 rounded-full"
                 >
                   Salvar
                 </button>
@@ -339,7 +339,7 @@ export default function AdminPortfolioPage() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleEdit(image)}
-                    className="flex-1 bg-blue-500 hover:bg-blue-600 text-white text-sm py-1 px-3 rounded"
+                    className="flex-1 bg-brand-blue hover:bg-brand-blue-dark text-white text-sm py-1 px-3 rounded"
                   >
                     ✏️ Editar
                   </button>
@@ -347,7 +347,7 @@ export default function AdminPortfolioPage() {
                     onClick={() => toggleActive(image)}
                     className={`flex-1 ${
                       image.is_active 
-                        ? 'bg-yellow-500 hover:bg-yellow-600' 
+                        ? 'bg-amber-500 hover:bg-amber-600' 
                         : 'bg-green-500 hover:bg-green-600'
                     } text-white text-sm py-1 px-3 rounded`}
                   >
@@ -370,7 +370,7 @@ export default function AdminPortfolioPage() {
             <p className="text-gray-600">Nenhuma imagem cadastrada ainda.</p>
             <button
               onClick={() => setShowForm(true)}
-              className="mt-4 bg-brand-yellow hover:bg-brand-yellow/90 text-white font-bold py-2 px-6 rounded-full"
+              className="mt-4 bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-6 rounded-full"
             >
               Adicionar Primeira Imagem
             </button>
