@@ -168,6 +168,7 @@ export interface KitInput {
   name: string;
   description?: string;
   price: number;
+  image_url?: string;
   is_active?: number;
   custom_id?: string; // Optional - will be auto-generated if not provided
 }
@@ -1481,12 +1482,13 @@ export async function createKit(
     // Try to insert with custom_id
     const result = await db
       .prepare(
-        'INSERT INTO kits (name, description, price, is_active, custom_id) VALUES (?, ?, ?, ?, ?) RETURNING *'
+        'INSERT INTO kits (name, description, price, image_url, is_active, custom_id) VALUES (?, ?, ?, ?, ?, ?) RETURNING *'
       )
       .bind(
         kit.name,
         kit.description || null,
         kit.price,
+        kit.image_url || null,
         kit.is_active !== undefined ? kit.is_active : 1,
         customId
       )
@@ -1503,12 +1505,13 @@ export async function createKit(
       console.warn('custom_id column not found, inserting without it');
       const result = await db
         .prepare(
-          'INSERT INTO kits (name, description, price, is_active) VALUES (?, ?, ?, ?) RETURNING *'
+          'INSERT INTO kits (name, description, price, image_url, is_active) VALUES (?, ?, ?, ?, ?) RETURNING *'
         )
         .bind(
           kit.name,
           kit.description || null,
           kit.price,
+          kit.image_url || null,
           kit.is_active !== undefined ? kit.is_active : 1
         )
         .first();
@@ -1540,6 +1543,10 @@ export async function updateKit(
   if (updates.price !== undefined) {
     fields.push('price = ?');
     values.push(updates.price);
+  }
+  if (updates.image_url !== undefined) {
+    fields.push('image_url = ?');
+    values.push(updates.image_url || null);
   }
   if (updates.is_active !== undefined) {
     fields.push('is_active = ?');
