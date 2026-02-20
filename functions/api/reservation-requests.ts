@@ -33,7 +33,8 @@ interface ReservationRequest {
 
 /**
  * GET - Lista todas as solicitações ou busca uma específica
- */(context: {
+ */
+export async function onRequestGet(context: {
   request: Request;
   env: Env;
 }) {
