@@ -23,9 +23,6 @@ export default function AdminLayout({
     { href: '/admin/finance', label: 'Financeiro', icon: '💰' },
     { href: '/admin/portfolio', label: 'Portfólio', icon: '🖼️' },
     { href: '/admin/maintenance', label: 'Manutenção', icon: '🔧' },
-    { href: '/admin/users', label: 'Usuáries', icon: '👤' },
-    { href: '/admin/settings', label: 'Configurações', icon: '⚙️' },
-    { href: '/admin/test-email', label: 'Teste Email', icon: '✉️' },
   ];
 
   return (
