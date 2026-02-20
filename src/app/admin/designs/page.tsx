@@ -186,7 +186,7 @@ export default function DesignsPage() {
               <div key={design.id} className="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="aspect-square bg-gray-200 relative">
                   {design.image_url ? (
-                    <Image src={design.image_url} alt={design.name} fill className="object-cover" />
+                    <Image src={design.image_url} alt={design.name} fill sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400 text-6xl">
                       🎨

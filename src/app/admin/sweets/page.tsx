@@ -191,7 +191,7 @@ export default function SweetsPage() {
               <div key={sweet.id} className="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="aspect-square bg-gray-200 relative">
                   {sweet.image_url ? (
-                    <Image src={sweet.image_url} alt={sweet.name} fill className="object-cover" />
+                    <Image src={sweet.image_url} alt={sweet.name} fill sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400 text-6xl">
                       🍰
