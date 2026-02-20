@@ -67,7 +67,7 @@ export default function InventoryPage() {
 
   const loadItems = async () => {
     try {
-      const response = await fetch('/api/items');
+      const response = await fetch('/api/items', { cache: 'no-store' });
       if (!response.ok) {
         throw new Error(`Erro HTTP: ${response.status}`);
       }

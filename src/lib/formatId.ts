@@ -25,6 +25,10 @@ export function formatDesignId(id: number): string {
   return `DES-A${String(id).padStart(3, '0')}`;
 }
 
+export function formatThemeId(id: number): string {
+  return `TM-A${String(id).padStart(3, '0')}`;
+}
+
 export function formatReservationId(id: number): string {
   return `RES-A${String(id).padStart(3, '0')}`;
 }

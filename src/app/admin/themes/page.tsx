@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import ImageUpload from '@/components/ImageUpload';
+import { formatThemeId } from '@/lib/formatId';
 
 interface Theme {
   id: number;
@@ -214,7 +215,7 @@ export default function ThemesPage() {
                 <div className="p-4">
                   <div className="flex items-start justify-between mb-2">
                     <span className="inline-block bg-pink-100 text-pink-800 text-xs font-bold px-2 py-1 rounded">
-                      #{theme.id}
+                      {formatThemeId(theme.id)}
                     </span>
                     {theme.show_in_catalog === 1 && (
                       <span className="inline-block bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded">
