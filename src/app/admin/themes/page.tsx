@@ -277,8 +277,8 @@ export default function ThemesPage() {
                     {categories.length === 0 ? (
                       <option disabled>Nenhuma categoria cadastrada</option>
                     ) : (
-                      categories.map((cat) => (
-                        <option key={cat} value={cat}>{cat}</option>
+                      categories.map((cat, idx) => (
+                        <option key={idx} value={cat}>{cat}</option>
                       ))
                     )}
                   </select>

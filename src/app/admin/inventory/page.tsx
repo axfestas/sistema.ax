@@ -35,11 +35,20 @@ export default function InventoryPage() {
 
   useEffect(() => {
     loadItems();
-    fetch('/api/categories?section=items')
-      .then((r) => r.ok ? r.json() : [])
-      .then((data: any[]) => setInventoryCategories(data.map((c) => c.name)))
-      .catch(() => {});
+    loadCategories();
   }, []);
+
+  const loadCategories = async () => {
+    try {
+      const res = await fetch('/api/categories?section=items');
+      if (res.ok) {
+        const data = await res.json() as any[];
+        setInventoryCategories(data.map((c) => c.name));
+      }
+    } catch (error) {
+      console.error('Error loading categories:', error);
+    }
+  };
 
   const loadItems = async () => {
     try {
@@ -195,8 +204,8 @@ export default function InventoryPage() {
                 className="w-full px-3 py-2 border rounded"
               >
                 <option value="">Sem categoria</option>
-                {inventoryCategories.map((cat) => (
-                  <option key={cat} value={cat}>{cat}</option>
+                {inventoryCategories.map((cat, idx) => (
+                  <option key={idx} value={cat}>{cat}</option>
                 ))}
               </select>
             </div>

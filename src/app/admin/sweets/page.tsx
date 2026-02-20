@@ -46,11 +46,20 @@ export default function SweetsPage() {
 
   useEffect(() => {
     loadSweets();
-    fetch('/api/categories?section=sweets')
-      .then((r) => r.ok ? r.json() : [])
-      .then((data: any[]) => setSweetsCategories(data.map((c) => c.name)))
-      .catch(() => {});
+    loadCategories();
   }, []);
+
+  async function loadCategories() {
+    try {
+      const res = await fetch('/api/categories?section=sweets');
+      if (res.ok) {
+        const data = await res.json() as any[];
+        setSweetsCategories(data.map((c) => c.name));
+      }
+    } catch (error) {
+      console.error('Error loading categories:', error);
+    }
+  }
 
   async function loadSweets() {
     try {
@@ -303,8 +312,8 @@ export default function SweetsPage() {
                     className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
                   >
                     <option value="">Sem categoria</option>
-                    {sweetsCategories.map((cat) => (
-                      <option key={cat} value={cat}>{cat}</option>
+                    {sweetsCategories.map((cat, idx) => (
+                      <option key={idx} value={cat}>{cat}</option>
                     ))}
                   </select>
                 </div>
