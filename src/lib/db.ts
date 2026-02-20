@@ -79,6 +79,10 @@ export interface Reservation {
   date_from: string; // YYYY-MM-DD
   date_to: string;   // YYYY-MM-DD
   status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+  total_amount?: number; // Total reservation value
+  payment_type?: string; // pix, cartao, dinheiro, transferencia, cheque
+  payment_receipt_url?: string; // URL to uploaded payment receipt
+  contract_url?: string; // URL to uploaded contract file
 }
 
 export interface ReservationInput {
@@ -96,6 +100,10 @@ export interface ReservationInput {
   date_to: string;
   status?: 'pending' | 'confirmed' | 'completed' | 'cancelled';
   custom_id?: string; // Optional - will be auto-generated if not provided
+  total_amount?: number; // Total reservation value
+  payment_type?: string; // pix, cartao, dinheiro, transferencia, cheque
+  payment_receipt_url?: string; // URL to uploaded payment receipt
+  contract_url?: string; // URL to uploaded contract file
 }
 
 export interface MaintenanceRecord {
@@ -507,10 +515,10 @@ export async function createReservation(
   let newReservation: Reservation;
 
   try {
-    // Try to insert with all fields including sweet_id, design_id, client_id, and customer_phone
+    // Try to insert with all fields including sweet_id, design_id, client_id, customer_phone, and payment fields
     const result = await db
       .prepare(
-        'INSERT INTO reservations (item_id, kit_id, sweet_id, design_id, theme_id, client_id, quantity, customer_name, customer_email, customer_phone, date_from, date_to, status, custom_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *'
+        'INSERT INTO reservations (item_id, kit_id, sweet_id, design_id, theme_id, client_id, quantity, customer_name, customer_email, customer_phone, date_from, date_to, status, custom_id, total_amount, payment_type, payment_receipt_url, contract_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *'
       )
       .bind(
         reservation.item_id || null,
@@ -526,7 +534,11 @@ export async function createReservation(
         reservation.date_from,
         reservation.date_to,
         status,
-        customId
+        customId,
+        reservation.total_amount !== undefined ? reservation.total_amount : null,
+        reservation.payment_type || null,
+        reservation.payment_receipt_url || null,
+        reservation.contract_url || null
       )
       .first();
     newReservation = result as unknown as Reservation;
@@ -539,7 +551,11 @@ export async function createReservation(
       error.message.includes('design_id') ||
       error.message.includes('theme_id') ||
       error.message.includes('client_id') ||
-      error.message.includes('customer_phone')
+      error.message.includes('customer_phone') ||
+      error.message.includes('total_amount') ||
+      error.message.includes('payment_type') ||
+      error.message.includes('payment_receipt_url') ||
+      error.message.includes('contract_url')
     );
     
     if (isColumnError) {
@@ -656,6 +672,22 @@ export async function updateReservation(
   if (updates.status !== undefined) {
     fields.push('status = ?');
     values.push(updates.status);
+  }
+  if (updates.total_amount !== undefined) {
+    fields.push('total_amount = ?');
+    values.push(updates.total_amount);
+  }
+  if (updates.payment_type !== undefined) {
+    fields.push('payment_type = ?');
+    values.push(updates.payment_type || null);
+  }
+  if (updates.payment_receipt_url !== undefined) {
+    fields.push('payment_receipt_url = ?');
+    values.push(updates.payment_receipt_url || null);
+  }
+  if (updates.contract_url !== undefined) {
+    fields.push('contract_url = ?');
+    values.push(updates.contract_url || null);
   }
 
   if (fields.length === 0) {

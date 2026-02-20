@@ -4,6 +4,7 @@ import { CartProvider } from '@/components/CartContext'
 import { ToastProvider } from '@/components/ToastProvider'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
+import SeoSchema from '@/components/SeoSchema'
 
 export const metadata: Metadata = {
   title: 'Ax Festas - Aluguel de Itens para Festas',
@@ -25,6 +26,7 @@ export default function RootLayout({
       <body className="font-sans flex flex-col min-h-screen">
         <ToastProvider>
           <CartProvider>
+            <SeoSchema />
             <Header />
             <main className="flex-1">
               {children}
