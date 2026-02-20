@@ -30,6 +30,7 @@ interface FormData {
 
 export default function SweetsPage() {
   const [sweets, setSweets] = useState<Sweet[]>([]);
+  const [sweetsCategories, setSweetsCategories] = useState<string[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editingSweet, setEditingSweet] = useState<Sweet | null>(null);
   const [loading, setLoading] = useState(true);
@@ -45,7 +46,20 @@ export default function SweetsPage() {
 
   useEffect(() => {
     loadSweets();
+    loadCategories();
   }, []);
+
+  async function loadCategories() {
+    try {
+      const res = await fetch('/api/categories?section=sweets');
+      if (res.ok) {
+        const data = await res.json() as any[];
+        setSweetsCategories(data.map((c) => c.name));
+      }
+    } catch (error) {
+      console.error('Error loading categories:', error);
+    }
+  }
 
   async function loadSweets() {
     try {
@@ -155,7 +169,7 @@ export default function SweetsPage() {
         <h1 className="text-2xl font-bold">Gerenciar Doces</h1>
         <button
           onClick={handleNewSweet}
-          className="bg-pink-600 text-white px-4 py-2 rounded hover:bg-pink-700 transition-colors"
+          className="bg-brand-blue text-white px-4 py-2 rounded hover:bg-brand-blue-dark transition-colors"
         >
           + Novo Doce
         </button>
@@ -177,7 +191,7 @@ export default function SweetsPage() {
               <div key={sweet.id} className="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="aspect-square bg-gray-200 relative">
                   {sweet.image_url ? (
-                    <Image src={sweet.image_url} alt={sweet.name} fill className="object-cover" />
+                    <Image src={sweet.image_url} alt={sweet.name} fill sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400 text-6xl">
                       🍰
@@ -213,7 +227,7 @@ export default function SweetsPage() {
                   <div className="flex gap-2">
                     <button 
                       onClick={() => handleEdit(sweet)}
-                      className="flex-1 bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700 transition-colors"
+                      className="flex-1 bg-brand-blue text-white px-3 py-2 rounded text-sm hover:bg-brand-blue-dark transition-colors"
                     >
                       Editar
                     </button>
@@ -292,13 +306,16 @@ export default function SweetsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Categoria</label>
-                  <input
-                    type="text"
+                  <select
                     value={formData.category}
                     onChange={(e) => setFormData({...formData, category: e.target.value})}
                     className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                    placeholder="Ex: Bolos, Docinhos, etc."
-                  />
+                  >
+                    <option value="">Sem categoria</option>
+                    {sweetsCategories.map((cat, idx) => (
+                      <option key={idx} value={cat}>{cat}</option>
+                    ))}
+                  </select>
                 </div>
                 <div className="flex items-center">
                   <label className="flex items-center cursor-pointer">
@@ -326,7 +343,7 @@ export default function SweetsPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-pink-600 text-white rounded hover:bg-pink-700 transition-colors"
+                  className="px-4 py-2 bg-brand-blue text-white rounded hover:bg-brand-blue-dark transition-colors"
                 >
                   {editingSweet ? 'Salvar Alterações' : 'Criar Doce'}
                 </button>

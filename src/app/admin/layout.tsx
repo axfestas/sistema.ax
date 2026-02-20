@@ -19,8 +19,10 @@ export default function AdminLayout({
     { href: '/admin/kits', label: 'Kits', icon: '🎁' },
     { href: '/admin/sweets', label: 'Doces', icon: '🍰' },
     { href: '/admin/designs', label: 'Design', icon: '🎨' },
+    { href: '/admin/themes', label: 'Temas', icon: '🎭' },
     { href: '/admin/clients', label: 'Clientes', icon: '👥' },
     { href: '/admin/finance', label: 'Financeiro', icon: '💰' },
+    { href: '/admin/categories', label: 'Categorias', icon: '🏷️' },
   ];
 
   return (

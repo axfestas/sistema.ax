@@ -51,13 +51,23 @@ interface Design {
   category?: string
 }
 
-type TabType = 'items' | 'kits' | 'sweets' | 'designs'
+interface Theme {
+  id: number
+  name: string
+  description?: string
+  price: number
+  image_url?: string
+  category?: string
+}
+
+type TabType = 'items' | 'kits' | 'sweets' | 'designs' | 'themes'
 
 export default function CatalogPage() {
   const [items, setItems] = useState<CatalogItem[]>([])
   const [kits, setKits] = useState<Kit[]>([])
   const [sweets, setSweets] = useState<Sweet[]>([])
   const [designs, setDesigns] = useState<Design[]>([])
+  const [themes, setThemes] = useState<Theme[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<TabType>('kits')
   const [quantities, setQuantities] = useState<{ [key: number]: number }>({})
@@ -70,11 +80,12 @@ export default function CatalogPage() {
   const loadCatalog = async () => {
     try {
       // Carregar todos os dados em paralelo
-      const [itemsResponse, kitsResponse, sweetsResponse, designsResponse] = await Promise.all([
+      const [itemsResponse, kitsResponse, sweetsResponse, designsResponse, themesResponse] = await Promise.all([
         fetch('/api/items?catalogOnly=true'),
         fetch('/api/kits?activeOnly=true'),
         fetch('/api/sweets?catalog=true'),
         fetch('/api/designs?catalog=true'),
+        fetch('/api/themes?catalog=true'),
       ])
 
       if (itemsResponse.ok) {
@@ -96,6 +107,11 @@ export default function CatalogPage() {
       if (designsResponse.ok) {
         const designsData = await designsResponse.json() as Design[]
         setDesigns(designsData)
+      }
+
+      if (themesResponse.ok) {
+        const themesData = await themesResponse.json() as Theme[]
+        setThemes(themesData)
       }
     } catch (error) {
       console.error('Error loading catalog:', error)
@@ -189,6 +205,16 @@ export default function CatalogPage() {
               }`}
             >
               🎨 Design ({designs.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('themes')}
+              className={`px-6 py-4 font-bold text-base md:text-lg transition-all duration-300 ${
+                activeTab === 'themes'
+                  ? 'border-b-4 border-brand-yellow text-brand-yellow'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              🎭 Temas ({themes.length})
             </button>
           </div>
 
@@ -534,6 +560,82 @@ export default function CatalogPage() {
                                   description: design.description || '',
                                   price: design.price,
                                   image: design.image_url
+                                })}
+                                className="bg-brand-yellow hover:bg-brand-yellow/90 text-white font-bold py-2 px-4 rounded-full transition-colors duration-300"
+                              >
+                                Adicionar ao Carrinho
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Themes Tab Content */}
+              {activeTab === 'themes' && (
+                <div>
+                  <div className="text-center mb-12">
+                    <h2 className="text-3xl md:text-4xl font-bold text-brand-gray mb-4">
+                      Temas para Festa
+                    </h2>
+                    <p className="text-lg text-gray-600">
+                      Temas exclusivos para tornar sua festa inesquecível
+                    </p>
+                  </div>
+
+                  {themes.length === 0 ? (
+                    <div className="text-center py-12">
+                      <p className="text-gray-600 text-lg">Nenhum tema disponível no momento.</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                      {themes.map((theme) => (
+                        <div
+                          key={theme.id}
+                          className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300"
+                        >
+                          <div className="h-64 bg-gradient-to-br from-pink-400 to-red-500 flex items-center justify-center relative overflow-hidden">
+                            {theme.image_url ? (
+                              <Image
+                                src={theme.image_url}
+                                alt={theme.name}
+                                fill
+                                className="object-cover"
+                              />
+                            ) : (
+                              <span className="text-white text-6xl">🎭</span>
+                            )}
+                          </div>
+
+                          <div className="p-6">
+                            <h3 className="text-xl font-bold text-brand-gray mb-2">
+                              {theme.name}
+                            </h3>
+                            {theme.description && (
+                              <p className="text-gray-600 mb-4 text-sm">
+                                {theme.description}
+                              </p>
+                            )}
+                            {theme.category && (
+                              <p className="text-xs text-gray-500 mb-4">
+                                Categoria: {theme.category}
+                              </p>
+                            )}
+
+                            <div className="flex justify-between items-center">
+                              <span className="text-2xl font-bold text-brand-yellow">
+                                R$ {theme.price.toFixed(2)}
+                              </span>
+                              <button
+                                onClick={() => addItem({
+                                  id: `theme-${theme.id}`,
+                                  name: theme.name,
+                                  description: theme.description || '',
+                                  price: theme.price,
+                                  image: theme.image_url
                                 })}
                                 className="bg-brand-yellow hover:bg-brand-yellow/90 text-white font-bold py-2 px-4 rounded-full transition-colors duration-300"
                               >

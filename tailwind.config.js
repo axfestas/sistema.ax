@@ -11,6 +11,7 @@ module.exports = {
         'brand-yellow': '#FFC107',
         'brand-gray': '#4A4A4A',
         'brand-blue': '#88A9C3',
+        'brand-blue-dark': '#6E95B0',
         'brand-purple': '#C08ADC',
       },
       backgroundImage: {

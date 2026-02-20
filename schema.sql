@@ -1,4 +1,6 @@
 -- Schema para D1 Database
+-- Este é o schema completo e autoritativo.
+-- Para bancos existentes, use os arquivos em migrations/ para aplicar as mudanças incrementais.
 
 CREATE TABLE items (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -8,6 +10,7 @@ CREATE TABLE items (
   price REAL NOT NULL,
   quantity INTEGER NOT NULL,
   image_url TEXT,
+  category TEXT,
   show_in_catalog INTEGER DEFAULT 1
 );
 
@@ -17,6 +20,10 @@ CREATE TABLE reservations (
   reservation_type TEXT NOT NULL DEFAULT 'unit', -- 'kit' or 'unit'
   item_id INTEGER,
   kit_id INTEGER,
+  sweet_id INTEGER,
+  design_id INTEGER,
+  theme_id INTEGER,
+  client_id INTEGER,
   quantity INTEGER DEFAULT 1,
   customer_name TEXT NOT NULL,
   customer_email TEXT,
@@ -25,6 +32,10 @@ CREATE TABLE reservations (
   date_to DATE NOT NULL,
   status TEXT DEFAULT 'pending',
   notes TEXT,
+  total_amount REAL,
+  payment_type TEXT,
+  payment_receipt_url TEXT,
+  contract_url TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (item_id) REFERENCES items(id),
@@ -184,6 +195,43 @@ CREATE TABLE designs (
   created_at INTEGER DEFAULT (strftime('%s', 'now'))
 );
 
+-- Tabela de Temas
+CREATE TABLE themes (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  description TEXT,
+  price REAL NOT NULL DEFAULT 0,
+  image_url TEXT,
+  category TEXT,
+  is_active INTEGER DEFAULT 1,
+  show_in_catalog INTEGER DEFAULT 1,
+  created_at INTEGER DEFAULT (strftime('%s', 'now'))
+);
+
+-- Tabela de Categorias (gerenciamento centralizado de categorias por seção)
+CREATE TABLE categories (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  section TEXT NOT NULL,
+  UNIQUE(name, section)
+);
+
+-- Tabela de Solicitações de Reserva (do Carrinho)
+CREATE TABLE reservation_requests (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  custom_id TEXT UNIQUE,
+  customer_name TEXT NOT NULL,
+  customer_email TEXT NOT NULL,
+  customer_phone TEXT NOT NULL,
+  event_date DATE NOT NULL,
+  message TEXT,
+  items_json TEXT NOT NULL,
+  total_amount REAL NOT NULL,
+  status TEXT DEFAULT 'pending',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Índices para melhorar performance
 CREATE INDEX idx_items_show_in_catalog ON items(show_in_catalog);
 CREATE INDEX idx_items_custom_id ON items(custom_id);
@@ -202,23 +250,8 @@ CREATE INDEX idx_clients_phone ON clients(phone);
 CREATE INDEX idx_clients_email ON clients(email);
 CREATE INDEX idx_sweets_catalog ON sweets(show_in_catalog, is_active);
 CREATE INDEX idx_designs_catalog ON designs(show_in_catalog, is_active);
-
--- Tabela de Solicitações de Reserva (do Carrinho)
-CREATE TABLE reservation_requests (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  custom_id TEXT UNIQUE,
-  customer_name TEXT NOT NULL,
-  customer_email TEXT NOT NULL,
-  customer_phone TEXT NOT NULL,
-  event_date DATE NOT NULL,
-  message TEXT,
-  items_json TEXT NOT NULL,
-  total_amount REAL NOT NULL,
-  status TEXT DEFAULT 'pending',
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
+CREATE INDEX idx_themes_catalog ON themes(show_in_catalog, is_active);
+CREATE INDEX idx_categories_section ON categories(section);
 CREATE INDEX idx_reservation_requests_status ON reservation_requests(status);
 CREATE INDEX idx_reservation_requests_created_at ON reservation_requests(created_at);
 CREATE INDEX idx_reservation_requests_custom_id ON reservation_requests(custom_id);

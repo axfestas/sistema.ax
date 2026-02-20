@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { useToast } from '@/hooks/useToast'
 import ImageUpload from '@/components/ImageUpload'
 import { formatKitId } from '@/lib/formatId'
@@ -48,10 +49,6 @@ export default function KitsPage() {
     is_active: 1,
   })
   const [formKitItems, setFormKitItems] = useState<Array<{ item_id: number; item_name: string; quantity: number }>>([])
-  const [newKitItem, setNewKitItem] = useState({
-    item_id: '',
-    quantity: '1',
-  })
   const [newFormItem, setNewFormItem] = useState({
     item_id: '',
     quantity: '1',
@@ -287,63 +284,6 @@ export default function KitsPage() {
     }
   }
 
-  const handleAddItemToKit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!selectedKit) return
-
-    try {
-      const response = await fetch('/api/kit-items', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          kit_id: selectedKit.id,
-          item_id: parseInt(newKitItem.item_id),
-          quantity: parseInt(newKitItem.quantity),
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error(`Erro HTTP: ${response.status}`)
-      }
-
-      if (response.ok) {
-        await loadKitWithItems(selectedKit.id)
-        setNewKitItem({ item_id: '', quantity: '1' })
-        showSuccess('Item adicionado ao kit!')
-      } else {
-        showError('Erro ao adicionar item ao kit')
-      }
-    } catch (error) {
-      console.error('Error adding item to kit:', error)
-      showError('Erro ao adicionar item ao kit')
-    }
-  }
-
-  const handleRemoveItemFromKit = async (kitItemId: number) => {
-    if (!confirm('Tem certeza que deseja remover este item do kit?')) return
-    if (!selectedKit) return
-
-    try {
-      const response = await fetch(`/api/kit-items?id=${kitItemId}`, {
-        method: 'DELETE',
-      })
-
-      if (!response.ok) {
-        throw new Error(`Erro HTTP: ${response.status}`)
-      }
-
-      if (response.ok) {
-        await loadKitWithItems(selectedKit.id)
-        showSuccess('Item removido do kit!')
-      } else {
-        showError('Erro ao remover item do kit')
-      }
-    } catch (error) {
-      console.error('Error removing item from kit:', error)
-      showError('Erro ao remover item do kit')
-    }
-  }
-
   if (loading) {
     return <div className="p-4">Carregando...</div>
   }
@@ -364,7 +304,7 @@ export default function KitsPage() {
             setFormData({ name: '', description: '', price: '', image_url: '', is_active: 1 })
             setFormKitItems([])
           }}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded"
         >
           + Novo Kit
         </button>
@@ -450,7 +390,7 @@ export default function KitsPage() {
                   type="button"
                   onClick={handleAddFormItem}
                   disabled={!newFormItem.item_id}
-                  className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-sm disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded text-sm disabled:bg-gray-300 disabled:cursor-not-allowed"
                 >
                   + Adicionar Item
                 </button>
@@ -495,7 +435,7 @@ export default function KitsPage() {
             <div className="flex gap-2">
               <button
                 type="submit"
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded"
               >
                 Salvar
               </button>
@@ -524,7 +464,17 @@ export default function KitsPage() {
           <ul role="list" className="divide-y divide-gray-200">
             {kits.map((kit) => (
               <li key={kit.id} className="px-6 py-4">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-4">
+                  {/* Thumbnail */}
+                  <div className="w-14 h-14 flex-shrink-0 rounded overflow-hidden bg-gray-100">
+                    {kit.image_url ? (
+                      <div className="relative w-14 h-14">
+                        <Image src={kit.image_url} alt={kit.name} fill sizes="56px" className="object-cover" />
+                      </div>
+                    ) : (
+                      <div className="w-14 h-14 flex items-center justify-center text-gray-300 text-2xl">🎁</div>
+                    )}
+                  </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-mono bg-purple-100 text-purple-800 px-2 py-1 rounded font-semibold">
@@ -549,13 +499,13 @@ export default function KitsPage() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => loadKitWithItems(kit.id)}
-                      className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-1 px-3 rounded text-sm"
+                      className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-1 px-3 rounded text-sm"
                     >
                       📦 Itens
                     </button>
                     <button
                       onClick={() => handleEdit(kit)}
-                      className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-3 rounded text-sm"
+                      className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-1 px-3 rounded text-sm"
                     >
                       ✏️ Editar
                     </button>
@@ -587,46 +537,6 @@ export default function KitsPage() {
               </button>
             </div>
 
-            {/* Formulário para adicionar item */}
-            <form onSubmit={handleAddItemToKit} className="mb-6 p-4 bg-gray-50 rounded">
-              <h4 className="font-semibold mb-3">Adicionar Item ao Kit</h4>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Item</label>
-                  <select
-                    value={newKitItem.item_id}
-                    onChange={(e) => setNewKitItem({ ...newKitItem, item_id: e.target.value })}
-                    required
-                    className="w-full px-3 py-2 border rounded"
-                  >
-                    <option value="">Selecione um item</option>
-                    {items.map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {item.name} (Qtd: {item.quantity})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Quantidade</label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={newKitItem.quantity}
-                    onChange={(e) => setNewKitItem({ ...newKitItem, quantity: e.target.value })}
-                    required
-                    className="w-full px-3 py-2 border rounded"
-                  />
-                </div>
-              </div>
-              <button
-                type="submit"
-                className="mt-3 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-sm"
-              >
-                + Adicionar
-              </button>
-            </form>
-
             {/* Lista de itens do kit */}
             <div>
               <h4 className="font-semibold mb-3">Itens incluídos ({selectedKit.items.length})</h4>
@@ -635,17 +545,11 @@ export default function KitsPage() {
               ) : (
                 <ul className="space-y-2">
                   {selectedKit.items.map((kitItem) => (
-                    <li key={kitItem.id} className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                    <li key={kitItem.id} className="flex items-center p-3 bg-gray-50 rounded">
                       <div>
                         <span className="font-medium">{kitItem.item_name}</span>
                         <span className="text-gray-600 ml-2">× {kitItem.quantity}</span>
                       </div>
-                      <button
-                        onClick={() => handleRemoveItemFromKit(kitItem.id)}
-                        className="text-red-500 hover:text-red-700 text-sm"
-                      >
-                        🗑️ Remover
-                      </button>
                     </li>
                   ))}
                 </ul>

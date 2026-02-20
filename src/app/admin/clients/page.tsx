@@ -163,7 +163,7 @@ export default function ClientsPage() {
         <h1 className="text-2xl font-bold">Gerenciar Clientes</h1>
         <button
           onClick={handleNewClient}
-          className="bg-pink-600 text-white px-4 py-2 rounded hover:bg-pink-700 transition-colors"
+          className="bg-brand-blue text-white px-4 py-2 rounded hover:bg-brand-blue-dark transition-colors"
         >
           + Nove Cliente
         </button>
@@ -171,7 +171,7 @@ export default function ClientsPage() {
 
       {loading ? (
         <div className="text-center py-12">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600"></div>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-brand-blue"></div>
           <p className="mt-4 text-gray-600">Carregando clientes...</p>
         </div>
       ) : (
@@ -207,7 +207,7 @@ export default function ClientsPage() {
                     <td className="p-3">
                       <button 
                         onClick={() => handleEdit(client)}
-                        className="text-blue-600 hover:underline mr-3"
+                        className="text-brand-blue hover:underline mr-3"
                       >
                         ✏️ Editar
                       </button>
@@ -338,7 +338,7 @@ export default function ClientsPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-pink-600 text-white rounded hover:bg-pink-700 transition-colors"
+                  className="px-4 py-2 bg-brand-blue text-white rounded hover:bg-brand-blue-dark transition-colors"
                 >
                   {editingClient ? 'Salvar Alterações' : 'Criar Cliente'}
                 </button>

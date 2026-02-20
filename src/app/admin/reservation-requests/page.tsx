@@ -380,13 +380,13 @@ export default function ReservationRequestsPage() {
                     <div className="flex gap-2 flex-wrap">
                       <a
                         href={getEmailLink(selectedRequest)}
-                        className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm flex items-center gap-2"
+                        className="bg-brand-blue hover:bg-brand-blue-dark text-white px-4 py-2 rounded text-sm flex items-center gap-2"
                         title="Abrir cliente de email com mensagem pré-preenchida"
                       >
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                          <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                        </svg>
+                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                            <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                          </svg>
                         Enviar Email
                       </a>
                       <a
@@ -412,7 +412,7 @@ export default function ReservationRequestsPage() {
                       {selectedRequest.status !== 'contacted' && selectedRequest.status !== 'approved' && selectedRequest.status !== 'rejected' && (
                         <button
                           onClick={() => updateStatus(selectedRequest.id, 'contacted')}
-                          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm"
+                          className="bg-brand-blue hover:bg-brand-blue-dark text-white px-4 py-2 rounded text-sm"
                           title="Cliente foi contatado e estamos em negociação"
                         >
                           📞 Em Contato
@@ -421,7 +421,7 @@ export default function ReservationRequestsPage() {
                       {['contacted', 'approved'].includes(selectedRequest.status) && (
                         <button
                           onClick={() => updateStatus(selectedRequest.id, 'converted')}
-                          className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded text-sm"
+                          className="bg-brand-blue hover:bg-brand-blue-dark text-white px-4 py-2 rounded text-sm"
                           title="Cliente confirmou e reserva foi criada no sistema"
                         >
                           ✅ Reserva Confirmada

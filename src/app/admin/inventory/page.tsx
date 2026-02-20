@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { useToast } from '@/hooks/useToast';
 import ImageUpload from '@/components/ImageUpload';
 import { formatItemId } from '@/lib/formatId';
@@ -18,6 +19,7 @@ interface Item {
 
 export default function InventoryPage() {
   const [items, setItems] = useState<Item[]>([]);
+  const [inventoryCategories, setInventoryCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
@@ -34,7 +36,20 @@ export default function InventoryPage() {
 
   useEffect(() => {
     loadItems();
+    loadCategories();
   }, []);
+
+  const loadCategories = async () => {
+    try {
+      const res = await fetch('/api/categories?section=items');
+      if (res.ok) {
+        const data = await res.json() as any[];
+        setInventoryCategories(data.map((c) => c.name));
+      }
+    } catch (error) {
+      console.error('Error loading categories:', error);
+    }
+  };
 
   const loadItems = async () => {
     try {
@@ -151,7 +166,7 @@ export default function InventoryPage() {
             setEditingItem(null);
             setFormData({ name: '', description: '', price: '', quantity: '', image_url: '', category: '', show_in_catalog: 1 });
           }}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded"
         >
           + Adicionar Item
         </button>
@@ -184,13 +199,16 @@ export default function InventoryPage() {
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Categoria</label>
-              <input
-                type="text"
+              <select
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                 className="w-full px-3 py-2 border rounded"
-                placeholder="Ex: Mesas, Cadeiras, Decoração, etc."
-              />
+              >
+                <option value="">Sem categoria</option>
+                {inventoryCategories.map((cat, idx) => (
+                  <option key={idx} value={cat}>{cat}</option>
+                ))}
+              </select>
             </div>
             <ImageUpload
               currentImage={formData.image_url}
@@ -241,7 +259,7 @@ export default function InventoryPage() {
             <div className="flex gap-2">
               <button
                 type="submit"
-                className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+                className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded"
               >
                 Salvar
               </button>
@@ -270,7 +288,17 @@ export default function InventoryPage() {
           <ul role="list" className="divide-y divide-gray-200">
             {items.map((item) => (
               <li key={item.id} className="px-6 py-4">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-4">
+                  {/* Thumbnail */}
+                  <div className="w-14 h-14 flex-shrink-0 rounded overflow-hidden bg-gray-100">
+                    {item.image_url ? (
+                      <div className="relative w-14 h-14">
+                        <Image src={item.image_url} alt={item.name} fill sizes="56px" className="object-cover" />
+                      </div>
+                    ) : (
+                      <div className="w-14 h-14 flex items-center justify-center text-gray-300 text-2xl">📦</div>
+                    )}
+                  </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-mono bg-blue-100 text-blue-800 px-2 py-1 rounded font-semibold">
@@ -305,7 +333,7 @@ export default function InventoryPage() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleEdit(item)}
-                      className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-3 rounded text-sm"
+                      className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-1 px-3 rounded text-sm"
                     >
                       Editar
                     </button>

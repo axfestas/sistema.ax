@@ -297,7 +297,7 @@ export default function SettingsPage() {
             <button
               type="submit"
               disabled={saving}
-              className="flex-1 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 disabled:bg-blue-300"
+              className="flex-1 bg-brand-blue text-white py-2 px-4 rounded hover:bg-brand-blue-dark disabled:bg-gray-300 disabled:cursor-not-allowed"
             >
               {saving ? 'Salvando...' : 'Salvar Configurações'}
             </button>
