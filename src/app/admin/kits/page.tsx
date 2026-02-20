@@ -180,42 +180,44 @@ export default function KitsPage() {
         const savedKit = await response.json() as { id: number }
         const kitId = editingKit ? editingKit.id : savedKit.id
         
-        // Save kit items for new kits or when editing
-        if (formKitItems.length > 0) {
-          // If editing, first get current items to avoid duplicates
-          if (editingKit) {
-            const currentKit = await fetch(`/api/kits?id=${kitId}`).then(r => r.json()) as KitWithItems
-            
-            // Add new items that don't exist yet
-            for (const formItem of formKitItems) {
-              const exists = currentKit.items?.some((i: any) => i.item_id === formItem.item_id)
-              
-              if (!exists) {
-                await fetch('/api/kit-items', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    kit_id: kitId,
-                    item_id: formItem.item_id,
-                    quantity: formItem.quantity,
-                  }),
-                })
-              }
-            }
-          } else {
-            // For new kits, add all items
-            for (const item of formKitItems) {
-              await fetch('/api/kit-items', {
+        if (editingKit) {
+          // Fetch current items to diff against formKitItems
+          const currentKit = await fetch(`/api/kits?id=${kitId}`).then(r => r.json()) as KitWithItems
+          const currentItems = currentKit.items || []
+
+          // Build parallel delete, add and update operations
+          const deleteOps = currentItems
+            .filter(current => !formKitItems.some(fi => fi.item_id === current.item_id))
+            .map(current => fetch(`/api/kit-items?id=${current.id}`, { method: 'DELETE' }))
+
+          const upsertOps = formKitItems.map(formItem => {
+            const existing = currentItems.find(ci => ci.item_id === formItem.item_id)
+            if (!existing) {
+              return fetch('/api/kit-items', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  kit_id: kitId,
-                  item_id: item.item_id,
-                  quantity: item.quantity,
-                }),
+                body: JSON.stringify({ kit_id: kitId, item_id: formItem.item_id, quantity: formItem.quantity }),
+              })
+            } else if (existing.quantity !== formItem.quantity) {
+              return fetch(`/api/kit-items?id=${existing.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ quantity: formItem.quantity }),
               })
             }
-          }
+            return Promise.resolve()
+          })
+
+          await Promise.all([...deleteOps, ...upsertOps])
+        } else {
+          // For new kits, add all items in parallel
+          await Promise.all(formKitItems.map(item =>
+            fetch('/api/kit-items', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ kit_id: kitId, item_id: item.item_id, quantity: item.quantity }),
+            })
+          ))
         }
         
         await loadKits()
