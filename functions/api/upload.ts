@@ -28,6 +28,17 @@ export async function onRequestPost(context: {
 
     const contentType = context.request.headers.get('content-type') || '';
     
+    // Check that R2 storage is configured
+    if (!context.env.STORAGE) {
+      return new Response(
+        JSON.stringify({ error: 'Storage (R2) not configured. Add the STORAGE R2 binding in Cloudflare Pages settings.' }),
+        {
+          status: 503,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
     if (!contentType.includes('multipart/form-data')) {
       return new Response(
         JSON.stringify({ error: 'Content-Type must be multipart/form-data' }),

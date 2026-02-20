@@ -78,7 +78,15 @@ export default function ImageUpload({
         showSuccess('Imagem enviada com sucesso!')
       } else {
         const error = await response.json() as { error: string }
-        showError(error.error || 'Erro ao enviar imagem')
+        const msg = error.error || 'Erro ao enviar imagem'
+        // Give actionable guidance when R2/storage is not configured
+        if (response.status === 503 || msg.toLowerCase().includes('storage')) {
+          showError('Upload indisponível: o armazenamento R2 não está configurado no Cloudflare Pages. Contate o administrador do sistema.')
+        } else if (response.status === 401) {
+          showError('Sessão expirada. Faça login novamente para enviar imagens.')
+        } else {
+          showError(msg)
+        }
         setPreview(currentImage || null)
       }
     } catch (error) {

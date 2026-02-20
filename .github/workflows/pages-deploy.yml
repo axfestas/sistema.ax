@@ -21,6 +21,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Apply D1 database migrations
+        # Requires CF_PAGES_API_TOKEN (with D1:edit + Pages:edit permissions)
+        # and CF_ACCOUNT_ID to be set as repository secrets.
+        run: bash scripts/apply-all-migrations.sh
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_PAGES_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+
       - name: Build
         run: npm run build
 

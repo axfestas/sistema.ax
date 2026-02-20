@@ -36,6 +36,17 @@ export async function onRequest(context: {
       );
     }
 
+    // Check that R2 storage is configured
+    if (!context.env.STORAGE) {
+      return new Response(
+        JSON.stringify({ error: 'Storage (R2) not configured. Add the STORAGE R2 binding in Cloudflare Pages settings.' }),
+        {
+          status: 503,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
     // Fetch object from R2
     const object = await context.env.STORAGE.get(key);
 
