@@ -16,10 +16,18 @@ interface SiteSettings {
   whatsapp_url?: string;
 }
 
+interface MigrationResult {
+  desc: string;
+  status: 'applied' | 'skipped' | 'error';
+  detail?: string;
+}
+
 export default function SettingsPage() {
   const [settings, setSettings] = useState<SiteSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [migrating, setMigrating] = useState(false);
+  const [migrationResults, setMigrationResults] = useState<MigrationResult[] | null>(null);
   const router = useRouter();
   const { showSuccess, showError } = useToast();
 
@@ -115,6 +123,28 @@ export default function SettingsPage() {
       showError('Erro ao salvar configurações');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleRunMigrations = async () => {
+    if (!confirm('Aplicar todas as migrações pendentes no banco de dados?')) return;
+    setMigrating(true);
+    setMigrationResults(null);
+    try {
+      const response = await fetch('/api/admin/migrate', { method: 'POST' });
+      const data = (await response.json()) as { results: MigrationResult[] };
+      setMigrationResults(data.results);
+      const errors = data.results.filter((r) => r.status === 'error');
+      if (errors.length === 0) {
+        showSuccess('Migrações aplicadas com sucesso!');
+      } else {
+        showError(`${errors.length} migração(ões) com erro. Veja os detalhes abaixo.`);
+      }
+    } catch (err) {
+      console.error('Error running migrations:', err);
+      showError('Erro ao executar migrações');
+    } finally {
+      setMigrating(false);
     }
   };
 
@@ -303,6 +333,46 @@ export default function SettingsPage() {
             </button>
           </div>
         </form>
+
+        {/* Database Migrations Panel */}
+        <div className="bg-white p-6 rounded-lg shadow mt-8">
+          <h2 className="text-xl font-bold mb-2 text-gray-800 border-b pb-2">
+            🛠️ Banco de Dados
+          </h2>
+          <p className="text-sm text-gray-600 mb-4">
+            Execute as migrações pendentes para criar tabelas e colunas que ainda não existem no banco de dados de produção.
+          </p>
+          <button
+            type="button"
+            onClick={handleRunMigrations}
+            disabled={migrating}
+            className="bg-brand-blue text-white py-2 px-4 rounded hover:bg-brand-blue-dark disabled:bg-gray-300 disabled:cursor-not-allowed"
+          >
+            {migrating ? 'Executando...' : '⚡ Executar Migrações'}
+          </button>
+
+          {migrationResults && (
+            <div className="mt-4 space-y-1">
+              {migrationResults.map((r, i) => {
+                const icon = r.status === 'applied' ? '✅' : r.status === 'skipped' ? '⚠️' : '❌';
+                const iconColor =
+                  r.status === 'applied' ? 'text-green-600' :
+                  r.status === 'skipped' ? 'text-yellow-600' :
+                  'text-red-600';
+                return (
+                  <div key={i} className="flex items-start gap-2 text-sm font-mono">
+                    <span className={iconColor}>{icon}</span>
+                    <span className="text-gray-700">{r.desc}</span>
+                    {r.status === 'skipped' && <span className="text-gray-400">(já aplicado)</span>}
+                    {r.status === 'error' && r.detail && (
+                      <span className="text-red-500 break-all">{r.detail}</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
