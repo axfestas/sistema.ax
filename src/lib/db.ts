@@ -70,6 +70,7 @@ export interface Reservation {
   kit_id?: number;  // Optional: if reserving a kit instead of item
   sweet_id?: number; // Optional: if reserving a sweet
   design_id?: number; // Optional: if reserving a design
+  theme_id?: number; // Optional: if reserving a theme
   quantity: number; // Quantity of items/kits reserved
   client_id?: number; // Optional: link to client record
   customer_name: string;
@@ -81,10 +82,11 @@ export interface Reservation {
 }
 
 export interface ReservationInput {
-  item_id?: number;  // Optional if kit_id/sweet_id/design_id is provided
-  kit_id?: number;   // Optional if item_id/sweet_id/design_id is provided
-  sweet_id?: number; // Optional if item_id/kit_id/design_id is provided
-  design_id?: number; // Optional if item_id/kit_id/sweet_id is provided
+  item_id?: number;  // Optional if kit_id/sweet_id/design_id/theme_id is provided
+  kit_id?: number;   // Optional if item_id/sweet_id/design_id/theme_id is provided
+  sweet_id?: number; // Optional if item_id/kit_id/design_id/theme_id is provided
+  design_id?: number; // Optional if item_id/kit_id/sweet_id/theme_id is provided
+  theme_id?: number; // Optional if item_id/kit_id/sweet_id/design_id is provided
   quantity?: number; // Default to 1 if not provided
   client_id?: number; // Optional: link to client record
   customer_name: string;
@@ -481,8 +483,8 @@ export async function createReservation(
   const quantity = reservation.quantity || 1;
   
   // Validação: deve ter pelo menos um tipo de item
-  if (!reservation.item_id && !reservation.kit_id && !reservation.sweet_id && !reservation.design_id) {
-    throw new Error('Deve fornecer item_id, kit_id, sweet_id ou design_id');
+  if (!reservation.item_id && !reservation.kit_id && !reservation.sweet_id && !reservation.design_id && !reservation.theme_id) {
+    throw new Error('Deve fornecer item_id, kit_id, sweet_id, design_id ou theme_id');
   }
 
   // Generate custom_id if not provided
@@ -508,13 +510,14 @@ export async function createReservation(
     // Try to insert with all fields including sweet_id, design_id, client_id, and customer_phone
     const result = await db
       .prepare(
-        'INSERT INTO reservations (item_id, kit_id, sweet_id, design_id, client_id, quantity, customer_name, customer_email, customer_phone, date_from, date_to, status, custom_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *'
+        'INSERT INTO reservations (item_id, kit_id, sweet_id, design_id, theme_id, client_id, quantity, customer_name, customer_email, customer_phone, date_from, date_to, status, custom_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *'
       )
       .bind(
         reservation.item_id || null,
         reservation.kit_id || null,
         reservation.sweet_id || null,
         reservation.design_id || null,
+        reservation.theme_id || null,
         reservation.client_id || null,
         quantity,
         reservation.customer_name,
@@ -534,6 +537,7 @@ export async function createReservation(
       error.message.includes('custom_id') ||
       error.message.includes('sweet_id') ||
       error.message.includes('design_id') ||
+      error.message.includes('theme_id') ||
       error.message.includes('client_id') ||
       error.message.includes('customer_phone')
     );
@@ -616,6 +620,10 @@ export async function updateReservation(
   if (updates.design_id !== undefined) {
     fields.push('design_id = ?');
     values.push(updates.design_id);
+  }
+  if (updates.theme_id !== undefined) {
+    fields.push('theme_id = ?');
+    values.push(updates.theme_id);
   }
   if (updates.client_id !== undefined) {
     fields.push('client_id = ?');

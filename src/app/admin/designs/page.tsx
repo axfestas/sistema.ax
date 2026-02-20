@@ -28,6 +28,7 @@ interface FormData {
 
 export default function DesignsPage() {
   const [designs, setDesigns] = useState<Design[]>([]);
+  const [designsCategories, setDesignsCategories] = useState<string[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editingDesign, setEditingDesign] = useState<Design | null>(null);
   const [loading, setLoading] = useState(true);
@@ -42,6 +43,10 @@ export default function DesignsPage() {
 
   useEffect(() => {
     loadDesigns();
+    fetch('/api/categories?section=designs')
+      .then((r) => r.ok ? r.json() : [])
+      .then((data: any[]) => setDesignsCategories(data.map((c) => c.name)))
+      .catch(() => {});
   }, []);
 
   async function loadDesigns() {
@@ -273,13 +278,16 @@ export default function DesignsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Categoria</label>
-                  <input
-                    type="text"
+                  <select
                     value={formData.category}
                     onChange={(e) => setFormData({...formData, category: e.target.value})}
                     className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                    placeholder="Ex: Painel, Centerpiece, etc."
-                  />
+                  >
+                    <option value="">Sem categoria</option>
+                    {designsCategories.map((cat) => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
                 </div>
                 <div className="flex items-center">
                   <label className="flex items-center cursor-pointer">

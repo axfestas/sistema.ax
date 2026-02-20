@@ -18,6 +18,7 @@ interface Item {
 
 export default function InventoryPage() {
   const [items, setItems] = useState<Item[]>([]);
+  const [inventoryCategories, setInventoryCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
@@ -34,6 +35,10 @@ export default function InventoryPage() {
 
   useEffect(() => {
     loadItems();
+    fetch('/api/categories?section=items')
+      .then((r) => r.ok ? r.json() : [])
+      .then((data: any[]) => setInventoryCategories(data.map((c) => c.name)))
+      .catch(() => {});
   }, []);
 
   const loadItems = async () => {
@@ -184,13 +189,16 @@ export default function InventoryPage() {
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Categoria</label>
-              <input
-                type="text"
+              <select
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                 className="w-full px-3 py-2 border rounded"
-                placeholder="Ex: Mesas, Cadeiras, Decoração, etc."
-              />
+              >
+                <option value="">Sem categoria</option>
+                {inventoryCategories.map((cat) => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
             </div>
             <ImageUpload
               currentImage={formData.image_url}

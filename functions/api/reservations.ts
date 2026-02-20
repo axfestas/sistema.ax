@@ -105,7 +105,7 @@ export async function onRequestPost(context: {
       return new Response(
         JSON.stringify({
           error:
-            'Missing required fields: customer_name, date_from, date_to. Note: An item identifier (item_id, kit_id, sweet_id, or design_id) is also required.',
+            'Missing required fields: customer_name, date_from, date_to. Note: An item identifier (item_id, kit_id, sweet_id, design_id, or theme_id) is also required.',
         }),
         {
           status: 400,

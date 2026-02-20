@@ -7,7 +7,7 @@ import { formatReservationId } from '@/lib/formatId';
 interface SelectableItem {
   id: number;
   name: string;
-  type: 'item' | 'kit' | 'sweet' | 'design';
+  type: 'item' | 'kit' | 'sweet' | 'design' | 'theme';
   displayName: string;
 }
 
@@ -24,6 +24,7 @@ interface Reservation {
   kit_id?: number;
   sweet_id?: number;
   design_id?: number;
+  theme_id?: number;
   client_id?: number;
   customer_name: string;
   customer_email?: string;
@@ -140,6 +141,18 @@ export default function ReservationsPage() {
         }));
       }
       
+      // Load themes
+      const themesRes = await fetch('/api/themes');
+      if (themesRes.ok) {
+        const data: any[] = await themesRes.json();
+        data.forEach(theme => items.push({
+          id: theme.id,
+          name: theme.name,
+          type: 'theme',
+          displayName: `[Tema] ${theme.name}`
+        }));
+      }
+      
       setAllItems(items);
     } catch (error) {
       console.error('Error loading items:', error);
@@ -224,6 +237,8 @@ export default function ReservationsPage() {
       reservationData.sweet_id = itemId;
     } else if (itemType === 'design') {
       reservationData.design_id = itemId;
+    } else if (itemType === 'theme') {
+      reservationData.theme_id = itemId;
     } else {
       showError('Tipo de item inválido');
       return;
@@ -288,6 +303,8 @@ export default function ReservationsPage() {
       selectedItem = `sweet:${reservation.sweet_id}`;
     } else if (reservation.design_id) {
       selectedItem = `design:${reservation.design_id}`;
+    } else if (reservation.theme_id) {
+      selectedItem = `theme:${reservation.theme_id}`;
     }
     
     setFormData({
@@ -340,6 +357,9 @@ export default function ReservationsPage() {
     } else if (reservation.design_id) {
       const item = allItems.find(i => i.type === 'design' && i.id === reservation.design_id);
       return item ? item.displayName : `Design #${reservation.design_id}`;
+    } else if (reservation.theme_id) {
+      const item = allItems.find(i => i.type === 'theme' && i.id === reservation.theme_id);
+      return item ? item.displayName : `Tema #${reservation.theme_id}`;
     }
     return 'Item não especificado';
   };
