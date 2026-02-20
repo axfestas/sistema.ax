@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/useToast';
 import { formatReservationId } from '@/lib/formatId';
 import ImageUpload from '@/components/ImageUpload';
 
+/** An item available for selection (populates the dropdown). */
 interface SelectableItem {
   id: number;
   name: string;
@@ -12,6 +13,7 @@ interface SelectableItem {
   displayName: string;
 }
 
+/** An item that has been added to the current reservation form (with quantity). */
 interface SelectedItemEntry {
   itemKey: string;      // e.g. "item:3", "kit:1"
   quantity: number;

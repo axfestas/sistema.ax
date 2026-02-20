@@ -175,16 +175,18 @@ export async function onRequestPut(context: {
     // Serialize multi-item array to items_json when provided
     if (body.items && body.items.length > 0) {
       body.items_json = JSON.stringify(body.items);
-      // Update primary item IDs from the first item for backward compatibility
+      // Update primary item IDs from the first item for backward compatibility.
+      // Cast to any so we can explicitly set unmatched ID fields to null (clearing old values).
+      const bodyAny = body as any;
       const first = body.items[0];
       const [type, idStr] = (first.itemKey || '').split(':');
       const id = parseInt(idStr || '0');
       if (!isNaN(id) && id > 0) {
-        body.item_id = type === 'item' ? id : null as any;
-        body.kit_id = type === 'kit' ? id : null as any;
-        body.sweet_id = type === 'sweet' ? id : null as any;
-        body.design_id = type === 'design' ? id : null as any;
-        body.theme_id = type === 'theme' ? id : null as any;
+        bodyAny.item_id = type === 'item' ? id : null;
+        bodyAny.kit_id = type === 'kit' ? id : null;
+        bodyAny.sweet_id = type === 'sweet' ? id : null;
+        bodyAny.design_id = type === 'design' ? id : null;
+        bodyAny.theme_id = type === 'theme' ? id : null;
       }
     }
 
