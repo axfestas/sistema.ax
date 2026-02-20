@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useToast } from '@/hooks/useToast';
 import { formatReservationId } from '@/lib/formatId';
 import ImageUpload from '@/components/ImageUpload';
@@ -84,9 +84,15 @@ export default function ReservationsPage() {
   const [formData, setFormData] = useState({ ...emptyForm });
   const [selectedItems, setSelectedItems] = useState<SelectedItemEntry[]>([]);
   const [newItemToAdd, setNewItemToAdd] = useState({ itemKey: '', quantity: '1' });
+  const [itemSearch, setItemSearch] = useState('');
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const { showSuccess, showError } = useToast();
+
+  const filteredSelectableItems = useMemo(
+    () => !itemSearch.trim() ? allItems : allItems.filter((item) => item.displayName.toLowerCase().includes(itemSearch.toLowerCase())),
+    [allItems, itemSearch]
+  );
 
   const filteredReservations = reservations.filter((r) => {
     const matchesStatus = !filterStatus || r.status === filterStatus;
@@ -212,6 +218,7 @@ export default function ReservationsPage() {
       setSelectedItems([...selectedItems, { itemKey: newItemToAdd.itemKey, quantity: validQty, displayName: found.displayName }]);
     }
     setNewItemToAdd({ itemKey: '', quantity: '1' });
+    setItemSearch('');
   };
 
   const handleRemoveItem = (itemKey: string) => {
@@ -390,7 +397,7 @@ export default function ReservationsPage() {
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold">Gerenciamento de Reservas</h2>
         <button
-          onClick={() => { setShowForm(true); setEditingReservation(null); setFormData({ ...emptyForm }); setSelectedItems([]); setNewItemToAdd({ itemKey: '', quantity: '1' }); }}
+          onClick={() => { setShowForm(true); setEditingReservation(null); setFormData({ ...emptyForm }); setSelectedItems([]); setNewItemToAdd({ itemKey: '', quantity: '1' }); setItemSearch(''); }}
           className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded"
         >
           + Nova Reserva
@@ -468,13 +475,20 @@ export default function ReservationsPage() {
               <div className="flex gap-2 items-end p-3 bg-gray-50 rounded border border-dashed">
                 <div className="flex-1">
                   <label className="block text-xs text-gray-500 mb-1">Selecione um item para adicionar</label>
+                  <input
+                    type="text"
+                    value={itemSearch}
+                    onChange={(e) => setItemSearch(e.target.value)}
+                    placeholder="Pesquisar item..."
+                    className="w-full px-3 py-2 border rounded text-sm mb-1"
+                  />
                   <select
                     value={newItemToAdd.itemKey}
                     onChange={(e) => setNewItemToAdd({ ...newItemToAdd, itemKey: e.target.value })}
                     className="w-full px-3 py-2 border rounded text-sm"
                   >
                     <option value="">Escolha um item...</option>
-                    {allItems.map((item) => (
+                    {filteredSelectableItems.map((item) => (
                       <option key={`${item.type}:${item.id}`} value={`${item.type}:${item.id}`}>
                         {item.displayName}{item.type === 'item' && item.stockQuantity !== undefined ? ` (estoque: ${item.stockQuantity})` : ''}
                       </option>
@@ -594,7 +608,7 @@ export default function ReservationsPage() {
 
             <div className="flex gap-2 pt-2">
               <button type="submit" className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded">Salvar</button>
-              <button type="button" onClick={() => { setShowForm(false); setEditingReservation(null); setSelectedItems([]); }} className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">Cancelar</button>
+              <button type="button" onClick={() => { setShowForm(false); setEditingReservation(null); setSelectedItems([]); setItemSearch(''); }} className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">Cancelar</button>
             </div>
           </form>
         </div>
