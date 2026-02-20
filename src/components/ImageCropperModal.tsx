@@ -25,6 +25,7 @@ interface ImageCropperModalProps {
 
 const HANDLE_RADIUS = 8
 const MIN_CROP = 40
+const JPEG_QUALITY = 0.92
 
 export default function ImageCropperModal({
   imageSrc,
@@ -253,7 +254,10 @@ export default function ImageCropperModal({
         }
       } else {
         // Resize
-        let nx = oc.x, ny = oc.y, nw = oc.w, nh = oc.h
+        let nx = oc.x
+        let ny = oc.y
+        let nw = oc.w
+        let nh = oc.h
 
         switch (drag.handle) {
           case 'nw':
@@ -328,7 +332,7 @@ export default function ImageCropperModal({
     out.height = Math.round(srcH)
     const ctx = out.getContext('2d')!
     ctx.drawImage(img, srcX, srcY, srcW, srcH, 0, 0, out.width, out.height)
-    out.toBlob((blob) => { if (blob) onCrop(blob) }, 'image/jpeg', 0.92)
+    out.toBlob((blob) => { if (blob) onCrop(blob) }, 'image/jpeg', JPEG_QUALITY)
   }
 
   return (

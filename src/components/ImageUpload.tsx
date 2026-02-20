@@ -29,13 +29,28 @@ export default function ImageUpload({
   const [dragActive, setDragActive] = useState(false)
   const [cropperSrc, setCropperSrc] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const previewObjectUrlRef = useRef<string | null>(null)
   const { showSuccess, showError } = useToast()
+
+  // Revoke any object URL we created when the component unmounts
+  useEffect(() => {
+    return () => {
+      if (previewObjectUrlRef.current) {
+        URL.revokeObjectURL(previewObjectUrlRef.current)
+      }
+    }
+  }, [])
 
   // Sync preview when currentImage prop changes (e.g., opening edit form for a different item)
   useEffect(() => {
     // Only update if not currently uploading (to avoid overwriting the live base64 preview)
     setPreview(prev => {
       if (uploading) return prev;
+      // Revoke the previous object URL, if any, when switching to a prop-provided URL
+      if (previewObjectUrlRef.current) {
+        URL.revokeObjectURL(previewObjectUrlRef.current)
+        previewObjectUrlRef.current = null
+      }
       return currentImage || null;
     });
   }, [currentImage]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -75,8 +90,13 @@ export default function ImageUpload({
   }
 
   const uploadBlob = async (blob: Blob) => {
+    // Revoke previous object URL to avoid memory leaks
+    if (previewObjectUrlRef.current) {
+      URL.revokeObjectURL(previewObjectUrlRef.current)
+    }
     // Show a preview of the cropped image immediately
     const objectUrl = URL.createObjectURL(blob)
+    previewObjectUrlRef.current = objectUrl
     setPreview(objectUrl)
 
     setUploading(true)
@@ -254,6 +274,10 @@ export default function ImageUpload({
           type="button"
           onClick={(e) => {
             e.preventDefault()
+            if (previewObjectUrlRef.current) {
+              URL.revokeObjectURL(previewObjectUrlRef.current)
+              previewObjectUrlRef.current = null
+            }
             setPreview(null)
             if (fileInputRef.current) {
               fileInputRef.current.value = ''
