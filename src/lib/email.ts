@@ -702,3 +702,336 @@ export async function sendPasswordResetEmail(params: {
     };
   }
 }
+
+/**
+ * Envia email de aprovação de solicitação de reserva
+ */
+export async function sendReservationApprovalEmail(params: {
+  to: string;
+  customerName: string;
+  requestCustomId: string;
+  eventDate: string;
+  itemsList: string;
+  total: number;
+  resendApiKey: string;
+}) {
+  try {
+    const { Resend } = await import('resend');
+    const resend = new Resend(params.resendApiKey);
+
+    const result = await resend.emails.send({
+      from: 'Ax Festas <noreply@axfestas.com.br>',
+      to: params.to,
+      subject: `✅ Solicitação Aprovada - ${params.requestCustomId}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #10b981;">✅ Solicitação Aprovada!</h2>
+          
+          <p>Olá ${params.customerName},</p>
+          
+          <p>Agradecemos pela sua solicitação! Temos o prazer de informar que sua reserva foi <strong>aprovada</strong>.</p>
+          
+          <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <p style="margin: 5px 0;"><strong>ID da Solicitação:</strong> ${params.requestCustomId}</p>
+            <p style="margin: 5px 0;"><strong>Data do Evento:</strong> ${formatDate(params.eventDate)}</p>
+          </div>
+          
+          <h3>Itens Aprovados:</h3>
+          <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+            <thead>
+              <tr style="background: #f3f4f6;">
+                <th style="padding: 8px; text-align: left;">Item</th>
+                <th style="padding: 8px; text-align: center;">Quantidade</th>
+                <th style="padding: 8px; text-align: right;">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${params.itemsList}
+            </tbody>
+            <tfoot>
+              <tr style="background: #f3f4f6; font-weight: bold;">
+                <td colspan="2" style="padding: 8px; text-align: right;">Total:</td>
+                <td style="padding: 8px; text-align: right; color: #10b981;">R$ ${params.total.toFixed(2)}</td>
+              </tr>
+            </tfoot>
+          </table>
+          
+          <p><strong>Próximos passos:</strong></p>
+          <ul>
+            <li>Entraremos em contato em breve para confirmar os detalhes finais</li>
+            <li>Faremos o agendamento oficial da reserva</li>
+            <li>Enviaremos informações sobre pagamento e contrato</li>
+          </ul>
+          
+          <p>Caso tenha alguma dúvida, não hesite em nos contatar.</p>
+          
+          <p>Atenciosamente,<br><strong>Equipe AX Festas</strong></p>
+        </div>
+      `,
+    });
+
+    return { success: true, data: result };
+  } catch (error: any) {
+    console.error('Error sending reservation approval email:', error);
+    return { success: false, error: error.message || 'Failed to send email' };
+  }
+}
+
+/**
+ * Envia email de rejeição/sem disponibilidade de solicitação de reserva
+ */
+export async function sendReservationRejectionEmail(params: {
+  to: string;
+  customerName: string;
+  requestCustomId: string;
+  eventDate: string;
+  reason?: string;
+  siteUrl: string;
+  adminEmail: string;
+  resendApiKey: string;
+}) {
+  try {
+    const { Resend } = await import('resend');
+    const resend = new Resend(params.resendApiKey);
+
+    const result = await resend.emails.send({
+      from: 'Ax Festas <noreply@axfestas.com.br>',
+      to: params.to,
+      reply_to: params.adminEmail,
+      subject: `Solicitação ${params.requestCustomId} - Vamos encontrar alternativas!`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #f59e0b;">Sobre sua Solicitação</h2>
+          
+          <p>Olá ${params.customerName},</p>
+          
+          <p>Agradecemos muito pelo seu interesse em nossos serviços!</p>
+          
+          <p>Infelizmente, para a data solicitada (<strong>${formatDate(params.eventDate)}</strong>), 
+          não temos disponibilidade completa dos itens que você escolheu.</p>
+          
+          ${params.reason ? `<div style="background: #fef3c7; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b;">
+            <p style="margin: 0;"><strong>Observação:</strong> ${params.reason}</p>
+          </div>` : ''}
+          
+          <p><strong>Mas não se preocupe! Podemos ajudar de várias formas:</strong></p>
+          <ul>
+            <li>💬 Verificar disponibilidade em datas próximas</li>
+            <li>🎨 Sugerir temas e itens alternativos que temos disponíveis</li>
+            <li>🎉 Montar um pacote personalizado para você</li>
+            <li>📅 Criar uma solução sob medida para seu evento</li>
+          </ul>
+          
+          <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
+            <p style="margin-bottom: 15px;"><strong>Vamos conversar?</strong></p>
+            <p style="margin: 10px 0;">
+              <a href="${params.siteUrl}/contato" 
+                 style="display: inline-block; background: #ec4899; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                Entre em Contato
+              </a>
+            </p>
+            <p style="margin: 10px 0; font-size: 14px; color: #666;">
+              Ou responda este email diretamente!
+            </p>
+          </div>
+          
+          <p>Estamos ansiosos para tornar seu evento especial! 🎈</p>
+          
+          <p>Atenciosamente,<br><strong>Equipe AX Festas</strong></p>
+        </div>
+      `,
+    });
+
+    return { success: true, data: result };
+  } catch (error: any) {
+    console.error('Error sending reservation rejection email:', error);
+    return { success: false, error: error.message || 'Failed to send email' };
+  }
+}
+
+/**
+ * Envia email de notificação para o admin sobre nova solicitação de carrinho
+ */
+export async function sendAdminNewRequestEmail(params: {
+  to: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  eventDate: string;
+  message?: string;
+  itemsList: string;
+  total: number;
+  resendApiKey: string;
+}) {
+  try {
+    const { Resend } = await import('resend');
+    const resend = new Resend(params.resendApiKey);
+
+    const result = await resend.emails.send({
+      from: 'Ax Festas <noreply@axfestas.com.br>',
+      to: params.to,
+      reply_to: params.customerEmail,
+      subject: `Nova Solicitação de Reserva - ${params.customerName}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background-color: #f59e0b; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+            .content { background-color: #f9fafb; padding: 20px; border-radius: 0 0 8px 8px; }
+            .info-item { margin-bottom: 15px; }
+            .info-label { font-weight: bold; color: #374151; }
+            table { width: 100%; border-collapse: collapse; margin: 20px 0; background: white; }
+            th { background-color: #f3f4f6; padding: 12px 8px; text-align: left; }
+            .total { font-size: 1.2em; font-weight: bold; color: #f59e0b; text-align: right; margin-top: 20px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🎉 Nova Solicitação de Reserva!</h1>
+            </div>
+            <div class="content">
+              <h2>Informações do Cliente</h2>
+              <div class="info-item">
+                <span class="info-label">Nome:</span> ${params.customerName}
+              </div>
+              <div class="info-item">
+                <span class="info-label">Email:</span> ${params.customerEmail}
+              </div>
+              <div class="info-item">
+                <span class="info-label">Telefone:</span> ${params.customerPhone}
+              </div>
+              <div class="info-item">
+                <span class="info-label">Data do Evento:</span> ${formatDate(params.eventDate)}
+              </div>
+              ${params.message ? `
+              <div class="info-item">
+                <span class="info-label">Mensagem:</span><br>
+                ${params.message}
+              </div>
+              ` : ''}
+              
+              <h2>Itens Solicitados</h2>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th style="text-align: center;">Quantidade</th>
+                    <th style="text-align: right;">Preço Unit.</th>
+                    <th style="text-align: right;">Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${params.itemsList}
+                </tbody>
+              </table>
+              
+              <div class="total">
+                Total Estimado: R$ ${params.total.toFixed(2)}
+              </div>
+              
+              <p style="margin-top: 30px; padding: 15px; background: white; border-left: 4px solid #f59e0b;">
+                <strong>Próximos Passos:</strong> Entre em contato com o cliente para confirmar disponibilidade e finalizar a reserva.
+              </p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    });
+
+    return { success: true, data: result };
+  } catch (error: any) {
+    console.error('Error sending admin new request email:', error);
+    return { success: false, error: error.message || 'Failed to send email' };
+  }
+}
+
+/**
+ * Envia email de confirmação de recebimento de solicitação para o cliente
+ */
+export async function sendCustomerRequestReceivedEmail(params: {
+  to: string;
+  customerName: string;
+  eventDate: string;
+  itemsList: string;
+  total: number;
+  resendApiKey: string;
+}) {
+  try {
+    const { Resend } = await import('resend');
+    const resend = new Resend(params.resendApiKey);
+
+    const result = await resend.emails.send({
+      from: 'Ax Festas <noreply@axfestas.com.br>',
+      to: params.to,
+      subject: 'Solicitação de Reserva Recebida - Ax Festas',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background-color: #f59e0b; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+            .content { background-color: #f9fafb; padding: 20px; border-radius: 0 0 8px 8px; }
+            table { width: 100%; border-collapse: collapse; margin: 20px 0; background: white; }
+            th { background-color: #f3f4f6; padding: 12px 8px; text-align: left; }
+            .total { font-size: 1.2em; font-weight: bold; color: #f59e0b; text-align: right; margin-top: 20px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🎉 Solicitação Recebida!</h1>
+            </div>
+            <div class="content">
+              <p>Olá <strong>${params.customerName}</strong>,</p>
+              
+              <p>Agradecemos pela sua solicitação de reserva para o evento do dia <strong>${formatDate(params.eventDate)}</strong>.</p>
+              
+              <h2>Resumo da Solicitação</h2>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th style="text-align: center;">Quantidade</th>
+                    <th style="text-align: right;">Preço</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${params.itemsList}
+                </tbody>
+              </table>
+              
+              <div class="total">
+                Total Estimado: R$ ${params.total.toFixed(2)}
+              </div>
+              
+              <p style="margin-top: 30px; padding: 15px; background: white; border-left: 4px solid #f59e0b;">
+                <strong>Em breve entraremos em contato!</strong><br>
+                Nossa equipe irá verificar a disponibilidade dos itens e retornar com a confirmação e detalhes finais da sua reserva.
+              </p>
+              
+              <p>Caso tenha alguma dúvida, entre em contato conosco.</p>
+              
+              <p>Atenciosamente,<br>
+              <strong>Equipe Ax Festas</strong></p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    });
+
+    return { success: true, data: result };
+  } catch (error: any) {
+    console.error('Error sending customer request received email:', error);
+    return { success: false, error: error.message || 'Failed to send email' };
+  }
+}
