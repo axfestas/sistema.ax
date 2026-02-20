@@ -15,11 +15,11 @@ interface SiteSettings {
 
 export default function Footer() {
   const [settings, setSettings] = useState<SiteSettings>({
-    company_name: 'Ax Festas',
-    company_description: 'Aluguel de itens para festas e eventos. Qualidade e excelência no atendimento.',
-    phone: '(00) 00000-0000',
-    email: 'contato@axfestas.com.br',
-    address: 'A definir',
+    company_name: '',
+    company_description: '',
+    phone: '',
+    email: '',
+    address: '',
   });
 
   useEffect(() => {
