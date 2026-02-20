@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import Image from 'next/image'
 
 interface PortfolioImage {
@@ -15,6 +15,16 @@ interface PortfolioImage {
 export default function Home() {
   const [portfolioImages, setPortfolioImages] = useState<PortfolioImage[]>([])
   const [loading, setLoading] = useState(true)
+  const [lightbox, setLightbox] = useState<PortfolioImage | null>(null)
+
+  const closeLightbox = useCallback(() => setLightbox(null), [])
+
+  useEffect(() => {
+    if (!lightbox) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeLightbox() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [lightbox, closeLightbox])
 
   useEffect(() => {
     loadPortfolioImages()
@@ -102,7 +112,8 @@ export default function Home() {
               {portfolioImages.map((image) => (
                 <div 
                   key={image.id} 
-                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300"
+                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer"
+                  onClick={() => setLightbox(image)}
                 >
                   {/* Portfolio Image */}
                   <div className={`${getImageHeightClass(image.image_size)} bg-gray-200 relative overflow-hidden`}>
@@ -148,6 +159,44 @@ export default function Home() {
           </a>
         </div>
       </section>
+
+      {/* Lightbox Modal */}
+      {lightbox && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+          onClick={closeLightbox}
+        >
+          <div
+            className="relative max-w-4xl w-full max-h-[90vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={closeLightbox}
+              className="absolute -top-10 right-0 text-white text-3xl leading-none hover:text-gray-300 transition-colors"
+              aria-label="Fechar"
+            >
+              ✕
+            </button>
+            <div className="relative w-full" style={{ aspectRatio: '4/3' }}>
+              <Image
+                src={lightbox.image_url}
+                alt={lightbox.title}
+                fill
+                className="object-contain rounded-lg"
+                sizes="(max-width: 896px) 100vw, 896px"
+              />
+            </div>
+            {(lightbox.title || lightbox.description) && (
+              <div className="bg-white rounded-b-lg px-6 py-4">
+                <h3 className="text-lg font-bold text-brand-gray">{lightbox.title}</h3>
+                {lightbox.description && (
+                  <p className="text-gray-600 text-sm mt-1">{lightbox.description}</p>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
