@@ -84,7 +84,7 @@ export default function CatalogPage() {
   // Derive all categories for the active tab
   const availableCategories = (() => {
     const getCats = (arr: { category?: string }[]) =>
-      [...new Set(arr.map((x) => x.category).filter(Boolean) as string[])].sort()
+      Array.from(new Set(arr.map((x) => x.category).filter(Boolean) as string[])).sort()
     if (activeTab === 'items') return getCats(items)
     if (activeTab === 'sweets') return getCats(sweets)
     if (activeTab === 'designs') return getCats(designs)
