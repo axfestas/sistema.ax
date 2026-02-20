@@ -8,7 +8,6 @@ interface Theme {
   id: number;
   name: string;
   description?: string;
-  price: number;
   image_url?: string;
   category?: string;
   is_active: number;
@@ -19,7 +18,6 @@ interface Theme {
 interface FormData {
   name: string;
   description: string;
-  price: string;
   image_url: string;
   category: string;
   show_in_catalog: boolean;
@@ -34,7 +32,6 @@ export default function ThemesPage() {
   const [formData, setFormData] = useState<FormData>({
     name: '',
     description: '',
-    price: '',
     image_url: '',
     category: '',
     show_in_catalog: true,
@@ -77,8 +74,8 @@ export default function ThemesPage() {
     try {
       const method = editingTheme ? 'PUT' : 'POST';
       const body = editingTheme
-        ? { ...formData, id: editingTheme.id, price: parseFloat(formData.price), show_in_catalog: formData.show_in_catalog ? 1 : 0 }
-        : { ...formData, price: parseFloat(formData.price), show_in_catalog: formData.show_in_catalog ? 1 : 0 };
+        ? { ...formData, id: editingTheme.id, show_in_catalog: formData.show_in_catalog ? 1 : 0 }
+        : { ...formData, show_in_catalog: formData.show_in_catalog ? 1 : 0 };
 
       const res = await fetch('/api/themes', {
         method,
@@ -101,7 +98,6 @@ export default function ThemesPage() {
     setFormData({
       name: '',
       description: '',
-      price: '',
       image_url: '',
       category: '',
       show_in_catalog: true,
@@ -113,7 +109,6 @@ export default function ThemesPage() {
     setFormData({
       name: theme.name,
       description: theme.description || '',
-      price: theme.price.toString(),
       image_url: theme.image_url || '',
       category: theme.category || '',
       show_in_catalog: theme.show_in_catalog === 1,
@@ -192,11 +187,6 @@ export default function ThemesPage() {
                   {theme.category && (
                     <p className="text-xs text-gray-500 mb-2">Categoria: {theme.category}</p>
                   )}
-                  <div className="mb-3">
-                    <span className="text-xl font-bold text-pink-600">
-                      R$ {theme.price.toFixed(2)}
-                    </span>
-                  </div>
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleEdit(theme)}
@@ -244,18 +234,6 @@ export default function ThemesPage() {
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
                     rows={3}
-                  />
-                </div>
-                <div className="col-span-2">
-                  <label className="block text-sm font-medium mb-1">Preço (R$) *</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    required
-                    value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
                   />
                 </div>
                 <div className="col-span-2">

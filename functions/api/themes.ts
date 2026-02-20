@@ -17,7 +17,6 @@ export interface Theme {
   id: number;
   name: string;
   description?: string;
-  price: number;
   image_url?: string;
   category?: string;
   is_active: number;
@@ -28,7 +27,6 @@ export interface Theme {
 export interface ThemeInput {
   name: string;
   description?: string;
-  price: number;
   image_url?: string;
   category?: string;
   show_in_catalog?: number;
@@ -73,9 +71,9 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   try {
     const body = await context.request.json() as ThemeInput;
 
-    if (!body.name || body.price === undefined) {
+    if (!body.name) {
       return new Response(
-        JSON.stringify({ error: 'Name and price are required' }),
+        JSON.stringify({ error: 'Name is required' }),
         {
           status: 400,
           headers: { 'Content-Type': 'application/json' },
@@ -85,13 +83,12 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
     const result = await db
       .prepare(`
-        INSERT INTO themes (name, description, price, image_url, category, show_in_catalog)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO themes (name, description, image_url, category, show_in_catalog)
+        VALUES (?, ?, ?, ?, ?)
       `)
       .bind(
         body.name,
         body.description || null,
-        body.price,
         body.image_url || null,
         body.category || null,
         body.show_in_catalog !== undefined ? body.show_in_catalog : 1
@@ -142,14 +139,13 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
     await db
       .prepare(`
         UPDATE themes
-        SET name = ?, description = ?, price = ?,
+        SET name = ?, description = ?,
             image_url = ?, category = ?, show_in_catalog = ?
         WHERE id = ?
       `)
       .bind(
         body.name,
         body.description || null,
-        body.price,
         body.image_url || null,
         body.category || null,
         body.show_in_catalog,

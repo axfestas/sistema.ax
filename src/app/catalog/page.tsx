@@ -55,7 +55,6 @@ interface Theme {
   id: number
   name: string
   description?: string
-  price: number
   image_url?: string
   category?: string
 }
@@ -624,24 +623,6 @@ export default function CatalogPage() {
                                 Categoria: {theme.category}
                               </p>
                             )}
-
-                            <div className="flex justify-between items-center">
-                              <span className="text-2xl font-bold text-brand-yellow">
-                                R$ {theme.price.toFixed(2)}
-                              </span>
-                              <button
-                                onClick={() => addItem({
-                                  id: `theme-${theme.id}`,
-                                  name: theme.name,
-                                  description: theme.description || '',
-                                  price: theme.price,
-                                  image: theme.image_url
-                                })}
-                                className="bg-brand-yellow hover:bg-brand-yellow/90 text-white font-bold py-2 px-4 rounded-full transition-colors duration-300"
-                              >
-                                Adicionar ao Carrinho
-                              </button>
-                            </div>
                           </div>
                         </div>
                       ))}
