@@ -316,15 +316,15 @@ const EMAIL_TEMPLATES: Record<string, string> = {
         <div class="footer">
             <div class="footer-logo">Ax Festas</div>
             <div class="footer-content">
-                <p>Transformando momentos em memórias inesquecíveis</p>
+                <p>Aqui seu sonho vira realidade</p>
                 <div class="contact-info">
                     <div class="contact-item">
                         <span>📧</span>
-                        <a href="mailto:contato@axfestas.com.br">contato@axfestas.com.br</a>
+                        <a href="mailto:comercial@axfestas.com.br">comercial@axfestas.com.br</a>
                     </div>
                     <div class="contact-item">
                         <span>📱</span>
-                        <span>(00) 00000-0000</span>
+                        <span>(27) 98141-6410</span>
                     </div>
                 </div>
             </div>
@@ -564,15 +564,15 @@ const EMAIL_TEMPLATES: Record<string, string> = {
         <div class="footer">
             <div class="footer-logo">Ax Festas</div>
             <div class="footer-content">
-                <p>Transformando momentos em memórias inesquecíveis</p>
+                <p>Aqui seu sonho vira realidade</p>
                 <div class="contact-info">
                     <div class="contact-item">
                         <span>📧</span>
-                        <a href="mailto:contato@axfestas.com.br">contato@axfestas.com.br</a>
+                        <a href="mailto:comercial@axfestas.com.br">comercial@axfestas.com.br</a>
                     </div>
                     <div class="contact-item">
                         <span>📱</span>
-                        <span>(00) 00000-0000</span>
+                        <span>(27) 98141-6410</span>
                     </div>
                 </div>
             </div>
@@ -765,7 +765,8 @@ export async function sendReservationApprovalEmail(params: {
           
           <p>Caso tenha alguma dúvida, não hesite em nos contatar.</p>
           
-          <p>Atenciosamente,<br><strong>Equipe AX Festas</strong></p>
+          <p>Atenciosamente,<br><strong>Equipe AX Festas</strong><br>
+          📧 <a href="mailto:comercial@axfestas.com.br">comercial@axfestas.com.br</a> | 📱 (27) 98141-6410</p>
         </div>
       `,
     });
@@ -837,7 +838,8 @@ export async function sendReservationRejectionEmail(params: {
           
           <p>Estamos ansiosos para tornar seu evento especial! 🎈</p>
           
-          <p>Atenciosamente,<br><strong>Equipe AX Festas</strong></p>
+          <p>Atenciosamente,<br><strong>Equipe AX Festas</strong><br>
+          📧 <a href="mailto:comercial@axfestas.com.br">comercial@axfestas.com.br</a> | 📱 (27) 98141-6410</p>
         </div>
       `,
     });
@@ -937,6 +939,9 @@ export async function sendAdminNewRequestEmail(params: {
               <p style="margin-top: 30px; padding: 15px; background: white; border-left: 4px solid #f59e0b;">
                 <strong>Próximos Passos:</strong> Entre em contato com o cliente para confirmar disponibilidade e finalizar a reserva.
               </p>
+              <p style="margin-top: 20px; font-size: 13px; color: #666;">
+                📧 <a href="mailto:comercial@axfestas.com.br">comercial@axfestas.com.br</a> | 📱 (27) 98141-6410
+              </p>
             </div>
           </div>
         </body>
@@ -1021,7 +1026,8 @@ export async function sendCustomerRequestReceivedEmail(params: {
               <p>Caso tenha alguma dúvida, entre em contato conosco.</p>
               
               <p>Atenciosamente,<br>
-              <strong>Equipe Ax Festas</strong></p>
+              <strong>Equipe Ax Festas</strong><br>
+              📧 <a href="mailto:comercial@axfestas.com.br">comercial@axfestas.com.br</a> | 📱 (27) 98141-6410</p>
             </div>
           </div>
         </body>
