@@ -541,7 +541,7 @@ export default function CatalogPage() {
                               </p>
                             )}
                             <p className="text-xs text-gray-500 mb-4">
-                              {sweet.quantity > 0 ? `${sweet.quantity} disponível(is)` : 'Indisponível'}
+                              {sweet.quantity > 0 ? `Quantidade: ${sweet.quantity}` : 'Indisponível'}
                             </p>
                             
                             <div className="flex justify-between items-center">
