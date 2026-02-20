@@ -100,6 +100,11 @@ const MIGRATIONS: { desc: string; sql: string }[] = [
     desc: '018: themes DROP COLUMN price',
     sql: 'ALTER TABLE themes DROP COLUMN price',
   },
+  // 019 – allow multiple items per reservation via JSON array
+  {
+    desc: '019: reservations.items_json',
+    sql: 'ALTER TABLE reservations ADD COLUMN items_json TEXT',
+  },
 ];
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
