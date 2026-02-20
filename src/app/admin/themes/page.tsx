@@ -8,7 +8,6 @@ interface Theme {
   id: number;
   name: string;
   description?: string;
-  price: number;
   image_url?: string;
   category?: string;
   is_active: number;
@@ -19,7 +18,6 @@ interface Theme {
 interface FormData {
   name: string;
   description: string;
-  price: string;
   image_url: string;
   category: string;
   show_in_catalog: boolean;
@@ -31,10 +29,11 @@ export default function ThemesPage() {
   const [editingTheme, setEditingTheme] = useState<Theme | null>(null);
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<string[]>([]);
+  const [search, setSearch] = useState('');
+  const [filterCategory, setFilterCategory] = useState('');
   const [formData, setFormData] = useState<FormData>({
     name: '',
     description: '',
-    price: '',
     image_url: '',
     category: '',
     show_in_catalog: true,
@@ -77,8 +76,8 @@ export default function ThemesPage() {
     try {
       const method = editingTheme ? 'PUT' : 'POST';
       const body = editingTheme
-        ? { ...formData, id: editingTheme.id, price: parseFloat(formData.price), show_in_catalog: formData.show_in_catalog ? 1 : 0 }
-        : { ...formData, price: parseFloat(formData.price), show_in_catalog: formData.show_in_catalog ? 1 : 0 };
+        ? { ...formData, id: editingTheme.id, show_in_catalog: formData.show_in_catalog ? 1 : 0 }
+        : { ...formData, show_in_catalog: formData.show_in_catalog ? 1 : 0 };
 
       const res = await fetch('/api/themes', {
         method,
@@ -101,7 +100,6 @@ export default function ThemesPage() {
     setFormData({
       name: '',
       description: '',
-      price: '',
       image_url: '',
       category: '',
       show_in_catalog: true,
@@ -113,7 +111,6 @@ export default function ThemesPage() {
     setFormData({
       name: theme.name,
       description: theme.description || '',
-      price: theme.price.toString(),
       image_url: theme.image_url || '',
       category: theme.category || '',
       show_in_catalog: theme.show_in_catalog === 1,
@@ -139,6 +136,18 @@ export default function ThemesPage() {
     setShowForm(true);
   }
 
+  const filteredThemes = themes.filter((t) => {
+    const matchesCat = !filterCategory || t.category === filterCategory;
+    if (!matchesCat) return false;
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return (
+      t.name.toLowerCase().includes(q) ||
+      (t.description && t.description.toLowerCase().includes(q)) ||
+      (t.category && t.category.toLowerCase().includes(q))
+    );
+  });
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
@@ -151,6 +160,30 @@ export default function ThemesPage() {
         </button>
       </div>
 
+      {!showForm && (
+        <div className="flex gap-2 mb-4 flex-wrap">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar por nome ou descrição..."
+            className="px-3 py-2 border rounded flex-1 min-w-[200px]"
+          />
+          {categories.length > 0 && (
+            <select
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+              className="px-3 py-2 border rounded"
+            >
+              <option value="">Todas as categorias</option>
+              {categories.map((cat, i) => (
+                <option key={i} value={cat}>{cat}</option>
+              ))}
+            </select>
+          )}
+        </div>
+      )}
+
       {loading ? (
         <div className="text-center py-12">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600"></div>
@@ -162,8 +195,12 @@ export default function ThemesPage() {
             <div className="col-span-full text-center py-12 text-gray-500">
               Nenhum tema cadastrado
             </div>
+          ) : filteredThemes.length === 0 ? (
+            <div className="col-span-full text-center py-12 text-gray-500">
+              Nenhum tema encontrado para os filtros aplicados.
+            </div>
           ) : (
-            themes.map((theme) => (
+            filteredThemes.map((theme) => (
               <div key={theme.id} className="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="aspect-square bg-gray-200 relative">
                   {theme.image_url ? (
@@ -192,11 +229,6 @@ export default function ThemesPage() {
                   {theme.category && (
                     <p className="text-xs text-gray-500 mb-2">Categoria: {theme.category}</p>
                   )}
-                  <div className="mb-3">
-                    <span className="text-xl font-bold text-pink-600">
-                      R$ {theme.price.toFixed(2)}
-                    </span>
-                  </div>
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleEdit(theme)}
@@ -244,18 +276,6 @@ export default function ThemesPage() {
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
                     rows={3}
-                  />
-                </div>
-                <div className="col-span-2">
-                  <label className="block text-sm font-medium mb-1">Preço (R$) *</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    required
-                    value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
                   />
                 </div>
                 <div className="col-span-2">

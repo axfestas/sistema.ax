@@ -31,10 +31,22 @@ export default function ReservationRequestsPage() {
   const [selectedRequest, setSelectedRequest] = useState<ReservationRequest | null>(null);
   const [showDetails, setShowDetails] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [search, setSearch] = useState('');
   const [settings, setSettings] = useState<SiteSettings | null>(null);
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const { showSuccess, showError } = useToast();
+
+  const filteredRequests = requests.filter((r) => {
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return (
+      r.customer_name.toLowerCase().includes(q) ||
+      r.customer_email.toLowerCase().includes(q) ||
+      (r.customer_phone && r.customer_phone.includes(q)) ||
+      (r.custom_id && r.custom_id.toLowerCase().includes(q))
+    );
+  });
 
   useEffect(() => {
     loadRequests();
@@ -148,7 +160,14 @@ export default function ReservationRequestsPage() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Solicitações de Reserva</h1>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar por nome, email ou ID..."
+            className="px-4 py-2 border border-gray-300 rounded-lg min-w-[220px]"
+          />
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
@@ -177,6 +196,10 @@ export default function ReservationRequestsPage() {
               : `Nenhuma solicitação com status "${filterStatus}" encontrada.`}
           </p>
         </div>
+      ) : filteredRequests.length === 0 ? (
+        <div className="bg-white p-8 rounded-lg shadow text-center">
+          <p className="text-gray-500">Nenhuma solicitação encontrada para a busca.</p>
+        </div>
       ) : (
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <table className="w-full">
@@ -193,7 +216,7 @@ export default function ReservationRequestsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {requests.map((request) => (
+              {filteredRequests.map((request) => (
                 <tr 
                   key={request.id} 
                   onClick={() => viewDetails(request)}

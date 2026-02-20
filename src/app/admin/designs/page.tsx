@@ -32,6 +32,8 @@ export default function DesignsPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingDesign, setEditingDesign] = useState<Design | null>(null);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [filterCategory, setFilterCategory] = useState('');
   const [formData, setFormData] = useState<FormData>({
     name: '',
     description: '',
@@ -158,6 +160,18 @@ export default function DesignsPage() {
     setShowForm(true);
   }
 
+  const filteredDesigns = designs.filter((d) => {
+    const matchesCat = !filterCategory || d.category === filterCategory;
+    if (!matchesCat) return false;
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return (
+      d.name.toLowerCase().includes(q) ||
+      (d.description && d.description.toLowerCase().includes(q)) ||
+      (d.category && d.category.toLowerCase().includes(q))
+    );
+  });
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
@@ -170,6 +184,30 @@ export default function DesignsPage() {
         </button>
       </div>
 
+      {!showForm && (
+        <div className="flex gap-2 mb-4 flex-wrap">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar por nome ou descrição..."
+            className="px-3 py-2 border rounded flex-1 min-w-[200px]"
+          />
+          {designsCategories.length > 0 && (
+            <select
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+              className="px-3 py-2 border rounded"
+            >
+              <option value="">Todas as categorias</option>
+              {designsCategories.map((cat, i) => (
+                <option key={i} value={cat}>{cat}</option>
+              ))}
+            </select>
+          )}
+        </div>
+      )}
+
       {loading ? (
         <div className="text-center py-12">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600"></div>
@@ -181,8 +219,12 @@ export default function DesignsPage() {
             <div className="col-span-full text-center py-12 text-gray-500">
               Nenhum design cadastrado
             </div>
+          ) : filteredDesigns.length === 0 ? (
+            <div className="col-span-full text-center py-12 text-gray-500">
+              Nenhum design encontrado para os filtros aplicados.
+            </div>
           ) : (
-            designs.map(design => (
+            filteredDesigns.map(design => (
               <div key={design.id} className="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="aspect-square bg-gray-200 relative">
                   {design.image_url ? (

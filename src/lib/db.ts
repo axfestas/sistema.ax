@@ -697,8 +697,44 @@ export async function updateReservation(
   values.push(reservationId);
   const query = `UPDATE reservations SET ${fields.join(', ')} WHERE id = ? RETURNING *`;
 
-  const result = await db.prepare(query).bind(...values).first();
-  return result ? (result as unknown as Reservation) : null;
+  try {
+    const result = await db.prepare(query).bind(...values).first();
+    return result ? (result as unknown as Reservation) : null;
+  } catch (error: any) {
+    // If a column referenced in the UPDATE doesn't exist yet (migration not applied),
+    // retry with only the core columns that are guaranteed to exist.
+    const isColumnError =
+      error.message &&
+      (error.message.toLowerCase().includes('no such column') ||
+        error.message.toLowerCase().includes('column'));
+
+    if (!isColumnError) throw error;
+
+    console.warn('Column error during update, retrying with base columns:', error.message);
+
+    // Build a minimal update using only the columns present in the original schema
+    // (before any ALTER TABLE migrations). These are safe to use on any DB version.
+    const baseFields: string[] = [];
+    const baseValues: any[] = [];
+    const ALWAYS_PRESENT = new Set([
+      'item_id = ?', 'kit_id = ?', 'quantity = ?',
+      'customer_name = ?', 'customer_email = ?',
+      'date_from = ?', 'date_to = ?', 'status = ?',
+    ]);
+    fields.forEach((field, i) => {
+      if (ALWAYS_PRESENT.has(field)) {
+        baseFields.push(field);
+        baseValues.push(values[i]);
+      }
+    });
+    if (baseFields.length === 0) {
+      return getReservationById(db, reservationId);
+    }
+    baseValues.push(reservationId);
+    const baseQuery = `UPDATE reservations SET ${baseFields.join(', ')} WHERE id = ? RETURNING *`;
+    const result = await db.prepare(baseQuery).bind(...baseValues).first();
+    return result ? (result as unknown as Reservation) : null;
+  }
 }
 
 /**

@@ -41,6 +41,7 @@ export default function KitsPage() {
   const [showItemsModal, setShowItemsModal] = useState(false)
   const [editingKit, setEditingKit] = useState<Kit | null>(null)
   const [selectedKit, setSelectedKit] = useState<KitWithItems | null>(null)
+  const [search, setSearch] = useState('')
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -52,6 +53,15 @@ export default function KitsPage() {
   const [newFormItem, setNewFormItem] = useState({
     item_id: '',
     quantity: '1',
+  })
+
+  const filteredKits = kits.filter((kit) => {
+    if (!search.trim()) return true
+    const q = search.toLowerCase()
+    return (
+      kit.name.toLowerCase().includes(q) ||
+      (kit.description && kit.description.toLowerCase().includes(q))
+    )
   })
 
   useEffect(() => {
@@ -310,6 +320,18 @@ export default function KitsPage() {
         </button>
       </div>
 
+      {!showForm && (
+        <div className="flex gap-2 mb-4">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar por nome ou descrição..."
+            className="px-3 py-2 border rounded flex-1"
+          />
+        </div>
+      )}
+
       {showForm && (
         <div className="bg-white p-6 rounded-lg shadow mb-6">
           <h3 className="text-xl font-bold mb-4">
@@ -456,13 +478,13 @@ export default function KitsPage() {
       )}
 
       <div className="bg-white rounded-lg shadow">
-        {kits.length === 0 ? (
+        {filteredKits.length === 0 ? (
           <div className="p-8 text-center">
-            <p className="text-gray-500">Nenhum kit cadastrado</p>
+            <p className="text-gray-500">{kits.length === 0 ? 'Nenhum kit cadastrado' : 'Nenhum kit encontrado para a busca.'}</p>
           </div>
         ) : (
           <ul role="list" className="divide-y divide-gray-200">
-            {kits.map((kit) => (
+            {filteredKits.map((kit) => (
               <li key={kit.id} className="px-6 py-4">
                 <div className="flex items-center justify-between gap-4">
                   {/* Thumbnail */}

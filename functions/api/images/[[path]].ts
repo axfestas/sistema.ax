@@ -20,11 +20,15 @@ interface Env {
 export async function onRequest(context: {
   request: Request;
   env: Env;
-  params: { path?: string };
+  params: { path?: string | string[] };
 }) {
   try {
-    // Extract the full image path from parameters
-    const key = context.params.path || '';
+    // Extract the full image path from parameters.
+    // Cloudflare Pages catch-all routes ([[path]]) deliver params.path as string[]
+    // when there are multiple segments (e.g. ['items', '1234-name.jpg']).
+    // Join with '/' to reconstruct the R2 key (e.g. 'items/1234-name.jpg').
+    const rawPath = context.params.path;
+    const key = Array.isArray(rawPath) ? rawPath.join('/') : (rawPath || '');
     
     if (!key) {
       return new Response(

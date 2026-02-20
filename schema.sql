@@ -200,7 +200,6 @@ CREATE TABLE themes (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
   description TEXT,
-  price REAL NOT NULL DEFAULT 0,
   image_url TEXT,
   category TEXT,
   is_active INTEGER DEFAULT 1,

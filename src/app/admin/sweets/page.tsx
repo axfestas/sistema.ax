@@ -34,6 +34,8 @@ export default function SweetsPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingSweet, setEditingSweet] = useState<Sweet | null>(null);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [filterCategory, setFilterCategory] = useState('');
   const [formData, setFormData] = useState<FormData>({
     name: '',
     description: '',
@@ -163,6 +165,18 @@ export default function SweetsPage() {
     setShowForm(true);
   }
 
+  const filteredSweets = sweets.filter((s) => {
+    const matchesCat = !filterCategory || s.category === filterCategory;
+    if (!matchesCat) return false;
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return (
+      s.name.toLowerCase().includes(q) ||
+      (s.description && s.description.toLowerCase().includes(q)) ||
+      (s.category && s.category.toLowerCase().includes(q))
+    );
+  });
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
@@ -175,6 +189,30 @@ export default function SweetsPage() {
         </button>
       </div>
 
+      {!showForm && (
+        <div className="flex gap-2 mb-4 flex-wrap">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar por nome ou descrição..."
+            className="px-3 py-2 border rounded flex-1 min-w-[200px]"
+          />
+          {sweetsCategories.length > 0 && (
+            <select
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+              className="px-3 py-2 border rounded"
+            >
+              <option value="">Todas as categorias</option>
+              {sweetsCategories.map((cat, i) => (
+                <option key={i} value={cat}>{cat}</option>
+              ))}
+            </select>
+          )}
+        </div>
+      )}
+
       {loading ? (
         <div className="text-center py-12">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600"></div>
@@ -186,8 +224,12 @@ export default function SweetsPage() {
             <div className="col-span-full text-center py-12 text-gray-500">
               Nenhum doce cadastrado
             </div>
+          ) : filteredSweets.length === 0 ? (
+            <div className="col-span-full text-center py-12 text-gray-500">
+              Nenhum doce encontrado para os filtros aplicados.
+            </div>
           ) : (
-            sweets.map(sweet => (
+            filteredSweets.map(sweet => (
               <div key={sweet.id} className="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="aspect-square bg-gray-200 relative">
                   {sweet.image_url ? (

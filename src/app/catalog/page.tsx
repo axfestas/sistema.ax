@@ -55,7 +55,6 @@ interface Theme {
   id: number
   name: string
   description?: string
-  price: number
   image_url?: string
   category?: string
 }
@@ -71,7 +70,48 @@ export default function CatalogPage() {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<TabType>('kits')
   const [quantities, setQuantities] = useState<{ [key: number]: number }>({})
+  const [search, setSearch] = useState('')
+  const [filterCategory, setFilterCategory] = useState('')
   const { addItem } = useCart()
+
+  // Reset search and category when switching tabs
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab)
+    setSearch('')
+    setFilterCategory('')
+  }
+
+  // Derive all categories for the active tab
+  const availableCategories = (() => {
+    const getCats = (arr: { category?: string }[]) =>
+      Array.from(new Set(arr.map((x) => x.category).filter(Boolean) as string[])).sort()
+    if (activeTab === 'items') return getCats(items)
+    if (activeTab === 'sweets') return getCats(sweets)
+    if (activeTab === 'designs') return getCats(designs)
+    if (activeTab === 'themes') return getCats(themes)
+    return []
+  })()
+
+  const filterFn = <T extends { name: string; description?: string }>(arr: T[]): T[] => {
+    return arr.filter((x) => {
+      const cat = (x as any).category as string | undefined
+      const matchesCat = !filterCategory || cat === filterCategory
+      if (!matchesCat) return false
+      if (!search.trim()) return true
+      const q = search.toLowerCase()
+      return (
+        x.name.toLowerCase().includes(q) ||
+        (x.description && x.description.toLowerCase().includes(q)) ||
+        (cat && cat.toLowerCase().includes(q))
+      )
+    })
+  }
+
+  const filteredItems = filterFn(items)
+  const filteredKits = filterFn(kits)
+  const filteredSweets = filterFn(sweets)
+  const filteredDesigns = filterFn(designs)
+  const filteredThemes = filterFn(themes)
 
   useEffect(() => {
     loadCatalog()
@@ -167,7 +207,7 @@ export default function CatalogPage() {
           {/* Tabs */}
           <div className="flex justify-center mb-8 border-b border-gray-200 flex-wrap">
             <button
-              onClick={() => setActiveTab('kits')}
+              onClick={() => handleTabChange('kits')}
               className={`px-6 py-4 font-bold text-base md:text-lg transition-all duration-300 ${
                 activeTab === 'kits'
                   ? 'border-b-4 border-brand-yellow text-brand-yellow'
@@ -177,7 +217,7 @@ export default function CatalogPage() {
               🎁 Kits ({kits.length})
             </button>
             <button
-              onClick={() => setActiveTab('items')}
+              onClick={() => handleTabChange('items')}
               className={`px-6 py-4 font-bold text-base md:text-lg transition-all duration-300 ${
                 activeTab === 'items'
                   ? 'border-b-4 border-brand-yellow text-brand-yellow'
@@ -187,7 +227,7 @@ export default function CatalogPage() {
               📦 Estoque ({items.length})
             </button>
             <button
-              onClick={() => setActiveTab('sweets')}
+              onClick={() => handleTabChange('sweets')}
               className={`px-6 py-4 font-bold text-base md:text-lg transition-all duration-300 ${
                 activeTab === 'sweets'
                   ? 'border-b-4 border-brand-yellow text-brand-yellow'
@@ -197,7 +237,7 @@ export default function CatalogPage() {
               🍰 Doces ({sweets.length})
             </button>
             <button
-              onClick={() => setActiveTab('designs')}
+              onClick={() => handleTabChange('designs')}
               className={`px-6 py-4 font-bold text-base md:text-lg transition-all duration-300 ${
                 activeTab === 'designs'
                   ? 'border-b-4 border-brand-yellow text-brand-yellow'
@@ -207,7 +247,7 @@ export default function CatalogPage() {
               🎨 Design ({designs.length})
             </button>
             <button
-              onClick={() => setActiveTab('themes')}
+              onClick={() => handleTabChange('themes')}
               className={`px-6 py-4 font-bold text-base md:text-lg transition-all duration-300 ${
                 activeTab === 'themes'
                   ? 'border-b-4 border-brand-yellow text-brand-yellow'
@@ -217,6 +257,31 @@ export default function CatalogPage() {
               🎭 Temas ({themes.length})
             </button>
           </div>
+
+          {/* Search and Filter Bar */}
+          {!loading && (
+            <div className="flex gap-2 mb-8 flex-wrap justify-center">
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Buscar por nome ou descrição..."
+                className="px-4 py-2 border border-gray-300 rounded-lg flex-1 max-w-md"
+              />
+              {availableCategories.length > 0 && (
+                <select
+                  value={filterCategory}
+                  onChange={(e) => setFilterCategory(e.target.value)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg"
+                >
+                  <option value="">Todas as categorias</option>
+                  {availableCategories.map((cat, i) => (
+                    <option key={i} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              )}
+            </div>
+          )}
 
           {/* Loading State */}
           {loading ? (
@@ -242,9 +307,13 @@ export default function CatalogPage() {
                     <div className="text-center py-12">
                       <p className="text-gray-600 text-lg">Nenhum kit disponível no momento.</p>
                     </div>
+                  ) : filteredKits.length === 0 ? (
+                    <div className="text-center py-12">
+                      <p className="text-gray-600 text-lg">Nenhum kit encontrado para a busca.</p>
+                    </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                      {kits.map((kit) => (
+                      {filteredKits.map((kit) => (
                         <div key={kit.id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
                           {/* Kit Image */}
                           <div className="h-48 bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center relative overflow-hidden">
@@ -325,9 +394,13 @@ export default function CatalogPage() {
                     <div className="text-center py-12">
                       <p className="text-gray-600 text-lg">Nenhum item disponível no momento.</p>
                     </div>
+                  ) : filteredItems.length === 0 ? (
+                    <div className="text-center py-12">
+                      <p className="text-gray-600 text-lg">Nenhum item encontrado para a busca.</p>
+                    </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                      {items.map((item) => (
+                      {filteredItems.map((item) => (
                         <div 
                           key={item.id} 
                           className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300"
@@ -428,9 +501,13 @@ export default function CatalogPage() {
                     <div className="text-center py-12">
                       <p className="text-gray-600 text-lg">Nenhum doce disponível no momento.</p>
                     </div>
+                  ) : filteredSweets.length === 0 ? (
+                    <div className="text-center py-12">
+                      <p className="text-gray-600 text-lg">Nenhum doce encontrado para a busca.</p>
+                    </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                      {sweets.map((sweet) => (
+                      {filteredSweets.map((sweet) => (
                         <div 
                           key={sweet.id} 
                           className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300"
@@ -513,9 +590,13 @@ export default function CatalogPage() {
                     <div className="text-center py-12">
                       <p className="text-gray-600 text-lg">Nenhum design disponível no momento.</p>
                     </div>
+                  ) : filteredDesigns.length === 0 ? (
+                    <div className="text-center py-12">
+                      <p className="text-gray-600 text-lg">Nenhum design encontrado para a busca.</p>
+                    </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                      {designs.map((design) => (
+                      {filteredDesigns.map((design) => (
                         <div 
                           key={design.id} 
                           className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300"
@@ -590,9 +671,13 @@ export default function CatalogPage() {
                     <div className="text-center py-12">
                       <p className="text-gray-600 text-lg">Nenhum tema disponível no momento.</p>
                     </div>
+                  ) : filteredThemes.length === 0 ? (
+                    <div className="text-center py-12">
+                      <p className="text-gray-600 text-lg">Nenhum tema encontrado para a busca.</p>
+                    </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                      {themes.map((theme) => (
+                      {filteredThemes.map((theme) => (
                         <div
                           key={theme.id}
                           className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300"
@@ -624,24 +709,6 @@ export default function CatalogPage() {
                                 Categoria: {theme.category}
                               </p>
                             )}
-
-                            <div className="flex justify-between items-center">
-                              <span className="text-2xl font-bold text-brand-yellow">
-                                R$ {theme.price.toFixed(2)}
-                              </span>
-                              <button
-                                onClick={() => addItem({
-                                  id: `theme-${theme.id}`,
-                                  name: theme.name,
-                                  description: theme.description || '',
-                                  price: theme.price,
-                                  image: theme.image_url
-                                })}
-                                className="bg-brand-yellow hover:bg-brand-yellow/90 text-white font-bold py-2 px-4 rounded-full transition-colors duration-300"
-                              >
-                                Adicionar ao Carrinho
-                              </button>
-                            </div>
                           </div>
                         </div>
                       ))}
