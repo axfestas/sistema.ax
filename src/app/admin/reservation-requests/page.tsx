@@ -82,11 +82,11 @@ export default function ReservationRequestsPage() {
       });
 
       if (response.ok) {
+        const updatedRequest = await response.json() as ReservationRequest;
         showSuccess('Status atualizado com sucesso!');
         loadRequests();
         if (selectedRequest?.id === requestId) {
-          setShowDetails(false);
-          setSelectedRequest(null);
+          setSelectedRequest(updatedRequest);
         }
       } else {
         showError('Erro ao atualizar status');

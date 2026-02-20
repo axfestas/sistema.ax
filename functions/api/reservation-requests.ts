@@ -7,6 +7,7 @@
  */
 
 import type { D1Database } from '@cloudflare/workers-types';
+import { sendReservationApprovalEmail, sendReservationRejectionEmail } from '../../src/lib/email';
 
 interface Env {
   DB: D1Database;
@@ -103,158 +104,6 @@ export async function onRequestGet(context: {
 }
 
 /**
- * Envia email de aprovação para o cliente
- */
-async function sendApprovalEmail(params: {
-  request: ReservationRequest;
-  resendApiKey: string;
-  siteUrl: string;
-}) {
-  try {
-    const { Resend } = await import('resend');
-    const resend = new Resend(params.resendApiKey);
-
-    const items = JSON.parse(params.request.items_json);
-    const itemsList = items
-      .map(
-        (item: any) => `
-        <tr>
-          <td style="padding: 8px; border-bottom: 1px solid #eee;">${item.name}</td>
-          <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
-          <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">R$ ${(item.price * item.quantity).toFixed(2)}</td>
-        </tr>
-      `
-      )
-      .join('');
-
-    await resend.emails.send({
-      from: 'AX Festas <noreply@axfestas.com.br>',
-      to: params.request.customer_email,
-      subject: `✅ Solicitação Aprovada - ${params.request.custom_id}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #10b981;">✅ Solicitação Aprovada!</h2>
-          
-          <p>Olá ${params.request.customer_name},</p>
-          
-          <p>Agradecemos pela sua solicitação! Temos o prazer de informar que sua reserva foi <strong>aprovada</strong>.</p>
-          
-          <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
-            <p style="margin: 5px 0;"><strong>ID da Solicitação:</strong> ${params.request.custom_id}</p>
-            <p style="margin: 5px 0;"><strong>Data do Evento:</strong> ${new Date(params.request.event_date).toLocaleDateString('pt-BR')}</p>
-          </div>
-          
-          <h3>Itens Aprovados:</h3>
-          <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
-            <thead>
-              <tr style="background: #f3f4f6;">
-                <th style="padding: 8px; text-align: left;">Item</th>
-                <th style="padding: 8px; text-align: center;">Quantidade</th>
-                <th style="padding: 8px; text-align: right;">Subtotal</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${itemsList}
-            </tbody>
-            <tfoot>
-              <tr style="background: #f3f4f6; font-weight: bold;">
-                <td colspan="2" style="padding: 8px; text-align: right;">Total:</td>
-                <td style="padding: 8px; text-align: right; color: #10b981;">R$ ${params.request.total_amount.toFixed(2)}</td>
-              </tr>
-            </tfoot>
-          </table>
-          
-          <p><strong>Próximos passos:</strong></p>
-          <ul>
-            <li>Entraremos em contato em breve para confirmar os detalhes finais</li>
-            <li>Faremos o agendamento oficial da reserva</li>
-            <li>Enviaremos informações sobre pagamento e contrato</li>
-          </ul>
-          
-          <p>Caso tenha alguma dúvida, não hesite em nos contatar.</p>
-          
-          <p>Atenciosamente,<br><strong>Equipe AX Festas</strong></p>
-        </div>
-      `,
-    });
-
-    return { success: true };
-  } catch (error) {
-    console.error('Error sending approval email:', error);
-    return { success: false, error };
-  }
-}
-
-/**
- * Envia email de rejeição para o cliente
- */
-async function sendRejectionEmail(params: {
-  request: ReservationRequest;
-  resendApiKey: string;
-  siteUrl: string;
-  reason?: string;
-  adminEmail: string;
-}) {
-  try {
-    const { Resend } = await import('resend');
-    const resend = new Resend(params.resendApiKey);
-
-    await resend.emails.send({
-      from: 'AX Festas <noreply@axfestas.com.br>',
-      to: params.request.customer_email,
-      reply_to: params.adminEmail,
-      subject: `Solicitação ${params.request.custom_id} - Vamos encontrar alternativas!`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #f59e0b;">Sobre sua Solicitação</h2>
-          
-          <p>Olá ${params.request.customer_name},</p>
-          
-          <p>Agradecemos muito pelo seu interesse em nossos serviços!</p>
-          
-          <p>Infelizmente, para a data solicitada (<strong>${new Date(params.request.event_date).toLocaleDateString('pt-BR')}</strong>), 
-          não temos disponibilidade completa dos itens que você escolheu.</p>
-          
-          ${params.reason ? `<div style="background: #fef3c7; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b;">
-            <p style="margin: 0;"><strong>Observação:</strong> ${params.reason}</p>
-          </div>` : ''}
-          
-          <p><strong>Mas não se preocupe! Podemos ajudar de várias formas:</strong></p>
-          <ul>
-            <li>💬 Verificar disponibilidade em datas próximas</li>
-            <li>🎨 Sugerir temas e itens alternativos que temos disponíveis</li>
-            <li>🎉 Montar um pacote personalizado para você</li>
-            <li>📅 Criar uma solução sob medida para seu evento</li>
-          </ul>
-          
-          <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
-            <p style="margin-bottom: 15px;"><strong>Vamos conversar?</strong></p>
-            <p style="margin: 10px 0;">
-              <a href="${params.siteUrl}/contato" 
-                 style="display: inline-block; background: #ec4899; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
-                Entre em Contato
-              </a>
-            </p>
-            <p style="margin: 10px 0; font-size: 14px; color: #666;">
-              Ou responda este email diretamente!
-            </p>
-          </div>
-          
-          <p>Estamos ansiosos para tornar seu evento especial! 🎈</p>
-          
-          <p>Atenciosamente,<br><strong>Equipe AX Festas</strong></p>
-        </div>
-      `,
-    });
-
-    return { success: true };
-  } catch (error) {
-    console.error('Error sending rejection email:', error);
-    return { success: false, error };
-  }
-}
-
-/**
  * PUT - Atualiza status de uma solicitação
  */
 export async function onRequestPut(context: {
@@ -321,19 +170,39 @@ export async function onRequestPut(context: {
     const adminEmail = context.env.ADMIN_EMAIL || 'alex.fraga@axfestas.com.br';
     
     if (resendApiKey && existingRequest.status !== body.status) {
+      const items = JSON.parse(result.items_json);
+      const itemsHtml = items
+        .map(
+          (item: any) => `
+          <tr>
+            <td style="padding: 8px; border-bottom: 1px solid #eee;">${item.name}</td>
+            <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
+            <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">R$ ${(item.price * item.quantity).toFixed(2)}</td>
+          </tr>
+        `
+        )
+        .join('');
+
       if (body.status === 'approved') {
-        await sendApprovalEmail({
-          request: result,
+        await sendReservationApprovalEmail({
+          to: result.customer_email,
+          customerName: result.customer_name,
+          requestCustomId: result.custom_id,
+          eventDate: result.event_date,
+          itemsList: itemsHtml,
+          total: result.total_amount,
           resendApiKey,
-          siteUrl,
         });
       } else if (body.status === 'rejected') {
-        await sendRejectionEmail({
-          request: result,
-          resendApiKey,
-          siteUrl,
+        await sendReservationRejectionEmail({
+          to: result.customer_email,
+          customerName: result.customer_name,
+          requestCustomId: result.custom_id,
+          eventDate: result.event_date,
           reason: body.reason,
+          siteUrl,
           adminEmail,
+          resendApiKey,
         });
       }
     }

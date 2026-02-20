@@ -8,6 +8,7 @@
  */
 
 import type { D1Database } from '@cloudflare/workers-types';
+import { sendAdminNewRequestEmail, sendCustomerRequestReceivedEmail } from '../../src/lib/email';
 
 interface Env {
   DB: D1Database;
@@ -31,215 +32,6 @@ interface RequestBody {
   message?: string;
   items: CartItem[];
   total: number;
-}
-
-/**
- * Envia email para o admin notificando sobre nova solicitação
- */
-async function sendAdminNotification(params: {
-  requestData: RequestBody;
-  resendApiKey: string;
-  adminEmail: string;
-}) {
-  try {
-    const { Resend } = await import('resend');
-    const resend = new Resend(params.resendApiKey);
-    
-    // Formatar lista de itens para o email
-    const itemsList = params.requestData.items
-      .map(item => `
-        <tr>
-          <td style="padding: 8px; border-bottom: 1px solid #eee;">${item.name}</td>
-          <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
-          <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">R$ ${item.price.toFixed(2)}</td>
-          <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">R$ ${(item.price * item.quantity).toFixed(2)}</td>
-        </tr>
-      `)
-      .join('');
-    
-    const html = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="UTF-8">
-        <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-          .header { background-color: #f59e0b; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
-          .content { background-color: #f9fafb; padding: 20px; border-radius: 0 0 8px 8px; }
-          .info-item { margin-bottom: 15px; }
-          .info-label { font-weight: bold; color: #374151; }
-          table { width: 100%; border-collapse: collapse; margin: 20px 0; background: white; }
-          th { background-color: #f3f4f6; padding: 12px 8px; text-align: left; }
-          .total { font-size: 1.2em; font-weight: bold; color: #f59e0b; text-align: right; margin-top: 20px; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <h1>🎉 Nova Solicitação de Reserva!</h1>
-          </div>
-          <div class="content">
-            <h2>Informações do Cliente</h2>
-            <div class="info-item">
-              <span class="info-label">Nome:</span> ${params.requestData.name}
-            </div>
-            <div class="info-item">
-              <span class="info-label">Email:</span> ${params.requestData.email}
-            </div>
-            <div class="info-item">
-              <span class="info-label">Telefone:</span> ${params.requestData.phone}
-            </div>
-            <div class="info-item">
-              <span class="info-label">Data do Evento:</span> ${new Date(params.requestData.eventDate).toLocaleDateString('pt-BR')}
-            </div>
-            ${params.requestData.message ? `
-            <div class="info-item">
-              <span class="info-label">Mensagem:</span><br>
-              ${params.requestData.message}
-            </div>
-            ` : ''}
-            
-            <h2>Itens Solicitados</h2>
-            <table>
-              <thead>
-                <tr>
-                  <th>Item</th>
-                  <th style="text-align: center;">Quantidade</th>
-                  <th style="text-align: right;">Preço Unit.</th>
-                  <th style="text-align: right;">Subtotal</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${itemsList}
-              </tbody>
-            </table>
-            
-            <div class="total">
-              Total Estimado: R$ ${params.requestData.total.toFixed(2)}
-            </div>
-            
-            <p style="margin-top: 30px; padding: 15px; background: white; border-left: 4px solid #f59e0b;">
-              <strong>Próximos Passos:</strong> Entre em contato com o cliente para confirmar disponibilidade e finalizar a reserva.
-            </p>
-          </div>
-        </div>
-      </body>
-      </html>
-    `;
-    
-    const result = await resend.emails.send({
-      from: 'Ax Festas <noreply@axfestas.com.br>',
-      to: params.adminEmail,
-      reply_to: params.requestData.email,
-      subject: `Nova Solicitação de Reserva - ${params.requestData.name}`,
-      html: html
-    });
-    
-    return { success: true, data: result };
-  } catch (error: any) {
-    console.error('Error sending admin notification:', error);
-    return { 
-      success: false, 
-      error: error.message || 'Failed to send admin notification' 
-    };
-  }
-}
-
-/**
- * Envia email de confirmação para o cliente
- */
-async function sendCustomerConfirmation(params: {
-  requestData: RequestBody;
-  resendApiKey: string;
-}) {
-  try {
-    const { Resend } = await import('resend');
-    const resend = new Resend(params.resendApiKey);
-    
-    const itemsList = params.requestData.items
-      .map(item => `
-        <tr>
-          <td style="padding: 8px; border-bottom: 1px solid #eee;">${item.name}</td>
-          <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
-          <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">R$ ${item.price.toFixed(2)}</td>
-        </tr>
-      `)
-      .join('');
-    
-    const html = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="UTF-8">
-        <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-          .header { background-color: #f59e0b; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
-          .content { background-color: #f9fafb; padding: 20px; border-radius: 0 0 8px 8px; }
-          table { width: 100%; border-collapse: collapse; margin: 20px 0; background: white; }
-          th { background-color: #f3f4f6; padding: 12px 8px; text-align: left; }
-          .total { font-size: 1.2em; font-weight: bold; color: #f59e0b; text-align: right; margin-top: 20px; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <h1>🎉 Solicitação Recebida!</h1>
-          </div>
-          <div class="content">
-            <p>Olá <strong>${params.requestData.name}</strong>,</p>
-            
-            <p>Agradecemos pela sua solicitação de reserva para o evento do dia <strong>${new Date(params.requestData.eventDate).toLocaleDateString('pt-BR')}</strong>.</p>
-            
-            <h2>Resumo da Solicitação</h2>
-            <table>
-              <thead>
-                <tr>
-                  <th>Item</th>
-                  <th style="text-align: center;">Quantidade</th>
-                  <th style="text-align: right;">Preço</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${itemsList}
-              </tbody>
-            </table>
-            
-            <div class="total">
-              Total Estimado: R$ ${params.requestData.total.toFixed(2)}
-            </div>
-            
-            <p style="margin-top: 30px; padding: 15px; background: white; border-left: 4px solid #f59e0b;">
-              <strong>Em breve entraremos em contato!</strong><br>
-              Nossa equipe irá verificar a disponibilidade dos itens e retornar com a confirmação e detalhes finais da sua reserva.
-            </p>
-            
-            <p>Caso tenha alguma dúvida, entre em contato conosco.</p>
-            
-            <p>Atenciosamente,<br>
-            <strong>Equipe Ax Festas</strong></p>
-          </div>
-        </div>
-      </body>
-      </html>
-    `;
-    
-    const result = await resend.emails.send({
-      from: 'Ax Festas <noreply@axfestas.com.br>',
-      to: params.requestData.email,
-      subject: 'Solicitação de Reserva Recebida - Ax Festas',
-      html: html
-    });
-    
-    return { success: true, data: result };
-  } catch (error: any) {
-    console.error('Error sending customer confirmation:', error);
-    return { 
-      success: false, 
-      error: error.message || 'Failed to send customer confirmation' 
-    };
-  }
 }
 
 /**
@@ -331,18 +123,49 @@ export async function onRequestPost(context: {
     
     // Email do admin (usar variável de ambiente ou fallback)
     const adminEmail = context.env.ADMIN_EMAIL || 'alex.fraga@axfestas.com.br';
+
+    const adminItemsList = body.items
+      .map(item => `
+        <tr>
+          <td style="padding: 8px; border-bottom: 1px solid #eee;">${item.name}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">R$ ${item.price.toFixed(2)}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">R$ ${(item.price * item.quantity).toFixed(2)}</td>
+        </tr>
+      `)
+      .join('');
+
+    const customerItemsList = body.items
+      .map(item => `
+        <tr>
+          <td style="padding: 8px; border-bottom: 1px solid #eee;">${item.name}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">R$ ${item.price.toFixed(2)}</td>
+        </tr>
+      `)
+      .join('');
     
     // Enviar emails em paralelo
     const [adminResult, customerResult] = await Promise.allSettled([
-      sendAdminNotification({
-        requestData: body,
+      sendAdminNewRequestEmail({
+        to: adminEmail,
+        customerName: body.name,
+        customerEmail: body.email,
+        customerPhone: body.phone,
+        eventDate: body.eventDate,
+        message: body.message,
+        itemsList: adminItemsList,
+        total: body.total,
         resendApiKey,
-        adminEmail
       }),
-      sendCustomerConfirmation({
-        requestData: body,
-        resendApiKey
-      })
+      sendCustomerRequestReceivedEmail({
+        to: body.email,
+        customerName: body.name,
+        eventDate: body.eventDate,
+        itemsList: customerItemsList,
+        total: body.total,
+        resendApiKey,
+      }),
     ]);
     
     // Verificar resultados
