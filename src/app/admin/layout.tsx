@@ -13,16 +13,14 @@ export default function AdminLayout({
 
   const navItems = [
     { href: '/admin', label: 'Dashboard', icon: '📊' },
-    { href: '/admin/clients', label: 'Clientes', icon: '👥' },
+    { href: '/admin/reservation-requests', label: 'Solicitações', icon: '📋' },
+    { href: '/admin/reservations', label: 'Reservas', icon: '📅' },
     { href: '/admin/inventory', label: 'Estoque', icon: '📦' },
     { href: '/admin/kits', label: 'Kits', icon: '🎁' },
     { href: '/admin/sweets', label: 'Doces', icon: '🍰' },
     { href: '/admin/designs', label: 'Design', icon: '🎨' },
-    { href: '/admin/reservations', label: 'Reservas', icon: '📅' },
-    { href: '/admin/reservation-requests', label: 'Solicitações', icon: '📋' },
+    { href: '/admin/clients', label: 'Clientes', icon: '👥' },
     { href: '/admin/finance', label: 'Financeiro', icon: '💰' },
-    { href: '/admin/portfolio', label: 'Portfólio', icon: '🖼️' },
-    { href: '/admin/maintenance', label: 'Manutenção', icon: '🔧' },
   ];
 
   return (

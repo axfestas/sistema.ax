@@ -88,6 +88,16 @@ export default function AdminPage() {
             <p className="text-sm text-gray-500">Testar envio de e-mails</p>
           </div>
         </a>
+        <a
+          href="/admin/portfolio"
+          className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow flex items-center gap-4"
+        >
+          <span className="text-4xl">🖼️</span>
+          <div>
+            <h2 className="text-lg font-bold text-gray-800">Portfólio</h2>
+            <p className="text-sm text-gray-500">Gerenciar portfólio de eventos</p>
+          </div>
+        </a>
       </div>
     </>
   );
