@@ -83,6 +83,7 @@ export interface Reservation {
   payment_type?: string; // pix, cartao, dinheiro, transferencia, cheque
   payment_receipt_url?: string; // URL to uploaded payment receipt
   contract_url?: string; // URL to uploaded contract file
+  items_json?: string; // JSON array of selected items for multi-item reservations
 }
 
 export interface ReservationInput {
@@ -104,6 +105,7 @@ export interface ReservationInput {
   payment_type?: string; // pix, cartao, dinheiro, transferencia, cheque
   payment_receipt_url?: string; // URL to uploaded payment receipt
   contract_url?: string; // URL to uploaded contract file
+  items_json?: string; // JSON array of selected items for multi-item reservations
 }
 
 export interface MaintenanceRecord {
@@ -490,9 +492,9 @@ export async function createReservation(
   const status = reservation.status || 'pending';
   const quantity = reservation.quantity || 1;
   
-  // Validação: deve ter pelo menos um tipo de item
-  if (!reservation.item_id && !reservation.kit_id && !reservation.sweet_id && !reservation.design_id && !reservation.theme_id) {
-    throw new Error('Deve fornecer item_id, kit_id, sweet_id, design_id ou theme_id');
+  // Validação: deve ter pelo menos um tipo de item ou items_json
+  if (!reservation.item_id && !reservation.kit_id && !reservation.sweet_id && !reservation.design_id && !reservation.theme_id && !reservation.items_json) {
+    throw new Error('Deve fornecer item_id, kit_id, sweet_id, design_id, theme_id ou items_json');
   }
 
   // Generate custom_id if not provided
@@ -518,7 +520,7 @@ export async function createReservation(
     // Try to insert with all fields including sweet_id, design_id, client_id, customer_phone, and payment fields
     const result = await db
       .prepare(
-        'INSERT INTO reservations (item_id, kit_id, sweet_id, design_id, theme_id, client_id, quantity, customer_name, customer_email, customer_phone, date_from, date_to, status, custom_id, total_amount, payment_type, payment_receipt_url, contract_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *'
+        'INSERT INTO reservations (item_id, kit_id, sweet_id, design_id, theme_id, client_id, quantity, customer_name, customer_email, customer_phone, date_from, date_to, status, custom_id, total_amount, payment_type, payment_receipt_url, contract_url, items_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *'
       )
       .bind(
         reservation.item_id || null,
@@ -538,7 +540,8 @@ export async function createReservation(
         reservation.total_amount !== undefined ? reservation.total_amount : null,
         reservation.payment_type || null,
         reservation.payment_receipt_url || null,
-        reservation.contract_url || null
+        reservation.contract_url || null,
+        reservation.items_json || null
       )
       .first();
     newReservation = result as unknown as Reservation;
@@ -555,7 +558,8 @@ export async function createReservation(
       error.message.includes('total_amount') ||
       error.message.includes('payment_type') ||
       error.message.includes('payment_receipt_url') ||
-      error.message.includes('contract_url')
+      error.message.includes('contract_url') ||
+      error.message.includes('items_json')
     );
     
     if (isColumnError) {
@@ -688,6 +692,10 @@ export async function updateReservation(
   if (updates.contract_url !== undefined) {
     fields.push('contract_url = ?');
     values.push(updates.contract_url || null);
+  }
+  if (updates.items_json !== undefined) {
+    fields.push('items_json = ?');
+    values.push(updates.items_json || null);
   }
 
   if (fields.length === 0) {

@@ -5,10 +5,18 @@ import { useToast } from '@/hooks/useToast';
 import { formatReservationId } from '@/lib/formatId';
 import ImageUpload from '@/components/ImageUpload';
 
+/** An item available for selection (populates the dropdown). */
 interface SelectableItem {
   id: number;
   name: string;
   type: 'item' | 'kit' | 'sweet' | 'design' | 'theme';
+  displayName: string;
+}
+
+/** An item that has been added to the current reservation form (with quantity). */
+interface SelectedItemEntry {
+  itemKey: string;      // e.g. "item:3", "kit:1"
+  quantity: number;
   displayName: string;
 }
 
@@ -37,6 +45,7 @@ interface Reservation {
   payment_type?: string;
   payment_receipt_url?: string;
   contract_url?: string;
+  items_json?: string; // JSON array of SelectedItemEntry[]
 }
 
 const PAYMENT_TYPES = [
@@ -51,7 +60,6 @@ const PAYMENT_TYPES = [
 ];
 
 const emptyForm = {
-  selected_item: '',
   client_id: '',
   customer_name: '',
   customer_email: '',
@@ -73,6 +81,8 @@ export default function ReservationsPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingReservation, setEditingReservation] = useState<Reservation | null>(null);
   const [formData, setFormData] = useState({ ...emptyForm });
+  const [selectedItems, setSelectedItems] = useState<SelectedItemEntry[]>([]);
+  const [newItemToAdd, setNewItemToAdd] = useState({ itemKey: '', quantity: '1' });
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const { showSuccess, showError } = useToast();
@@ -175,17 +185,37 @@ export default function ReservationsPage() {
     setFormData(prev => ({ ...prev, client_id: '', customer_name: '', customer_email: '', customer_phone: '' }));
   };
 
+  const handleAddItem = () => {
+    if (!newItemToAdd.itemKey) return;
+    const qty = Math.max(1, parseInt(newItemToAdd.quantity) || 1);
+    const found = allItems.find(x => `${x.type}:${x.id}` === newItemToAdd.itemKey);
+    if (!found) return;
+    const existing = selectedItems.findIndex(x => x.itemKey === newItemToAdd.itemKey);
+    if (existing >= 0) {
+      const updated = [...selectedItems];
+      updated[existing] = { ...updated[existing], quantity: qty };
+      setSelectedItems(updated);
+    } else {
+      setSelectedItems([...selectedItems, { itemKey: newItemToAdd.itemKey, quantity: qty, displayName: found.displayName }]);
+    }
+    setNewItemToAdd({ itemKey: '', quantity: '1' });
+  };
+
+  const handleRemoveItem = (itemKey: string) => {
+    setSelectedItems(selectedItems.filter(x => x.itemKey !== itemKey));
+  };
+
+  const handleItemQuantityChange = (itemKey: string, qty: number) => {
+    setSelectedItems(selectedItems.map(x => x.itemKey === itemKey ? { ...x, quantity: Math.max(1, qty) } : x));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.selected_item || !formData.selected_item.includes(':')) {
-      showError('Por favor, selecione um item válido');
+    if (selectedItems.length === 0) {
+      showError('Por favor, adicione pelo menos um item à reserva');
       return;
     }
-
-    const [itemType, itemIdStr] = formData.selected_item.split(':');
-    const itemId = parseInt(itemIdStr);
-    if (isNaN(itemId)) { showError('Item selecionado inválido'); return; }
 
     const reservationData: any = {
       customer_name: formData.customer_name,
@@ -198,14 +228,8 @@ export default function ReservationsPage() {
       payment_type: formData.payment_type || undefined,
       payment_receipt_url: formData.payment_receipt_url || undefined,
       contract_url: formData.contract_url || undefined,
+      items: selectedItems,
     };
-
-    if (itemType === 'item') reservationData.item_id = itemId;
-    else if (itemType === 'kit') reservationData.kit_id = itemId;
-    else if (itemType === 'sweet') reservationData.sweet_id = itemId;
-    else if (itemType === 'design') reservationData.design_id = itemId;
-    else if (itemType === 'theme') reservationData.theme_id = itemId;
-    else { showError('Tipo de item inválido'); return; }
 
     if (formData.client_id) reservationData.client_id = parseInt(formData.client_id);
 
@@ -229,14 +253,34 @@ export default function ReservationsPage() {
 
   const handleEdit = (reservation: Reservation) => {
     setEditingReservation(reservation);
-    let selectedItem = '';
-    if (reservation.item_id) selectedItem = `item:${reservation.item_id}`;
-    else if (reservation.kit_id) selectedItem = `kit:${reservation.kit_id}`;
-    else if (reservation.sweet_id) selectedItem = `sweet:${reservation.sweet_id}`;
-    else if (reservation.design_id) selectedItem = `design:${reservation.design_id}`;
-    else if (reservation.theme_id) selectedItem = `theme:${reservation.theme_id}`;
+    // Populate selected items from items_json, or fall back to single-item backward compat
+    if (reservation.items_json) {
+      try {
+        setSelectedItems(JSON.parse(reservation.items_json) as SelectedItemEntry[]);
+      } catch {
+        setSelectedItems([]);
+      }
+    } else {
+      const fallbackItems: SelectedItemEntry[] = [];
+      if (reservation.item_id) {
+        const i = allItems.find(x => x.type === 'item' && x.id === reservation.item_id);
+        fallbackItems.push({ itemKey: `item:${reservation.item_id}`, quantity: 1, displayName: i?.displayName || `Item #${reservation.item_id}` });
+      } else if (reservation.kit_id) {
+        const i = allItems.find(x => x.type === 'kit' && x.id === reservation.kit_id);
+        fallbackItems.push({ itemKey: `kit:${reservation.kit_id}`, quantity: 1, displayName: i?.displayName || `Kit #${reservation.kit_id}` });
+      } else if (reservation.sweet_id) {
+        const i = allItems.find(x => x.type === 'sweet' && x.id === reservation.sweet_id);
+        fallbackItems.push({ itemKey: `sweet:${reservation.sweet_id}`, quantity: 1, displayName: i?.displayName || `Doce #${reservation.sweet_id}` });
+      } else if (reservation.design_id) {
+        const i = allItems.find(x => x.type === 'design' && x.id === reservation.design_id);
+        fallbackItems.push({ itemKey: `design:${reservation.design_id}`, quantity: 1, displayName: i?.displayName || `Design #${reservation.design_id}` });
+      } else if (reservation.theme_id) {
+        const i = allItems.find(x => x.type === 'theme' && x.id === reservation.theme_id);
+        fallbackItems.push({ itemKey: `theme:${reservation.theme_id}`, quantity: 1, displayName: i?.displayName || `Tema #${reservation.theme_id}` });
+      }
+      setSelectedItems(fallbackItems);
+    }
     setFormData({
-      selected_item: selectedItem,
       client_id: reservation.client_id?.toString() || '',
       customer_name: reservation.customer_name,
       customer_email: reservation.customer_email || '',
@@ -265,7 +309,17 @@ export default function ReservationsPage() {
     }
   };
 
-  const getReservationItemName = (reservation: Reservation) => {
+  const getReservationItemsSummary = (reservation: Reservation): string => {
+    // Use items_json when available (new multi-item format)
+    if (reservation.items_json) {
+      try {
+        const items = JSON.parse(reservation.items_json) as SelectedItemEntry[];
+        if (items.length === 0) return 'Sem itens';
+        if (items.length === 1) return `${items[0].displayName} (x${items[0].quantity})`;
+        return items.map(x => `${x.displayName} (x${x.quantity})`).join(', ');
+      } catch { /* fall through to backward compat */ }
+    }
+    // Backward compat: single-item format
     if (reservation.item_id) {
       const i = allItems.find(x => x.type === 'item' && x.id === reservation.item_id);
       return i ? i.displayName : `Item #${reservation.item_id}`;
@@ -317,7 +371,7 @@ export default function ReservationsPage() {
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold">Gerenciamento de Reservas</h2>
         <button
-          onClick={() => { setShowForm(true); setEditingReservation(null); setFormData({ ...emptyForm }); }}
+          onClick={() => { setShowForm(true); setEditingReservation(null); setFormData({ ...emptyForm }); setSelectedItems([]); setNewItemToAdd({ itemKey: '', quantity: '1' }); }}
           className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded"
         >
           + Nova Reserva
@@ -353,15 +407,73 @@ export default function ReservationsPage() {
             {editingReservation ? 'Editar Reserva' : 'Nova Reserva'}
           </h3>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Item */}
+            {/* Multi-item picker */}
             <div>
-              <label className="block text-sm font-medium mb-1">Item *</label>
-              <select value={formData.selected_item} onChange={(e) => setFormData({ ...formData, selected_item: e.target.value })} required className="w-full px-3 py-2 border rounded">
-                <option value="">Selecione um item</option>
-                {allItems.map((item) => (
-                  <option key={`${item.type}:${item.id}`} value={`${item.type}:${item.id}`}>{item.displayName}</option>
-                ))}
-              </select>
+              <label className="block text-sm font-medium mb-1">Itens *</label>
+
+              {/* Selected items list */}
+              {selectedItems.length > 0 && (
+                <ul className="mb-3 space-y-2">
+                  {selectedItems.map((entry) => (
+                    <li key={entry.itemKey} className="flex items-center gap-2 p-2 bg-gray-50 rounded border">
+                      <span className="flex-1 text-sm">{entry.displayName}</span>
+                      <label className="text-xs text-gray-500 whitespace-nowrap">Qtd:</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={entry.quantity}
+                        onChange={(e) => handleItemQuantityChange(entry.itemKey, parseInt(e.target.value) || 1)}
+                        className="w-16 px-2 py-1 border rounded text-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveItem(entry.itemKey)}
+                        className="text-red-500 hover:text-red-700 text-sm font-bold px-2"
+                      >
+                        ✕
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {/* Add item row */}
+              <div className="flex gap-2 items-end p-3 bg-gray-50 rounded border border-dashed">
+                <div className="flex-1">
+                  <label className="block text-xs text-gray-500 mb-1">Selecione um item para adicionar</label>
+                  <select
+                    value={newItemToAdd.itemKey}
+                    onChange={(e) => setNewItemToAdd({ ...newItemToAdd, itemKey: e.target.value })}
+                    className="w-full px-3 py-2 border rounded text-sm"
+                  >
+                    <option value="">Escolha um item...</option>
+                    {allItems.map((item) => (
+                      <option key={`${item.type}:${item.id}`} value={`${item.type}:${item.id}`}>{item.displayName}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="w-24">
+                  <label className="block text-xs text-gray-500 mb-1">Quantidade</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={newItemToAdd.quantity}
+                    onChange={(e) => setNewItemToAdd({ ...newItemToAdd, quantity: e.target.value })}
+                    className="w-full px-2 py-2 border rounded text-sm"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleAddItem}
+                  disabled={!newItemToAdd.itemKey}
+                  className="px-3 py-2 bg-brand-blue hover:bg-brand-blue-dark text-white text-sm font-bold rounded disabled:bg-gray-300 disabled:cursor-not-allowed whitespace-nowrap"
+                >
+                  + Adicionar
+                </button>
+              </div>
+              {selectedItems.length === 0 && (
+                <p className="text-xs text-red-500 mt-1">Adicione pelo menos um item.</p>
+              )}
             </div>
             {/* Client */}
             <div>
@@ -452,7 +564,7 @@ export default function ReservationsPage() {
 
             <div className="flex gap-2 pt-2">
               <button type="submit" className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded">Salvar</button>
-              <button type="button" onClick={() => { setShowForm(false); setEditingReservation(null); }} className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">Cancelar</button>
+              <button type="button" onClick={() => { setShowForm(false); setEditingReservation(null); setSelectedItems([]); }} className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">Cancelar</button>
             </div>
           </form>
         </div>
@@ -486,7 +598,7 @@ export default function ReservationsPage() {
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-gray-600">Item: {getReservationItemName(reservation)}</p>
+                    <p className="text-sm text-gray-600">Itens: {getReservationItemsSummary(reservation)}</p>
                     {reservation.customer_email && <p className="text-sm text-gray-600">Email: {reservation.customer_email}</p>}
                     {reservation.customer_phone && <p className="text-sm text-gray-600">Telefone: {reservation.customer_phone}</p>}
                     <p className="text-sm text-gray-600 mt-1">{reservation.date_from} até {reservation.date_to}</p>

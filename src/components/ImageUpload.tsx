@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
 import { useToast } from '@/hooks/useToast'
+import ImageCropperModal from '@/components/ImageCropperModal'
 
 interface ImageUploadProps {
   currentImage?: string
@@ -11,6 +12,7 @@ interface ImageUploadProps {
   maxSize?: number // MB, default 5
   accept?: string // default 'image/*'
   label?: string
+  aspectRatio?: number // Optional aspect ratio lock for the cropper (width/height, e.g. 1 for square)
 }
 
 export default function ImageUpload({
@@ -19,19 +21,36 @@ export default function ImageUpload({
   folder = 'general',
   maxSize = 5,
   accept = 'image/*',
-  label = 'Imagem'
+  label = 'Imagem',
+  aspectRatio,
 }: ImageUploadProps) {
   const [preview, setPreview] = useState<string | null>(currentImage || null)
   const [uploading, setUploading] = useState(false)
   const [dragActive, setDragActive] = useState(false)
+  const [cropperSrc, setCropperSrc] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const previewObjectUrlRef = useRef<string | null>(null)
   const { showSuccess, showError } = useToast()
+
+  // Revoke any object URL we created when the component unmounts
+  useEffect(() => {
+    return () => {
+      if (previewObjectUrlRef.current) {
+        URL.revokeObjectURL(previewObjectUrlRef.current)
+      }
+    }
+  }, [])
 
   // Sync preview when currentImage prop changes (e.g., opening edit form for a different item)
   useEffect(() => {
     // Only update if not currently uploading (to avoid overwriting the live base64 preview)
     setPreview(prev => {
       if (uploading) return prev;
+      // Revoke the previous object URL, if any, when switching to a prop-provided URL
+      if (previewObjectUrlRef.current) {
+        URL.revokeObjectURL(previewObjectUrlRef.current)
+        previewObjectUrlRef.current = null
+      }
       return currentImage || null;
     });
   }, [currentImage]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -62,18 +81,28 @@ export default function ImageUpload({
   const handleFileSelect = async (file: File) => {
     if (!validateFile(file)) return
 
-    // Create preview
+    // Open cropper so the user can adjust the image before uploading
     const reader = new FileReader()
     reader.onload = (e) => {
-      setPreview(e.target?.result as string)
+      setCropperSrc(e.target?.result as string)
     }
     reader.readAsDataURL(file)
+  }
 
-    // Upload file
+  const uploadBlob = async (blob: Blob) => {
+    // Revoke previous object URL to avoid memory leaks
+    if (previewObjectUrlRef.current) {
+      URL.revokeObjectURL(previewObjectUrlRef.current)
+    }
+    // Show a preview of the cropped image immediately
+    const objectUrl = URL.createObjectURL(blob)
+    previewObjectUrlRef.current = objectUrl
+    setPreview(objectUrl)
+
     setUploading(true)
     try {
       const formData = new FormData()
-      formData.append('file', file)
+      formData.append('file', blob, 'image.jpg')
       formData.append('folder', folder)
 
       const response = await fetch('/api/upload', {
@@ -138,8 +167,29 @@ export default function ImageUpload({
     fileInputRef.current?.click()
   }
 
+  const handleCropDone = (blob: Blob) => {
+    setCropperSrc(null)
+    // Reset file input so the same file can be re-selected if needed
+    if (fileInputRef.current) fileInputRef.current.value = ''
+    uploadBlob(blob)
+  }
+
+  const handleCropCancel = () => {
+    setCropperSrc(null)
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
   return (
-    <div className="space-y-2">
+    <>
+      {cropperSrc && (
+        <ImageCropperModal
+          imageSrc={cropperSrc}
+          aspectRatio={aspectRatio}
+          onCrop={handleCropDone}
+          onCancel={handleCropCancel}
+        />
+      )}
+      <div className="space-y-2">
       <label className="block text-sm font-medium text-gray-700">
         {label}
       </label>
@@ -224,6 +274,10 @@ export default function ImageUpload({
           type="button"
           onClick={(e) => {
             e.preventDefault()
+            if (previewObjectUrlRef.current) {
+              URL.revokeObjectURL(previewObjectUrlRef.current)
+              previewObjectUrlRef.current = null
+            }
             setPreview(null)
             if (fileInputRef.current) {
               fileInputRef.current.value = ''
@@ -234,6 +288,7 @@ export default function ImageUpload({
           Remover imagem
         </button>
       )}
-    </div>
+      </div>
+    </>
   )
 }

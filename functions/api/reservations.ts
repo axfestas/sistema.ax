@@ -95,7 +95,23 @@ export async function onRequestPost(context: {
 }) {
   try {
     const db = context.env.DB;
-    const body = (await context.request.json()) as ReservationInput;
+    const body = (await context.request.json()) as ReservationInput & { items?: { itemKey: string; quantity: number; displayName: string }[] };
+
+    // Serialize multi-item array to items_json when provided
+    if (body.items && body.items.length > 0) {
+      body.items_json = JSON.stringify(body.items);
+      // Set primary item IDs from the first item for backward compatibility
+      const first = body.items[0];
+      const [type, idStr] = (first.itemKey || '').split(':');
+      const id = parseInt(idStr || '0');
+      if (!isNaN(id) && id > 0) {
+        if (type === 'item') body.item_id = id;
+        else if (type === 'kit') body.kit_id = id;
+        else if (type === 'sweet') body.sweet_id = id;
+        else if (type === 'design') body.design_id = id;
+        else if (type === 'theme') body.theme_id = id;
+      }
+    }
 
     if (
       !body.customer_name ||
@@ -105,7 +121,7 @@ export async function onRequestPost(context: {
       return new Response(
         JSON.stringify({
           error:
-            'Missing required fields: customer_name, date_from, date_to. Note: An item identifier (item_id, kit_id, sweet_id, design_id, or theme_id) is also required.',
+            'Missing required fields: customer_name, date_from, date_to. Note: An item identifier (item_id, kit_id, sweet_id, design_id, theme_id, or items array) is also required.',
         }),
         {
           status: 400,
@@ -154,7 +170,26 @@ export async function onRequestPut(context: {
       );
     }
 
-    const body = (await context.request.json()) as Partial<ReservationInput>;
+    const body = (await context.request.json()) as Partial<ReservationInput> & { items?: { itemKey: string; quantity: number; displayName: string }[] };
+
+    // Serialize multi-item array to items_json when provided
+    if (body.items && body.items.length > 0) {
+      body.items_json = JSON.stringify(body.items);
+      // Update primary item IDs from the first item for backward compatibility.
+      // Cast to any so we can explicitly set unmatched ID fields to null (clearing old values).
+      const bodyAny = body as any;
+      const first = body.items[0];
+      const [type, idStr] = (first.itemKey || '').split(':');
+      const id = parseInt(idStr || '0');
+      if (!isNaN(id) && id > 0) {
+        bodyAny.item_id = type === 'item' ? id : null;
+        bodyAny.kit_id = type === 'kit' ? id : null;
+        bodyAny.sweet_id = type === 'sweet' ? id : null;
+        bodyAny.design_id = type === 'design' ? id : null;
+        bodyAny.theme_id = type === 'theme' ? id : null;
+      }
+    }
+
     const updatedReservation = await updateReservation(
       db,
       Number(reservationId),

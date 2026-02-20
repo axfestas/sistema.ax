@@ -17,6 +17,11 @@ interface SiteSettings {
  * Renders a JSON-LD LocalBusiness structured data script in the document head.
  * This helps Google (and other search engines) display up-to-date business info
  * such as phone number, address, and description in search results.
+ *
+ * Because this site is statically exported, the <title> and <meta name="description">
+ * in the built HTML are hardcoded. This component also updates those tags dynamically
+ * after loading settings, so Googlebot (which runs JavaScript) will index the
+ * most recent values saved in Configurações.
  */
 export default function SeoSchema() {
   const [settings, setSettings] = useState<SiteSettings | null>(null);
@@ -25,7 +30,23 @@ export default function SeoSchema() {
     fetch('/api/settings')
       .then((res) => (res.ok ? res.json() : null))
       .then((data: any) => {
-        if (data && !data.error) setSettings(data as SiteSettings);
+        if (data && !data.error) {
+          const s = data as SiteSettings;
+          setSettings(s);
+
+          // Dynamically update <title> and <meta name="description"> so that
+          // search engines crawling with JS enabled pick up the live values.
+          if (s.company_name) {
+            document.title = s.company_description
+              ? `${s.company_name} - ${s.company_description}`
+              : s.company_name;
+
+            const descMeta = document.querySelector<HTMLMetaElement>('meta[name="description"]');
+            if (descMeta) {
+              descMeta.setAttribute('content', s.company_description || s.company_name);
+            }
+          }
+        }
       })
       .catch(() => {});
   }, []);
