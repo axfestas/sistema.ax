@@ -11,6 +11,7 @@ interface SelectableItem {
   name: string;
   type: 'item' | 'kit' | 'sweet' | 'design' | 'theme';
   displayName: string;
+  stockQuantity?: number; // only set for 'item' type (from inventory)
 }
 
 /** An item that has been added to the current reservation form (with quantity). */
@@ -107,7 +108,7 @@ export default function ReservationsPage() {
 
   const loadReservations = async () => {
     try {
-      const response = await fetch('/api/reservations');
+      const response = await fetch('/api/reservations', { cache: 'no-store' });
       if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
       const data: any = await response.json();
       setReservations(data);
@@ -131,7 +132,7 @@ export default function ReservationsPage() {
       ]);
       if (itemsRes.ok) {
         const d: any[] = await itemsRes.json();
-        d.forEach(x => items.push({ id: x.id, name: x.name, type: 'item', displayName: `[Estoque] ${x.name}` }));
+        d.forEach(x => items.push({ id: x.id, name: x.name, type: 'item', displayName: `[Estoque] ${x.name}`, stockQuantity: x.quantity }));
       }
       if (kitsRes.ok) {
         const d: any[] = await kitsRes.json();
@@ -185,18 +186,30 @@ export default function ReservationsPage() {
     setFormData(prev => ({ ...prev, client_id: '', customer_name: '', customer_email: '', customer_phone: '' }));
   };
 
+  /** Validates qty against stock for inventory items. Returns clamped qty, or null to abort. */
+  const validateAndClampQty = (item: SelectableItem, qty: number, abort: boolean): number | null => {
+    if (item.type === 'item' && item.stockQuantity !== undefined && qty > item.stockQuantity) {
+      showError(`Quantidade solicitada (${qty}) excede o estoque disponível (${item.stockQuantity}) para "${item.name}"`);
+      if (abort) return null;
+      return item.stockQuantity;
+    }
+    return qty;
+  };
+
   const handleAddItem = () => {
     if (!newItemToAdd.itemKey) return;
     const qty = Math.max(1, parseInt(newItemToAdd.quantity) || 1);
     const found = allItems.find(x => `${x.type}:${x.id}` === newItemToAdd.itemKey);
     if (!found) return;
+    const validQty = validateAndClampQty(found, qty, true);
+    if (validQty === null) return;
     const existing = selectedItems.findIndex(x => x.itemKey === newItemToAdd.itemKey);
     if (existing >= 0) {
       const updated = [...selectedItems];
-      updated[existing] = { ...updated[existing], quantity: qty };
+      updated[existing] = { ...updated[existing], quantity: validQty };
       setSelectedItems(updated);
     } else {
-      setSelectedItems([...selectedItems, { itemKey: newItemToAdd.itemKey, quantity: qty, displayName: found.displayName }]);
+      setSelectedItems([...selectedItems, { itemKey: newItemToAdd.itemKey, quantity: validQty, displayName: found.displayName }]);
     }
     setNewItemToAdd({ itemKey: '', quantity: '1' });
   };
@@ -206,7 +219,9 @@ export default function ReservationsPage() {
   };
 
   const handleItemQuantityChange = (itemKey: string, qty: number) => {
-    setSelectedItems(selectedItems.map(x => x.itemKey === itemKey ? { ...x, quantity: Math.max(1, qty) } : x));
+    const found = allItems.find(x => `${x.type}:${x.id}` === itemKey);
+    const validQty = found ? (validateAndClampQty(found, qty, false) ?? qty) : qty;
+    setSelectedItems(selectedItems.map(x => x.itemKey === itemKey ? { ...x, quantity: Math.max(1, validQty) } : x));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -244,6 +259,7 @@ export default function ReservationsPage() {
       setShowForm(false);
       setEditingReservation(null);
       setFormData({ ...emptyForm });
+      setSelectedItems([]);
       showSuccess(editingReservation ? 'Reserva atualizada com sucesso!' : 'Reserva criada com sucesso!');
     } catch (error) {
       console.error('Error saving reservation:', error);
@@ -364,6 +380,9 @@ export default function ReservationsPage() {
   };
   const getPaymentTypeLabel = (type?: string) => PAYMENT_TYPES.find(p => p.value === type)?.label || type || '';
 
+  const selectedNewItemRef = allItems.find(x => `${x.type}:${x.id}` === newItemToAdd.itemKey);
+  const newItemMaxQty = selectedNewItemRef?.type === 'item' ? selectedNewItemRef.stockQuantity : undefined;
+
   if (loading) return <div className="p-4">Carregando...</div>;
 
   return (
@@ -414,13 +433,20 @@ export default function ReservationsPage() {
               {/* Selected items list */}
               {selectedItems.length > 0 && (
                 <ul className="mb-3 space-y-2">
-                  {selectedItems.map((entry) => (
+                  {selectedItems.map((entry) => {
+                    const itemRef = allItems.find(x => `${x.type}:${x.id}` === entry.itemKey);
+                    const maxQty = itemRef?.type === 'item' ? itemRef.stockQuantity : undefined;
+                    return (
                     <li key={entry.itemKey} className="flex items-center gap-2 p-2 bg-gray-50 rounded border">
                       <span className="flex-1 text-sm">{entry.displayName}</span>
+                      {maxQty !== undefined && (
+                        <span className="text-xs text-gray-400 whitespace-nowrap">estoque: {maxQty}</span>
+                      )}
                       <label className="text-xs text-gray-500 whitespace-nowrap">Qtd:</label>
                       <input
                         type="number"
                         min="1"
+                        max={maxQty}
                         value={entry.quantity}
                         onChange={(e) => handleItemQuantityChange(entry.itemKey, parseInt(e.target.value) || 1)}
                         className="w-16 px-2 py-1 border rounded text-sm"
@@ -433,7 +459,8 @@ export default function ReservationsPage() {
                         ✕
                       </button>
                     </li>
-                  ))}
+                    );
+                  })}
                 </ul>
               )}
 
@@ -448,7 +475,9 @@ export default function ReservationsPage() {
                   >
                     <option value="">Escolha um item...</option>
                     {allItems.map((item) => (
-                      <option key={`${item.type}:${item.id}`} value={`${item.type}:${item.id}`}>{item.displayName}</option>
+                      <option key={`${item.type}:${item.id}`} value={`${item.type}:${item.id}`}>
+                        {item.displayName}{item.type === 'item' && item.stockQuantity !== undefined ? ` (estoque: ${item.stockQuantity})` : ''}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -457,6 +486,7 @@ export default function ReservationsPage() {
                   <input
                     type="number"
                     min="1"
+                    max={newItemMaxQty}
                     value={newItemToAdd.quantity}
                     onChange={(e) => setNewItemToAdd({ ...newItemToAdd, quantity: e.target.value })}
                     className="w-full px-2 py-2 border rounded text-sm"
