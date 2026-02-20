@@ -23,7 +23,6 @@ export default function AdminLayout({
     { href: '/admin/clients', label: 'Clientes', icon: '👥' },
     { href: '/admin/finance', label: 'Financeiro', icon: '💰' },
     { href: '/admin/categories', label: 'Categorias', icon: '🏷️' },
-    { href: '/admin/settings', label: 'Configurações', icon: '⚙️' },
   ];
 
   return (
