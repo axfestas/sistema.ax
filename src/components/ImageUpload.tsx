@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
 import { useToast } from '@/hooks/useToast'
 
@@ -26,6 +26,15 @@ export default function ImageUpload({
   const [dragActive, setDragActive] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { showSuccess, showError } = useToast()
+
+  // Sync preview when currentImage prop changes (e.g., opening edit form for a different item)
+  useEffect(() => {
+    // Only update if not currently uploading (to avoid overwriting the live base64 preview)
+    setPreview(prev => {
+      if (uploading) return prev;
+      return currentImage || null;
+    });
+  }, [currentImage]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const validateFile = (file: File): boolean => {
     // Validate type

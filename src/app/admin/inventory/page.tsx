@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { useToast } from '@/hooks/useToast';
 import ImageUpload from '@/components/ImageUpload';
 import { formatItemId } from '@/lib/formatId';
@@ -287,7 +288,17 @@ export default function InventoryPage() {
           <ul role="list" className="divide-y divide-gray-200">
             {items.map((item) => (
               <li key={item.id} className="px-6 py-4">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-4">
+                  {/* Thumbnail */}
+                  <div className="w-14 h-14 flex-shrink-0 rounded overflow-hidden bg-gray-100">
+                    {item.image_url ? (
+                      <div className="relative w-14 h-14">
+                        <Image src={item.image_url} alt={item.name} fill sizes="56px" className="object-cover" />
+                      </div>
+                    ) : (
+                      <div className="w-14 h-14 flex items-center justify-center text-gray-300 text-2xl">📦</div>
+                    )}
+                  </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-mono bg-blue-100 text-blue-800 px-2 py-1 rounded font-semibold">
