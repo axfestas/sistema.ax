@@ -73,7 +73,21 @@ export default function ReservationsPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingReservation, setEditingReservation] = useState<Reservation | null>(null);
   const [formData, setFormData] = useState({ ...emptyForm });
+  const [search, setSearch] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
   const { showSuccess, showError } = useToast();
+
+  const filteredReservations = reservations.filter((r) => {
+    const matchesStatus = !filterStatus || r.status === filterStatus;
+    if (!matchesStatus) return false;
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return (
+      r.customer_name.toLowerCase().includes(q) ||
+      (r.customer_email && r.customer_email.toLowerCase().includes(q)) ||
+      (r.customer_phone && r.customer_phone.includes(q))
+    );
+  });
 
   useEffect(() => {
     loadReservations();
@@ -310,6 +324,29 @@ export default function ReservationsPage() {
         </button>
       </div>
 
+      {!showForm && (
+        <div className="flex gap-2 mb-4 flex-wrap">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar por nome, email ou telefone..."
+            className="px-3 py-2 border rounded flex-1 min-w-[200px]"
+          />
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="px-3 py-2 border rounded"
+          >
+            <option value="">Todos os status</option>
+            <option value="pending">Pendente</option>
+            <option value="confirmed">Confirmada</option>
+            <option value="completed">Concluída</option>
+            <option value="cancelled">Cancelada</option>
+          </select>
+        </div>
+      )}
+
       {showForm && (
         <div className="bg-white p-6 rounded-lg shadow mb-6">
           <h3 className="text-xl font-bold mb-4">
@@ -422,11 +459,11 @@ export default function ReservationsPage() {
       )}
 
       <div className="bg-white shadow overflow-hidden sm:rounded-md">
-        {reservations.length === 0 ? (
-          <div className="px-6 py-4"><p className="text-gray-500">Nenhuma reserva cadastrada</p></div>
+        {filteredReservations.length === 0 ? (
+          <div className="px-6 py-4"><p className="text-gray-500">{reservations.length === 0 ? 'Nenhuma reserva cadastrada' : 'Nenhuma reserva encontrada para os filtros aplicados.'}</p></div>
         ) : (
           <ul role="list" className="divide-y divide-gray-200">
-            {reservations.map((reservation) => (
+            {filteredReservations.map((reservation) => (
               <li key={reservation.id} className="px-6 py-4">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">

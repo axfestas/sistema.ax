@@ -23,6 +23,8 @@ export default function InventoryPage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
+  const [search, setSearch] = useState('');
+  const [filterCategory, setFilterCategory] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -30,9 +32,21 @@ export default function InventoryPage() {
     quantity: '',
     image_url: '',
     category: '',
-    show_in_catalog: 1, // Default to showing in catalog
+    show_in_catalog: 1,
   });
   const { showSuccess, showError } = useToast();
+
+  const filteredItems = items.filter((item) => {
+    const matchesCat = !filterCategory || item.category === filterCategory;
+    if (!matchesCat) return false;
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return (
+      item.name.toLowerCase().includes(q) ||
+      (item.description && item.description.toLowerCase().includes(q)) ||
+      (item.category && item.category.toLowerCase().includes(q))
+    );
+  });
 
   useEffect(() => {
     loadItems();
@@ -172,6 +186,30 @@ export default function InventoryPage() {
         </button>
       </div>
 
+      {!showForm && (
+        <div className="flex gap-2 mb-4 flex-wrap">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar por nome ou descrição..."
+            className="px-3 py-2 border rounded flex-1 min-w-[200px]"
+          />
+          {inventoryCategories.length > 0 && (
+            <select
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+              className="px-3 py-2 border rounded"
+            >
+              <option value="">Todas as categorias</option>
+              {inventoryCategories.map((cat, i) => (
+                <option key={i} value={cat}>{cat}</option>
+              ))}
+            </select>
+          )}
+        </div>
+      )}
+
       {showForm && (
         <div className="bg-white p-6 rounded-lg shadow mb-6">
           <h3 className="text-xl font-bold mb-4">
@@ -280,13 +318,13 @@ export default function InventoryPage() {
       )}
 
       <div className="bg-white shadow overflow-hidden sm:rounded-md">
-        {items.length === 0 ? (
+        {filteredItems.length === 0 ? (
           <div className="px-6 py-4">
-            <p className="text-gray-500">Nenhum item cadastrado</p>
+            <p className="text-gray-500">{items.length === 0 ? 'Nenhum item cadastrado' : 'Nenhum item encontrado para os filtros aplicados.'}</p>
           </div>
         ) : (
           <ul role="list" className="divide-y divide-gray-200">
-            {items.map((item) => (
+            {filteredItems.map((item) => (
               <li key={item.id} className="px-6 py-4">
                 <div className="flex items-center justify-between gap-4">
                   {/* Thumbnail */}

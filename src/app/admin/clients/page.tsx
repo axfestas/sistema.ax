@@ -35,6 +35,7 @@ export default function ClientsPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
@@ -157,6 +158,18 @@ export default function ClientsPage() {
     setShowForm(true);
   }
 
+  const filteredClients = clients.filter((c) => {
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return (
+      c.name.toLowerCase().includes(q) ||
+      (c.email && c.email.toLowerCase().includes(q)) ||
+      c.phone.includes(q) ||
+      (c.city && c.city.toLowerCase().includes(q)) ||
+      (c.cpf && c.cpf.includes(q))
+    );
+  });
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
@@ -165,9 +178,21 @@ export default function ClientsPage() {
           onClick={handleNewClient}
           className="bg-brand-blue text-white px-4 py-2 rounded hover:bg-brand-blue-dark transition-colors"
         >
-          + Nove Cliente
+          + Novo Cliente
         </button>
       </div>
+
+      {!showForm && (
+        <div className="flex gap-2 mb-4">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar por nome, email, telefone ou cidade..."
+            className="px-3 py-2 border rounded flex-1"
+          />
+        </div>
+      )}
 
       {loading ? (
         <div className="text-center py-12">
@@ -188,14 +213,14 @@ export default function ClientsPage() {
               </tr>
             </thead>
             <tbody>
-              {clients.length === 0 ? (
+              {filteredClients.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="p-6 text-center text-gray-500">
-                    Nenhume cliente cadastrade
+                    {clients.length === 0 ? 'Nenhum cliente cadastrado' : 'Nenhum cliente encontrado para a busca.'}
                   </td>
                 </tr>
               ) : (
-                clients.map(client => (
+                filteredClients.map(client => (
                   <tr key={client.id} className="border-t hover:bg-gray-50">
                     <td className="p-3 font-mono text-sm text-gray-600">
                       {formatClientId(client.id)}

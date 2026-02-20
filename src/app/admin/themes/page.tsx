@@ -29,6 +29,8 @@ export default function ThemesPage() {
   const [editingTheme, setEditingTheme] = useState<Theme | null>(null);
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<string[]>([]);
+  const [search, setSearch] = useState('');
+  const [filterCategory, setFilterCategory] = useState('');
   const [formData, setFormData] = useState<FormData>({
     name: '',
     description: '',
@@ -134,6 +136,18 @@ export default function ThemesPage() {
     setShowForm(true);
   }
 
+  const filteredThemes = themes.filter((t) => {
+    const matchesCat = !filterCategory || t.category === filterCategory;
+    if (!matchesCat) return false;
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return (
+      t.name.toLowerCase().includes(q) ||
+      (t.description && t.description.toLowerCase().includes(q)) ||
+      (t.category && t.category.toLowerCase().includes(q))
+    );
+  });
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
@@ -146,6 +160,30 @@ export default function ThemesPage() {
         </button>
       </div>
 
+      {!showForm && (
+        <div className="flex gap-2 mb-4 flex-wrap">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar por nome ou descrição..."
+            className="px-3 py-2 border rounded flex-1 min-w-[200px]"
+          />
+          {categories.length > 0 && (
+            <select
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+              className="px-3 py-2 border rounded"
+            >
+              <option value="">Todas as categorias</option>
+              {categories.map((cat, i) => (
+                <option key={i} value={cat}>{cat}</option>
+              ))}
+            </select>
+          )}
+        </div>
+      )}
+
       {loading ? (
         <div className="text-center py-12">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600"></div>
@@ -157,8 +195,12 @@ export default function ThemesPage() {
             <div className="col-span-full text-center py-12 text-gray-500">
               Nenhum tema cadastrado
             </div>
+          ) : filteredThemes.length === 0 ? (
+            <div className="col-span-full text-center py-12 text-gray-500">
+              Nenhum tema encontrado para os filtros aplicados.
+            </div>
           ) : (
-            themes.map((theme) => (
+            filteredThemes.map((theme) => (
               <div key={theme.id} className="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="aspect-square bg-gray-200 relative">
                   {theme.image_url ? (
