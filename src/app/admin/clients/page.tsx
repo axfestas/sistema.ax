@@ -201,6 +201,7 @@ export default function ClientsPage() {
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-100">
               <tr>
@@ -248,6 +249,7 @@ export default function ClientsPage() {
               )}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 
