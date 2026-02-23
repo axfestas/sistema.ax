@@ -2,9 +2,8 @@ import type { Metadata } from 'next'
 import './globals.css'
 import { CartProvider } from '@/components/CartContext'
 import { ToastProvider } from '@/components/ToastProvider'
-import Header from '@/components/Header'
-import Footer from '@/components/Footer'
 import SeoSchema from '@/components/SeoSchema'
+import ClientLayout from './ClientLayout'
 
 export const metadata: Metadata = {
   title: 'Ax Festas - Aluguel de Itens para Festas',
@@ -27,11 +26,9 @@ export default function RootLayout({
         <ToastProvider>
           <CartProvider>
             <SeoSchema />
-            <Header />
-            <main className="flex-1">
+            <ClientLayout>
               {children}
-            </main>
-            <Footer />
+            </ClientLayout>
           </CartProvider>
         </ToastProvider>
       </body>

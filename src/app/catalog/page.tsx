@@ -57,6 +57,7 @@ interface Theme {
   description?: string
   image_url?: string
   category?: string
+  price?: number
 }
 
 type TabType = 'items' | 'kits' | 'sweets' | 'designs' | 'themes'
@@ -709,6 +710,21 @@ export default function CatalogPage() {
                                 Categoria: {theme.category}
                               </p>
                             )}
+                            <div className="flex flex-col items-end gap-1">
+                              <button
+                                onClick={() => addItem({
+                                  id: `theme-${theme.id}`,
+                                  name: theme.name,
+                                  description: theme.description || '',
+                                  price: theme.price || 0,
+                                  image: theme.image_url
+                                })}
+                                className="bg-brand-yellow hover:bg-brand-yellow/90 text-white font-bold py-2 px-4 rounded-full transition-colors duration-300"
+                              >
+                                Adicionar ao Carrinho
+                              </button>
+                              <span className="text-xs text-gray-400">Preço sob consulta</span>
+                            </div>
                           </div>
                         </div>
                       ))}
