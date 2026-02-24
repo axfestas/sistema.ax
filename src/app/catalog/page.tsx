@@ -70,6 +70,9 @@ interface Theme {
 
 type TabType = 'items' | 'kits' | 'sweets' | 'designs' | 'themes'
 
+const HIGHLIGHT_DURATION_MS = 10000
+const TAB_SWITCH_DELAY_MS = 300
+
 export default function CatalogPage() {
   const [items, setItems] = useState<CatalogItem[]>([])
   const [kits, setKits] = useState<Kit[]>([])
@@ -81,6 +84,7 @@ export default function CatalogPage() {
   const [quantities, setQuantities] = useState<{ [key: number]: number }>({})
   const [search, setSearch] = useState('')
   const [filterCategory, setFilterCategory] = useState('')
+  const [highlightedItem, setHighlightedItem] = useState<string | null>(null)
   const { addItem } = useCart()
   const { showSuccess } = useToast()
 
@@ -197,9 +201,12 @@ export default function CatalogPage() {
     })
   }
 
-  const handleShare = async (name: string, description?: string) => {
-    const url = window.location.href
+  const handleShare = async (type: string, id: number, name: string, description?: string) => {
+    const anchor = `${type}-${id}`
+    const url = `${window.location.origin}${window.location.pathname}#${anchor}`
     const text = description ? `${name} - ${description}` : name
+    setHighlightedItem(anchor)
+    setTimeout(() => setHighlightedItem(null), HIGHLIGHT_DURATION_MS)
     if (navigator.share) {
       try {
         await navigator.share({ title: name, text, url })
@@ -208,13 +215,36 @@ export default function CatalogPage() {
       }
     } else {
       try {
-        await navigator.clipboard.writeText(`${text}\n${url}`)
+        await navigator.clipboard.writeText(url)
         showSuccess('Link copiado para a área de transferência!')
       } catch {
         // clipboard not available
       }
     }
   }
+
+  // Highlight item when navigating via a shared link (hash in URL)
+  useEffect(() => {
+    if (loading) return
+    const hash = window.location.hash
+    if (!hash) return
+    const anchor = hash.slice(1)
+    if (anchor.startsWith('kit-')) setActiveTab('kits')
+    else if (anchor.startsWith('item-')) setActiveTab('items')
+    else if (anchor.startsWith('sweet-')) setActiveTab('sweets')
+    else if (anchor.startsWith('design-')) setActiveTab('designs')
+    else if (anchor.startsWith('theme-')) setActiveTab('themes')
+    setTimeout(() => {
+      const el = document.getElementById(anchor)
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        setHighlightedItem(anchor)
+        setTimeout(() => setHighlightedItem(null), HIGHLIGHT_DURATION_MS)
+      }
+    }, TAB_SWITCH_DELAY_MS)
+  // setActiveTab is stable (from useState) so omitting it from deps is safe
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading])
 
   return (
     <div className="min-h-screen bg-white">
@@ -343,7 +373,7 @@ export default function CatalogPage() {
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                       {filteredKits.map((kit) => (
-                        <div key={kit.id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+                        <div key={kit.id} id={`kit-${kit.id}`} className={`bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300${highlightedItem === `kit-${kit.id}` ? ' ring-4 ring-black' : ''}`}>
                           {/* Kit Image */}
                           <div className="h-48 bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center relative overflow-hidden">
                             {kit.image_url ? (
@@ -356,6 +386,14 @@ export default function CatalogPage() {
                             ) : (
                               <span className="text-white text-8xl">🎁</span>
                             )}
+                            <button
+                              onClick={() => handleShare('kit', kit.id, kit.name, kit.description)}
+                              title="Compartilhar"
+                              aria-label="Compartilhar"
+                              className="absolute top-2 right-2 z-10 p-2 rounded-full bg-white/80 hover:bg-white transition-colors text-gray-600 shadow"
+                            >
+                              <ShareIcon />
+                            </button>
                           </div>
                           
                           <div className="p-6">
@@ -392,22 +430,12 @@ export default function CatalogPage() {
                               <span className="text-2xl font-bold text-brand-yellow">
                                 R$ {kit.price.toFixed(2)}
                               </span>
-                              <div className="flex items-center gap-2">
-                                <button
-                                  onClick={() => handleShare(kit.name, kit.description)}
-                                  title="Compartilhar"
-                                  aria-label="Compartilhar"
-                                  className="p-2 rounded-full border border-gray-300 hover:bg-gray-100 transition-colors text-gray-500"
-                                >
-                                  <ShareIcon />
-                                </button>
-                                <button
-                                  onClick={() => handleAddKitToCart(kit)}
-                                  className="bg-brand-yellow hover:bg-brand-yellow/90 text-white font-bold py-2 px-4 rounded-full transition-colors"
-                                >
-                                  Adicionar ao Carrinho
-                                </button>
-                              </div>
+                              <button
+                                onClick={() => handleAddKitToCart(kit)}
+                                className="bg-brand-yellow hover:bg-brand-yellow/90 text-white font-bold py-2 px-4 rounded-full transition-colors"
+                              >
+                                Adicionar ao Carrinho
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -441,8 +469,9 @@ export default function CatalogPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                       {filteredItems.map((item) => (
                         <div 
-                          key={item.id} 
-                          className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300"
+                          key={item.id}
+                          id={`item-${item.id}`}
+                          className={`bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300${highlightedItem === `item-${item.id}` ? ' ring-4 ring-black' : ''}`}
                         >
                           {/* Image */}
                           <div className="h-64 bg-gradient-to-br from-brand-blue to-brand-purple flex items-center justify-center relative overflow-hidden">
@@ -456,6 +485,14 @@ export default function CatalogPage() {
                             ) : (
                               <span className="text-white text-6xl">📦</span>
                             )}
+                            <button
+                              onClick={() => handleShare('item', item.id, item.name, item.description)}
+                              title="Compartilhar"
+                              aria-label="Compartilhar"
+                              className="absolute top-2 right-2 z-10 p-2 rounded-full bg-white/80 hover:bg-white transition-colors text-gray-600 shadow"
+                            >
+                              <ShareIcon />
+                            </button>
                           </div>
                           
                           <div className="p-6">
@@ -504,27 +541,17 @@ export default function CatalogPage() {
                               <span className="text-2xl font-bold text-brand-yellow">
                                 R$ {item.price.toFixed(2)}
                               </span>
-                              <div className="flex items-center gap-2">
-                                <button
-                                  onClick={() => handleShare(item.name, item.description)}
-                                  title="Compartilhar"
-                                  aria-label="Compartilhar"
-                                  className="p-2 rounded-full border border-gray-300 hover:bg-gray-100 transition-colors text-gray-500"
-                                >
-                                  <ShareIcon />
-                                </button>
-                                <button
-                                  onClick={() => handleAddToCart(item)}
-                                  disabled={item.quantity === 0}
-                                  className={`font-bold py-2 px-4 rounded-full transition-colors duration-300 ${
-                                    item.quantity > 0
-                                      ? 'bg-brand-yellow hover:bg-brand-yellow/90 text-white'
-                                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                  }`}
-                                >
-                                  {item.quantity > 0 ? 'Adicionar ao Carrinho' : 'Indisponível'}
-                                </button>
-                              </div>
+                              <button
+                                onClick={() => handleAddToCart(item)}
+                                disabled={item.quantity === 0}
+                                className={`font-bold py-2 px-4 rounded-full transition-colors duration-300 ${
+                                  item.quantity > 0
+                                    ? 'bg-brand-yellow hover:bg-brand-yellow/90 text-white'
+                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                }`}
+                              >
+                                {item.quantity > 0 ? 'Adicionar ao Carrinho' : 'Indisponível'}
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -558,8 +585,9 @@ export default function CatalogPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                       {filteredSweets.map((sweet) => (
                         <div 
-                          key={sweet.id} 
-                          className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300"
+                          key={sweet.id}
+                          id={`sweet-${sweet.id}`}
+                          className={`bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300${highlightedItem === `sweet-${sweet.id}` ? ' ring-4 ring-black' : ''}`}
                         >
                           {/* Image */}
                           <div className="h-64 bg-gradient-to-br from-pink-300 to-purple-400 flex items-center justify-center relative overflow-hidden">
@@ -573,6 +601,14 @@ export default function CatalogPage() {
                             ) : (
                               <span className="text-white text-6xl">🍰</span>
                             )}
+                            <button
+                              onClick={() => handleShare('sweet', sweet.id, sweet.name, sweet.description)}
+                              title="Compartilhar"
+                              aria-label="Compartilhar"
+                              className="absolute top-2 right-2 z-10 p-2 rounded-full bg-white/80 hover:bg-white transition-colors text-gray-600 shadow"
+                            >
+                              <ShareIcon />
+                            </button>
                           </div>
                           
                           <div className="p-6">
@@ -597,33 +633,23 @@ export default function CatalogPage() {
                               <span className="text-2xl font-bold text-brand-yellow">
                                 R$ {sweet.price.toFixed(2)}
                               </span>
-                              <div className="flex items-center gap-2">
-                                <button
-                                  onClick={() => handleShare(sweet.name, sweet.description)}
-                                  title="Compartilhar"
-                                  aria-label="Compartilhar"
-                                  className="p-2 rounded-full border border-gray-300 hover:bg-gray-100 transition-colors text-gray-500"
-                                >
-                                  <ShareIcon />
-                                </button>
-                                <button
-                                  onClick={() => addItem({
-                                    id: `sweet-${sweet.id}`,
-                                    name: sweet.name,
-                                    description: sweet.description || '',
-                                    price: sweet.price,
-                                    image: sweet.image_url
-                                  })}
-                                  disabled={sweet.quantity === 0}
-                                  className={`font-bold py-2 px-4 rounded-full transition-colors duration-300 ${
-                                    sweet.quantity > 0
-                                      ? 'bg-brand-yellow hover:bg-brand-yellow/90 text-white'
-                                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                  }`}
-                                >
-                                  {sweet.quantity > 0 ? 'Adicionar ao Carrinho' : 'Indisponível'}
-                                </button>
-                              </div>
+                              <button
+                                onClick={() => addItem({
+                                  id: `sweet-${sweet.id}`,
+                                  name: sweet.name,
+                                  description: sweet.description || '',
+                                  price: sweet.price,
+                                  image: sweet.image_url
+                                })}
+                                disabled={sweet.quantity === 0}
+                                className={`font-bold py-2 px-4 rounded-full transition-colors duration-300 ${
+                                  sweet.quantity > 0
+                                    ? 'bg-brand-yellow hover:bg-brand-yellow/90 text-white'
+                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                }`}
+                              >
+                                {sweet.quantity > 0 ? 'Adicionar ao Carrinho' : 'Indisponível'}
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -657,8 +683,9 @@ export default function CatalogPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                       {filteredDesigns.map((design) => (
                         <div 
-                          key={design.id} 
-                          className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300"
+                          key={design.id}
+                          id={`design-${design.id}`}
+                          className={`bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300${highlightedItem === `design-${design.id}` ? ' ring-4 ring-black' : ''}`}
                         >
                           {/* Image */}
                           <div className="h-64 bg-gradient-to-br from-purple-400 to-indigo-500 flex items-center justify-center relative overflow-hidden">
@@ -672,6 +699,14 @@ export default function CatalogPage() {
                             ) : (
                               <span className="text-white text-6xl">🎨</span>
                             )}
+                            <button
+                              onClick={() => handleShare('design', design.id, design.name, design.description)}
+                              title="Compartilhar"
+                              aria-label="Compartilhar"
+                              className="absolute top-2 right-2 z-10 p-2 rounded-full bg-white/80 hover:bg-white transition-colors text-gray-600 shadow"
+                            >
+                              <ShareIcon />
+                            </button>
                           </div>
                           
                           <div className="p-6">
@@ -693,28 +728,18 @@ export default function CatalogPage() {
                               <span className="text-2xl font-bold text-brand-yellow">
                                 R$ {design.price.toFixed(2)}
                               </span>
-                              <div className="flex items-center gap-2">
-                                <button
-                                  onClick={() => handleShare(design.name, design.description)}
-                                  title="Compartilhar"
-                                  aria-label="Compartilhar"
-                                  className="p-2 rounded-full border border-gray-300 hover:bg-gray-100 transition-colors text-gray-500"
-                                >
-                                  <ShareIcon />
-                                </button>
-                                <button
-                                  onClick={() => addItem({
-                                    id: `design-${design.id}`,
-                                    name: design.name,
-                                    description: design.description || '',
-                                    price: design.price,
-                                    image: design.image_url
-                                  })}
-                                  className="bg-brand-yellow hover:bg-brand-yellow/90 text-white font-bold py-2 px-4 rounded-full transition-colors duration-300"
-                                >
-                                  Adicionar ao Carrinho
-                                </button>
-                              </div>
+                              <button
+                                onClick={() => addItem({
+                                  id: `design-${design.id}`,
+                                  name: design.name,
+                                  description: design.description || '',
+                                  price: design.price,
+                                  image: design.image_url
+                                })}
+                                className="bg-brand-yellow hover:bg-brand-yellow/90 text-white font-bold py-2 px-4 rounded-full transition-colors duration-300"
+                              >
+                                Adicionar ao Carrinho
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -749,7 +774,8 @@ export default function CatalogPage() {
                       {filteredThemes.map((theme) => (
                         <div
                           key={theme.id}
-                          className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300"
+                          id={`theme-${theme.id}`}
+                          className={`bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300${highlightedItem === `theme-${theme.id}` ? ' ring-4 ring-black' : ''}`}
                         >
                           <div className="h-64 bg-gradient-to-br from-pink-400 to-red-500 flex items-center justify-center relative overflow-hidden">
                             {theme.image_url ? (
@@ -762,6 +788,14 @@ export default function CatalogPage() {
                             ) : (
                               <span className="text-white text-6xl">🎭</span>
                             )}
+                            <button
+                              onClick={() => handleShare('theme', theme.id, theme.name, theme.description)}
+                              title="Compartilhar"
+                              aria-label="Compartilhar"
+                              className="absolute top-2 right-2 z-10 p-2 rounded-full bg-white/80 hover:bg-white transition-colors text-gray-600 shadow"
+                            >
+                              <ShareIcon />
+                            </button>
                           </div>
 
                           <div className="p-6">
@@ -780,14 +814,6 @@ export default function CatalogPage() {
                             )}
                             <div className="flex flex-col items-end gap-1">
                               <div className="flex items-center gap-2">
-                                <button
-                                  onClick={() => handleShare(theme.name, theme.description)}
-                                  title="Compartilhar"
-                                  aria-label="Compartilhar"
-                                  className="p-2 rounded-full border border-gray-300 hover:bg-gray-100 transition-colors text-gray-500"
-                                >
-                                  <ShareIcon />
-                                </button>
                                 <button
                                   onClick={() => addItem({
                                     id: `theme-${theme.id}`,
