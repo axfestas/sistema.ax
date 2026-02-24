@@ -304,8 +304,7 @@ export default function CatalogPage() {
   }
 
   const handleShare = (type: string, id: number, name: string, description?: string) => {
-    const anchor = `${type}-${id}`
-    const url = `${window.location.origin}${window.location.pathname}#${anchor}`
+    const url = `${window.location.origin}/item/${type}/${id}`
     const text = description ? `${name} - ${description}` : name
     setShareModal({ url, name, text })
   }
