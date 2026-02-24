@@ -8,10 +8,11 @@ import ClientLayout from './ClientLayout'
 export const metadata: Metadata = {
   title: 'Ax Festas - Aluguel de Itens para Festas',
   description: 'Aluguel de itens para festas e eventos. Qualidade e excelência no atendimento.',
+  manifest: '/manifest.webmanifest',
   icons: {
     icon: '/favicon.svg',
     shortcut: '/favicon.svg',
-    apple: '/logotipo.svg',
+    apple: '/1.png',
   },
 }
 

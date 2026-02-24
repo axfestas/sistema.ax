@@ -1,0 +1,17 @@
+{
+  "name": "Ax Festas",
+  "short_name": "Ax Festas",
+  "description": "Aluguel de itens para festas e eventos. Qualidade e excelência no atendimento.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFC107",
+  "theme_color": "#FFC107",
+  "icons": [
+    {
+      "src": "/1.png",
+      "sizes": "500x500",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

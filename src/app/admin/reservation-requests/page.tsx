@@ -158,7 +158,7 @@ export default function ReservationRequestsPage() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col gap-3 mb-6 sm:flex-row sm:justify-between sm:items-center">
         <h1 className="text-3xl font-bold">Solicitações de Reserva</h1>
         <div className="flex gap-2 flex-wrap">
           <input
@@ -166,7 +166,7 @@ export default function ReservationRequestsPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por nome, email ou ID..."
-            className="px-4 py-2 border border-gray-300 rounded-lg min-w-[220px]"
+            className="px-4 py-2 border border-gray-300 rounded-lg w-full sm:w-auto sm:min-w-[220px]"
           />
           <select
             value={filterStatus}
@@ -309,6 +309,7 @@ export default function ReservationRequestsPage() {
               {/* Itens Solicitados */}
               <div className="mb-6">
                 <h3 className="text-lg font-bold mb-3">Itens Solicitados</h3>
+                <div className="overflow-x-auto">
                 <table className="w-full border border-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
@@ -357,6 +358,7 @@ export default function ReservationRequestsPage() {
                     </tr>
                   </tfoot>
                 </table>
+                </div>
               </div>
 
               {/* Status e Ações */}
