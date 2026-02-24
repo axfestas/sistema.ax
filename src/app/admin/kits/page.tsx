@@ -488,39 +488,41 @@ export default function KitsPage() {
           <ul role="list" className="divide-y divide-gray-200">
             {filteredKits.map((kit) => (
               <li key={kit.id} className="px-6 py-4">
-                <div className="flex items-center justify-between gap-4">
-                  {/* Thumbnail */}
-                  <div className="w-14 h-14 flex-shrink-0 rounded overflow-hidden bg-gray-100">
-                    {kit.image_url ? (
-                      <div className="relative w-14 h-14">
-                        <Image src={kit.image_url} alt={kit.name} fill sizes="56px" className="object-cover" />
-                      </div>
-                    ) : (
-                      <div className="w-14 h-14 flex items-center justify-center text-gray-300 text-2xl">🎁</div>
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono bg-purple-100 text-purple-800 px-2 py-1 rounded font-semibold">
-                        {formatKitId(kit.id)}
-                      </span>
-                      <h3 className="text-lg font-semibold">{kit.name}</h3>
-                      {kit.is_active === 0 && (
-                        <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded">
-                          Inativo
-                        </span>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                  {/* Thumbnail + info row */}
+                  <div className="flex items-center gap-4 flex-1 min-w-0">
+                    <div className="w-14 h-14 flex-shrink-0 rounded overflow-hidden bg-gray-100">
+                      {kit.image_url ? (
+                        <div className="relative w-14 h-14">
+                          <Image src={kit.image_url} alt={kit.name} fill sizes="56px" className="object-cover" />
+                        </div>
+                      ) : (
+                        <div className="w-14 h-14 flex items-center justify-center text-gray-300 text-2xl">🎁</div>
                       )}
                     </div>
-                    {kit.description && (
-                      <p className="text-sm text-gray-600 mt-1">{kit.description}</p>
-                    )}
-                    <div className="mt-2 flex gap-4 text-sm">
-                      <span className="text-green-600 font-semibold">
-                        R$ {kit.price.toFixed(2)}
-                      </span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs font-mono bg-purple-100 text-purple-800 px-2 py-1 rounded font-semibold">
+                          {formatKitId(kit.id)}
+                        </span>
+                        <h3 className="text-lg font-semibold">{kit.name}</h3>
+                        {kit.is_active === 0 && (
+                          <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded">
+                            Inativo
+                          </span>
+                        )}
+                      </div>
+                      {kit.description && (
+                        <p className="text-sm text-gray-600 mt-1">{kit.description}</p>
+                      )}
+                      <div className="mt-2 flex gap-4 text-sm">
+                        <span className="text-green-600 font-semibold">
+                          R$ {kit.price.toFixed(2)}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <button
                       onClick={() => loadKitWithItems(kit.id)}
                       className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-1 px-3 rounded text-sm"
@@ -549,7 +551,7 @@ export default function KitsPage() {
 
       {/* Modal de Itens do Kit */}
       {showItemsModal && selectedKit && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-bold">Itens do Kit: {selectedKit.name}</h3>
