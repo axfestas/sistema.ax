@@ -3,6 +3,14 @@
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { useCart } from '@/components/CartContext'
+import { useToast } from '@/components/ToastProvider'
+
+const ShareIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+  </svg>
+)
 
 interface CatalogItem {
   id: number
@@ -74,6 +82,7 @@ export default function CatalogPage() {
   const [search, setSearch] = useState('')
   const [filterCategory, setFilterCategory] = useState('')
   const { addItem } = useCart()
+  const { showSuccess } = useToast()
 
   // Reset search and category when switching tabs
   const handleTabChange = (tab: TabType) => {
@@ -186,6 +195,25 @@ export default function CatalogPage() {
       price: kit.price,
       image: kit.image_url
     })
+  }
+
+  const handleShare = async (name: string, description?: string) => {
+    const url = window.location.href
+    const text = description ? `${name} - ${description}` : name
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: name, text, url })
+      } catch {
+        // user cancelled or error
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(`${text}\n${url}`)
+        showSuccess('Link copiado para a área de transferência!')
+      } catch {
+        // clipboard not available
+      }
+    }
   }
 
   return (
@@ -364,12 +392,22 @@ export default function CatalogPage() {
                               <span className="text-2xl font-bold text-brand-yellow">
                                 R$ {kit.price.toFixed(2)}
                               </span>
-                              <button
-                                onClick={() => handleAddKitToCart(kit)}
-                                className="bg-brand-yellow hover:bg-brand-yellow/90 text-white font-bold py-2 px-4 rounded-full transition-colors"
-                              >
-                                Adicionar ao Carrinho
-                              </button>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => handleShare(kit.name, kit.description)}
+                                  title="Compartilhar"
+                                  aria-label="Compartilhar"
+                                  className="p-2 rounded-full border border-gray-300 hover:bg-gray-100 transition-colors text-gray-500"
+                                >
+                                  <ShareIcon />
+                                </button>
+                                <button
+                                  onClick={() => handleAddKitToCart(kit)}
+                                  className="bg-brand-yellow hover:bg-brand-yellow/90 text-white font-bold py-2 px-4 rounded-full transition-colors"
+                                >
+                                  Adicionar ao Carrinho
+                                </button>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -466,17 +504,27 @@ export default function CatalogPage() {
                               <span className="text-2xl font-bold text-brand-yellow">
                                 R$ {item.price.toFixed(2)}
                               </span>
-                              <button
-                                onClick={() => handleAddToCart(item)}
-                                disabled={item.quantity === 0}
-                                className={`font-bold py-2 px-4 rounded-full transition-colors duration-300 ${
-                                  item.quantity > 0
-                                    ? 'bg-brand-yellow hover:bg-brand-yellow/90 text-white'
-                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                }`}
-                              >
-                                {item.quantity > 0 ? 'Adicionar ao Carrinho' : 'Indisponível'}
-                              </button>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => handleShare(item.name, item.description)}
+                                  title="Compartilhar"
+                                  aria-label="Compartilhar"
+                                  className="p-2 rounded-full border border-gray-300 hover:bg-gray-100 transition-colors text-gray-500"
+                                >
+                                  <ShareIcon />
+                                </button>
+                                <button
+                                  onClick={() => handleAddToCart(item)}
+                                  disabled={item.quantity === 0}
+                                  className={`font-bold py-2 px-4 rounded-full transition-colors duration-300 ${
+                                    item.quantity > 0
+                                      ? 'bg-brand-yellow hover:bg-brand-yellow/90 text-white'
+                                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                  }`}
+                                >
+                                  {item.quantity > 0 ? 'Adicionar ao Carrinho' : 'Indisponível'}
+                                </button>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -549,23 +597,33 @@ export default function CatalogPage() {
                               <span className="text-2xl font-bold text-brand-yellow">
                                 R$ {sweet.price.toFixed(2)}
                               </span>
-                              <button
-                                onClick={() => addItem({
-                                  id: `sweet-${sweet.id}`,
-                                  name: sweet.name,
-                                  description: sweet.description || '',
-                                  price: sweet.price,
-                                  image: sweet.image_url
-                                })}
-                                disabled={sweet.quantity === 0}
-                                className={`font-bold py-2 px-4 rounded-full transition-colors duration-300 ${
-                                  sweet.quantity > 0
-                                    ? 'bg-brand-yellow hover:bg-brand-yellow/90 text-white'
-                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                }`}
-                              >
-                                {sweet.quantity > 0 ? 'Adicionar ao Carrinho' : 'Indisponível'}
-                              </button>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => handleShare(sweet.name, sweet.description)}
+                                  title="Compartilhar"
+                                  aria-label="Compartilhar"
+                                  className="p-2 rounded-full border border-gray-300 hover:bg-gray-100 transition-colors text-gray-500"
+                                >
+                                  <ShareIcon />
+                                </button>
+                                <button
+                                  onClick={() => addItem({
+                                    id: `sweet-${sweet.id}`,
+                                    name: sweet.name,
+                                    description: sweet.description || '',
+                                    price: sweet.price,
+                                    image: sweet.image_url
+                                  })}
+                                  disabled={sweet.quantity === 0}
+                                  className={`font-bold py-2 px-4 rounded-full transition-colors duration-300 ${
+                                    sweet.quantity > 0
+                                      ? 'bg-brand-yellow hover:bg-brand-yellow/90 text-white'
+                                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                  }`}
+                                >
+                                  {sweet.quantity > 0 ? 'Adicionar ao Carrinho' : 'Indisponível'}
+                                </button>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -635,18 +693,28 @@ export default function CatalogPage() {
                               <span className="text-2xl font-bold text-brand-yellow">
                                 R$ {design.price.toFixed(2)}
                               </span>
-                              <button
-                                onClick={() => addItem({
-                                  id: `design-${design.id}`,
-                                  name: design.name,
-                                  description: design.description || '',
-                                  price: design.price,
-                                  image: design.image_url
-                                })}
-                                className="bg-brand-yellow hover:bg-brand-yellow/90 text-white font-bold py-2 px-4 rounded-full transition-colors duration-300"
-                              >
-                                Adicionar ao Carrinho
-                              </button>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => handleShare(design.name, design.description)}
+                                  title="Compartilhar"
+                                  aria-label="Compartilhar"
+                                  className="p-2 rounded-full border border-gray-300 hover:bg-gray-100 transition-colors text-gray-500"
+                                >
+                                  <ShareIcon />
+                                </button>
+                                <button
+                                  onClick={() => addItem({
+                                    id: `design-${design.id}`,
+                                    name: design.name,
+                                    description: design.description || '',
+                                    price: design.price,
+                                    image: design.image_url
+                                  })}
+                                  className="bg-brand-yellow hover:bg-brand-yellow/90 text-white font-bold py-2 px-4 rounded-full transition-colors duration-300"
+                                >
+                                  Adicionar ao Carrinho
+                                </button>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -711,18 +779,28 @@ export default function CatalogPage() {
                               </p>
                             )}
                             <div className="flex flex-col items-end gap-1">
-                              <button
-                                onClick={() => addItem({
-                                  id: `theme-${theme.id}`,
-                                  name: theme.name,
-                                  description: theme.description || '',
-                                  price: theme.price || 0,
-                                  image: theme.image_url
-                                })}
-                                className="bg-brand-yellow hover:bg-brand-yellow/90 text-white font-bold py-2 px-4 rounded-full transition-colors duration-300"
-                              >
-                                Adicionar ao Carrinho
-                              </button>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => handleShare(theme.name, theme.description)}
+                                  title="Compartilhar"
+                                  aria-label="Compartilhar"
+                                  className="p-2 rounded-full border border-gray-300 hover:bg-gray-100 transition-colors text-gray-500"
+                                >
+                                  <ShareIcon />
+                                </button>
+                                <button
+                                  onClick={() => addItem({
+                                    id: `theme-${theme.id}`,
+                                    name: theme.name,
+                                    description: theme.description || '',
+                                    price: theme.price || 0,
+                                    image: theme.image_url
+                                  })}
+                                  className="bg-brand-yellow hover:bg-brand-yellow/90 text-white font-bold py-2 px-4 rounded-full transition-colors duration-300"
+                                >
+                                  Adicionar ao Carrinho
+                                </button>
+                              </div>
                               <span className="text-xs text-gray-400">Preço sob consulta</span>
                             </div>
                           </div>
