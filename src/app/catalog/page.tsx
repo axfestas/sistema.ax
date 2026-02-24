@@ -21,6 +21,11 @@ interface ShareModalProps {
 
 const ShareModal = ({ url, name, text, onClose }: ShareModalProps) => {
   const { showSuccess } = useToast()
+  const [hasNativeShare, setHasNativeShare] = useState(false)
+
+  useEffect(() => {
+    setHasNativeShare('share' in navigator)
+  }, [])
 
   const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(`${text}\n${url}`)}`
 
@@ -47,15 +52,19 @@ const ShareModal = ({ url, name, text, onClose }: ShareModalProps) => {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center sm:items-center bg-black/50"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:w-96 p-6 shadow-2xl"
+        className="bg-white rounded-t-2xl w-full max-w-lg p-6 shadow-2xl animate-slide-up"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* drag handle */}
+        <div className="flex justify-center mb-4" aria-hidden="true">
+          <div className="w-10 h-1 rounded-full bg-gray-300" />
+        </div>
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-lg font-bold text-gray-800">Compartilhar</h2>
+          <h2 className="text-lg font-bold text-gray-800">Compartilhar com...</h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -66,7 +75,7 @@ const ShareModal = ({ url, name, text, onClose }: ShareModalProps) => {
             </svg>
           </button>
         </div>
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 pb-2">
           <a
             href={whatsappUrl}
             target="_blank"
@@ -88,7 +97,7 @@ const ShareModal = ({ url, name, text, onClose }: ShareModalProps) => {
             </svg>
             Copiar link
           </button>
-          {'share' in navigator && (
+          {hasNativeShare && (
             <button
               onClick={handleOtherApps}
               className="flex items-center gap-3 w-full px-4 py-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors text-gray-700 font-medium"

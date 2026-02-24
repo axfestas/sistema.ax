@@ -18,6 +18,20 @@
   .animate-slide-in-right {
     animation: slide-in-right 0.2s ease-out;
   }
+
+  /* Bottom sheet slide-up animation */
+  @keyframes slide-up {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+  }
 }
 @layer base {
   input[type='number'] {
