@@ -81,11 +81,21 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 
   const title = item.name;
   const description = item.description || title;
-  const imageUrl = item.image_url
-    ? item.image_url.startsWith('http')
-      ? item.image_url
+  const hasItemImage = Boolean(item.image_url);
+  const imageUrl = hasItemImage
+    ? item.image_url!.startsWith('http')
+      ? item.image_url!
       : `${siteUrl}${item.image_url}`
-    : `${siteUrl}/logotipo.svg`;
+    : `${siteUrl}/1.png`;
+  // Add known dimensions for the fallback logo (500×500 PNG) to improve social media display
+  const imageDimensionTags = hasItemImage
+    ? ''
+    : `\n  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:width" content="500" />
+  <meta property="og:image:height" content="500" />`;
+  const imageAltTag = hasItemImage
+    ? `\n  <meta property="og:image:alt" content="${escapeHtml(title)}" />`
+    : `\n  <meta property="og:image:alt" content="Ax Festas" />`;
 
   const html = `<!DOCTYPE html>
 <html lang="pt-br">
@@ -99,8 +109,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   <meta property="og:type" content="product" />
   <meta property="og:title" content="${escapeHtml(title)}" />
   <meta property="og:description" content="${escapeHtml(description)}" />
-  <meta property="og:image" content="${escapeHtml(imageUrl)}" />
-  <meta property="og:image:alt" content="${escapeHtml(title)}" />
+  <meta property="og:image" content="${escapeHtml(imageUrl)}" />${imageAltTag}${imageDimensionTags}
   <meta property="og:url" content="${escapeHtml(catalogUrl)}" />
   <meta property="og:site_name" content="Ax Festas" />
 
@@ -110,7 +119,6 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   <meta name="twitter:description" content="${escapeHtml(description)}" />
   <meta name="twitter:image" content="${escapeHtml(imageUrl)}" />
 
-  <meta http-equiv="refresh" content="0; url=${escapeHtml(catalogUrl)}" />
   <link rel="canonical" href="${escapeHtml(catalogUrl)}" />
 </head>
 <body>
