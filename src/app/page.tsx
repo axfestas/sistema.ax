@@ -80,7 +80,7 @@ export default function Home() {
             href="/catalog" 
             className="inline-block bg-white text-brand-gray font-bold py-4 px-8 rounded-full hover:bg-brand-yellow hover:text-white transition-all duration-300 shadow-lg"
           >
-            Ver Nosso Catálogo
+            Ver Catálogo
           </a>
         </div>
       </section>
@@ -100,11 +100,11 @@ export default function Home() {
           {loading ? (
             <div className="text-center py-12">
               <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-brand-yellow"></div>
-              <p className="mt-4 text-gray-600">Carregando catálogo...</p>
+              <p className="mt-4 text-gray-600">Carregando portfólio...</p>
             </div>
           ) : portfolioImages.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-600 text-lg">Nenhuma imagem de catálogo disponível no momento.</p>
+              <p className="text-gray-600 text-lg">Nenhuma imagem do portfólio disponível no momento.</p>
               <p className="text-gray-500 text-sm mt-2">Em breve adicionaremos fotos dos nossos trabalhos!</p>
             </div>
           ) : (
@@ -155,7 +155,7 @@ export default function Home() {
             href="/catalog" 
             className="inline-block bg-brand-yellow hover:bg-brand-yellow/90 text-brand-gray font-bold py-4 px-8 rounded-full transition-all duration-300"
           >
-            Ver Catálogo de Itens
+            Ver Catálogo
           </a>
         </div>
       </section>
