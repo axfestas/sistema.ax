@@ -87,6 +87,9 @@ export default function ReservationsPage() {
   const [itemSearch, setItemSearch] = useState('');
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
+  const [activeView, setActiveView] = useState<'list' | 'calendar'>('list');
+  const [calendarDate, setCalendarDate] = useState(() => new Date());
+  const [selectedCalendarDay, setSelectedCalendarDay] = useState<string | null>(null);
   const { showSuccess, showError } = useToast();
 
   const filteredSelectableItems = useMemo(
@@ -105,6 +108,19 @@ export default function ReservationsPage() {
       (r.customer_phone && r.customer_phone.includes(q))
     );
   });
+
+  const upcomingDeliveries = useMemo(() => {
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const fmt = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    const todStr = fmt(now);
+    const in7 = new Date(now);
+    in7.setDate(in7.getDate() + 7);
+    const i7Str = fmt(in7);
+    return reservations
+      .filter(r => r.status !== 'cancelled' && r.date_to >= todStr && r.date_to <= i7Str)
+      .sort((a, b) => a.date_to.localeCompare(b.date_to));
+  }, [reservations]);
 
   useEffect(() => {
     loadReservations();
@@ -387,10 +403,38 @@ export default function ReservationsPage() {
   };
   const getPaymentTypeLabel = (type?: string) => PAYMENT_TYPES.find(p => p.value === type)?.label || type || '';
 
+  const getReservationsForDay = (dateStr: string): Reservation[] =>
+    reservations.filter(r => r.status !== 'cancelled' && r.date_from <= dateStr && r.date_to >= dateStr);
+
+  const daysUntil = (dateStr: string): number => {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const now = new Date();
+    const todStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+    const d = new Date(dateStr + 'T00:00:00');
+    const t = new Date(todStr + 'T00:00:00');
+    return Math.round((d.getTime() - t.getTime()) / 86400000);
+  };
+
   const selectedNewItemRef = allItems.find(x => `${x.type}:${x.id}` === newItemToAdd.itemKey);
   const newItemMaxQty = selectedNewItemRef?.type === 'item' ? selectedNewItemRef.stockQuantity : undefined;
 
   if (loading) return <div className="p-4">Carregando...</div>;
+
+  // Calendar locals
+  const calYear = calendarDate.getFullYear();
+  const calMonth = calendarDate.getMonth();
+  const calPad = (n: number) => String(n).padStart(2, '0');
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${calPad(now.getMonth() + 1)}-${calPad(now.getDate())}`;
+  const daysInCalMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const firstDayOfWeek = (new Date(calYear, calMonth, 1).getDay() + 6) % 7; // Mon=0
+  const calCells: (number | null)[] = [
+    ...Array(firstDayOfWeek).fill(null),
+    ...Array.from({ length: daysInCalMonth }, (_, i) => i + 1),
+  ];
+  const DAY_LABELS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+  const MONTH_NAMES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const selectedDayReservations = selectedCalendarDay ? getReservationsForDay(selectedCalendarDay) : [];
 
   return (
     <div>
@@ -403,29 +447,6 @@ export default function ReservationsPage() {
           + Nova Reserva
         </button>
       </div>
-
-      {!showForm && (
-        <div className="flex gap-2 mb-4 flex-wrap">
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por nome, email ou telefone..."
-            className="px-3 py-2 border rounded flex-1 min-w-[200px]"
-          />
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-3 py-2 border rounded"
-          >
-            <option value="">Todos os status</option>
-            <option value="pending">Pendente</option>
-            <option value="confirmed">Confirmada</option>
-            <option value="completed">Concluída</option>
-            <option value="cancelled">Cancelada</option>
-          </select>
-        </div>
-      )}
 
       {showForm && (
         <div className="bg-white p-6 rounded-lg shadow mb-6">
@@ -614,61 +635,245 @@ export default function ReservationsPage() {
         </div>
       )}
 
-      <div className="bg-white shadow overflow-hidden sm:rounded-md">
-        {filteredReservations.length === 0 ? (
-          <div className="px-6 py-4"><p className="text-gray-500">{reservations.length === 0 ? 'Nenhuma reserva cadastrada' : 'Nenhuma reserva encontrada para os filtros aplicados.'}</p></div>
-        ) : (
-          <ul role="list" className="divide-y divide-gray-200">
-            {filteredReservations.map((reservation) => (
-              <li key={reservation.id} className="px-6 py-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-xs font-mono bg-green-100 text-green-800 px-2 py-1 rounded font-semibold">
-                        {formatReservationId(reservation.id)}
+      {!showForm && (
+        <>
+          {/* Upcoming deliveries — always visible, independent of the search/status filter */}
+          {upcomingDeliveries.length > 0 && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
+              <h3 className="text-base font-bold text-amber-800 mb-3 flex items-center gap-2">
+                🚚 Próximas Entregas
+                <span className="text-sm font-normal text-amber-600">(próximos 7 dias)</span>
+              </h3>
+              <ul className="space-y-2">
+                {upcomingDeliveries.map(r => {
+                  const days = daysUntil(r.date_to);
+                  return (
+                    <li key={r.id} className="flex items-center gap-2 bg-white rounded-lg px-3 py-2 border border-amber-100 flex-wrap text-sm">
+                      <span className={`font-bold px-2 py-0.5 rounded text-xs whitespace-nowrap ${
+                        days === 0 ? 'bg-red-100 text-red-700' :
+                        days === 1 ? 'bg-orange-100 text-orange-700' :
+                        'bg-amber-100 text-amber-700'
+                      }`}>
+                        {days === 0 ? 'Hoje' : days === 1 ? 'Amanhã' : `em ${days} dias`}
                       </span>
-                      <h3 className="text-lg font-semibold">{reservation.customer_name}</h3>
-                      <span className={`px-2 py-1 text-xs rounded ${getStatusColor(reservation.status)}`}>
-                        {getStatusLabel(reservation.status)}
-                      </span>
-                      {reservation.total_amount != null && (
-                        <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded font-semibold">
-                          R$ {reservation.total_amount.toFixed(2)}
+                      <span className="font-mono text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded">{formatReservationId(r.id)}</span>
+                      <span className="font-medium">{r.customer_name}</span>
+                      <span className={`px-2 py-0.5 text-xs rounded ${getStatusColor(r.status)}`}>{getStatusLabel(r.status)}</span>
+                      <span className="text-xs text-gray-500 truncate max-w-[200px]">{getReservationItemsSummary(r)}</span>
+                      <span className="text-xs text-gray-400 ml-auto whitespace-nowrap">entrega: {r.date_to.split('-').reverse().join('/')}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
+
+          {/* View toggle tabs */}
+          <div className="flex gap-1 mb-4 border-b">
+            <button
+              onClick={() => setActiveView('list')}
+              className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+                activeView === 'list' ? 'border-brand-blue text-brand-blue' : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              📋 Lista
+            </button>
+            <button
+              onClick={() => { setActiveView('calendar'); setSelectedCalendarDay(null); }}
+              className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+                activeView === 'calendar' ? 'border-brand-blue text-brand-blue' : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              📅 Calendário
+            </button>
+          </div>
+
+          {/* ── LIST VIEW ── */}
+          {activeView === 'list' && (
+            <>
+              <div className="flex gap-2 mb-4 flex-wrap">
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Buscar por nome, email ou telefone..."
+                  className="px-3 py-2 border rounded flex-1 min-w-[200px]"
+                />
+                <select
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                  className="px-3 py-2 border rounded"
+                >
+                  <option value="">Todos os status</option>
+                  <option value="pending">Pendente</option>
+                  <option value="confirmed">Confirmada</option>
+                  <option value="completed">Concluída</option>
+                  <option value="cancelled">Cancelada</option>
+                </select>
+              </div>
+
+              <div className="bg-white shadow overflow-hidden sm:rounded-md">
+                {filteredReservations.length === 0 ? (
+                  <div className="px-6 py-4"><p className="text-gray-500">{reservations.length === 0 ? 'Nenhuma reserva cadastrada' : 'Nenhuma reserva encontrada para os filtros aplicados.'}</p></div>
+                ) : (
+                  <ul role="list" className="divide-y divide-gray-200">
+                    {filteredReservations.map((reservation) => (
+                      <li key={reservation.id} className="px-6 py-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-xs font-mono bg-green-100 text-green-800 px-2 py-1 rounded font-semibold">
+                                {formatReservationId(reservation.id)}
+                              </span>
+                              <h3 className="text-lg font-semibold">{reservation.customer_name}</h3>
+                              <span className={`px-2 py-1 text-xs rounded ${getStatusColor(reservation.status)}`}>
+                                {getStatusLabel(reservation.status)}
+                              </span>
+                              {reservation.total_amount != null && (
+                                <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded font-semibold">
+                                  R$ {reservation.total_amount.toFixed(2)}
+                                </span>
+                              )}
+                              {reservation.payment_type && (
+                                <span className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded">
+                                  {getPaymentTypeLabel(reservation.payment_type)}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-600">Itens: {getReservationItemsSummary(reservation)}</p>
+                            {reservation.customer_email && <p className="text-sm text-gray-600">Email: {reservation.customer_email}</p>}
+                            {reservation.customer_phone && <p className="text-sm text-gray-600">Telefone: {reservation.customer_phone}</p>}
+                            <p className="text-sm text-gray-600 mt-1">{reservation.date_from} até {reservation.date_to}</p>
+                            <div className="flex gap-3 mt-1">
+                              {reservation.payment_receipt_url && (
+                                <a href={reservation.payment_receipt_url} target="_blank" rel="noreferrer" className="text-xs text-brand-blue hover:underline">
+                                  📄 Comprovante
+                                </a>
+                              )}
+                              {reservation.contract_url && (
+                                <a href={reservation.contract_url} target="_blank" rel="noreferrer" className="text-xs text-brand-blue hover:underline">
+                                  📝 Contrato
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <button onClick={() => handleEdit(reservation)} className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-1 px-3 rounded text-sm">Editar</button>
+                            <button onClick={() => handleDelete(reservation.id)} className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm">Deletar</button>
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </>
+          )}
+
+          {/* ── CALENDAR VIEW ── */}
+          {activeView === 'calendar' && (
+            <div className="bg-white rounded-lg shadow p-4">
+              {/* Month navigation */}
+              <div className="flex items-center justify-between mb-4">
+                <button
+                  onClick={() => { setCalendarDate(new Date(calYear, calMonth - 1, 1)); setSelectedCalendarDay(null); }}
+                  className="p-2 hover:bg-gray-100 rounded-lg font-bold text-xl leading-none"
+                >
+                  ‹
+                </button>
+                <span className="text-base font-bold">{MONTH_NAMES[calMonth]} {calYear}</span>
+                <button
+                  onClick={() => { setCalendarDate(new Date(calYear, calMonth + 1, 1)); setSelectedCalendarDay(null); }}
+                  className="p-2 hover:bg-gray-100 rounded-lg font-bold text-xl leading-none"
+                >
+                  ›
+                </button>
+              </div>
+
+              {/* Day-of-week headers */}
+              <div className="grid grid-cols-7 gap-1 mb-1">
+                {DAY_LABELS.map(d => (
+                  <div key={d} className="text-center text-xs font-semibold text-gray-400 py-1">{d}</div>
+                ))}
+              </div>
+
+              {/* Day cells */}
+              <div className="grid grid-cols-7 gap-1">
+                {calCells.map((day, i) => {
+                  if (day === null) return <div key={`e${i}`} />;
+                  const dateStr = `${calYear}-${calPad(calMonth + 1)}-${calPad(day)}`;
+                  const dayRes = getReservationsForDay(dateStr);
+                  const isToday = dateStr === todayStr;
+                  const isSelected = dateStr === selectedCalendarDay;
+                  return (
+                    <button
+                      key={dateStr}
+                      onClick={() => setSelectedCalendarDay(isSelected ? null : dateStr)}
+                      className={`flex flex-col items-center justify-start p-1 min-h-[44px] rounded-lg text-sm transition-colors border ${
+                        isSelected
+                          ? 'bg-brand-blue text-white border-brand-blue'
+                          : isToday
+                          ? 'bg-yellow-50 border-yellow-300 font-bold'
+                          : dayRes.length > 0
+                          ? 'bg-blue-50 border-blue-200 hover:bg-blue-100'
+                          : 'border-transparent hover:bg-gray-50'
+                      }`}
+                    >
+                      <span className="leading-none">{day}</span>
+                      {dayRes.length > 0 && (
+                        <span className={`mt-0.5 text-xs font-bold ${isSelected ? 'text-white' : 'text-brand-blue'}`}>
+                          {dayRes.length}
                         </span>
                       )}
-                      {reservation.payment_type && (
-                        <span className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded">
-                          {getPaymentTypeLabel(reservation.payment_type)}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-sm text-gray-600">Itens: {getReservationItemsSummary(reservation)}</p>
-                    {reservation.customer_email && <p className="text-sm text-gray-600">Email: {reservation.customer_email}</p>}
-                    {reservation.customer_phone && <p className="text-sm text-gray-600">Telefone: {reservation.customer_phone}</p>}
-                    <p className="text-sm text-gray-600 mt-1">{reservation.date_from} até {reservation.date_to}</p>
-                    <div className="flex gap-3 mt-1">
-                      {reservation.payment_receipt_url && (
-                        <a href={reservation.payment_receipt_url} target="_blank" rel="noreferrer" className="text-xs text-brand-blue hover:underline">
-                          📄 Comprovante
-                        </a>
-                      )}
-                      {reservation.contract_url && (
-                        <a href={reservation.contract_url} target="_blank" rel="noreferrer" className="text-xs text-brand-blue hover:underline">
-                          📝 Contrato
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => handleEdit(reservation)} className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-1 px-3 rounded text-sm">Editar</button>
-                    <button onClick={() => handleDelete(reservation.id)} className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm">Deletar</button>
-                  </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Selected day details */}
+              {selectedCalendarDay && (
+                <div className="mt-4 border-t pt-4">
+                  <h4 className="font-semibold text-sm text-gray-700 mb-2">
+                    Reservas em {selectedCalendarDay.split('-').reverse().join('/')}
+                    <span className="ml-2 text-gray-400 font-normal">({selectedDayReservations.length})</span>
+                  </h4>
+                  {selectedDayReservations.length === 0 ? (
+                    <p className="text-sm text-gray-500">Nenhuma reserva ativa neste dia.</p>
+                  ) : (
+                    <ul className="space-y-2">
+                      {selectedDayReservations.map(r => (
+                        <li key={r.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded text-sm flex-wrap">
+                          <span className="font-mono text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded">{formatReservationId(r.id)}</span>
+                          <span className="font-medium">{r.customer_name}</span>
+                          <span className={`px-2 py-0.5 text-xs rounded ${getStatusColor(r.status)}`}>{getStatusLabel(r.status)}</span>
+                          <span className="text-xs text-gray-500 truncate max-w-[200px]">{getReservationItemsSummary(r)}</span>
+                          <span className="text-xs text-gray-400 ml-auto whitespace-nowrap">{r.date_from} → {r.date_to}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+              )}
+
+              {/* Legend */}
+              <div className="flex flex-wrap gap-4 mt-4 pt-3 border-t text-xs text-gray-500">
+                <span className="flex items-center gap-1">
+                  <span className="w-3 h-3 rounded bg-blue-50 border border-blue-200 inline-block" />
+                  Tem reserva
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-3 h-3 rounded bg-yellow-50 border border-yellow-300 inline-block" />
+                  Hoje
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-3 h-3 rounded bg-brand-blue inline-block" />
+                  Selecionado
+                </span>
+              </div>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
