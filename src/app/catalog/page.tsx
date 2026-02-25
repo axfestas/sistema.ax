@@ -377,7 +377,7 @@ export default function CatalogPage() {
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              📦 Estoque ({items.length})
+              📦 Itens ({items.length})
             </button>
             <button
               onClick={() => handleTabChange('sweets')}
@@ -449,7 +449,7 @@ export default function CatalogPage() {
                 <div>
                   <div className="text-center mb-12">
                     <h2 className="text-3xl md:text-4xl font-bold text-brand-gray mb-4">
-                      Kits Especiais
+                      Kits Pegue & Monte
                     </h2>
                     <p className="text-lg text-gray-600">
                       Pacotes completos para sua festa
@@ -660,7 +660,7 @@ export default function CatalogPage() {
                 <div>
                   <div className="text-center mb-12">
                     <h2 className="text-3xl md:text-4xl font-bold text-brand-gray mb-4">
-                      Doces e Sobremesas
+                      Doces de festas
                     </h2>
                     <p className="text-lg text-gray-600">
                       Deliciosos doces para adoçar sua festa
@@ -758,7 +758,7 @@ export default function CatalogPage() {
                 <div>
                   <div className="text-center mb-12">
                     <h2 className="text-3xl md:text-4xl font-bold text-brand-gray mb-4">
-                      Design e Decoração
+                      Design e Personalizados
                     </h2>
                     <p className="text-lg text-gray-600">
                       Designs exclusivos para tornar sua festa única
