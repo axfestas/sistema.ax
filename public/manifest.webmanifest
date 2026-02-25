@@ -4,7 +4,7 @@
   "description": "Aluguel de itens para festas e eventos. Qualidade e excelência no atendimento.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#FFC107",
+  "background_color": "#FFFFFF",
   "theme_color": "#FFC107",
   "icons": [
     {

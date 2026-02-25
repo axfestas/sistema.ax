@@ -16,6 +16,13 @@ export default function SplashScreen() {
   const [fadingOut, setFadingOut] = useState(false);
 
   useEffect(() => {
+    // Only show in PWA standalone mode or on mobile/tablet devices — not on desktop browsers
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (!isStandalone && !isMobile) {
+      return;
+    }
+
     // Only show once per browser session
     if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(SESSION_KEY)) {
       return;
