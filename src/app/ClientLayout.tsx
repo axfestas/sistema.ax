@@ -3,7 +3,6 @@
 import { usePathname } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import SplashScreen from '@/components/SplashScreen';
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() ?? '';
@@ -15,7 +14,6 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
   return (
     <>
-      <SplashScreen />
       <Header />
       <main className="flex-1">
         {children}
