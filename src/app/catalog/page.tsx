@@ -16,16 +16,210 @@ interface ShareModalProps {
   url: string
   name: string
   text: string
+  imageUrl?: string
   onClose: () => void
 }
 
-const ShareModal = ({ url, name, text, onClose }: ShareModalProps) => {
-  const { showSuccess } = useToast()
-  const [hasNativeShare, setHasNativeShare] = useState(false)
+interface StoryPreviewModalProps {
+  name: string
+  description: string
+  imageUrl?: string
+  platform: 'instagram' | 'whatsapp'
+  onClose: () => void
+}
 
-  useEffect(() => {
-    setHasNativeShare('share' in navigator)
-  }, [])
+const StoryPreviewModal = ({ name, description, imageUrl, platform, onClose }: StoryPreviewModalProps) => {
+  const { showSuccess } = useToast()
+  const isInstagram = platform === 'instagram'
+  const platformLabel = isInstagram ? 'Instagram Stories' : 'Status do WhatsApp'
+  const gradientStyle = isInstagram
+    ? { background: 'linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%)' }
+    : { background: 'linear-gradient(135deg, #25d366 0%, #128c7e 100%)' }
+
+  const MAX_STORY_TEXT_Y = 1870
+
+  const handleDownload = async () => {
+    const canvas = document.createElement('canvas')
+    canvas.width = 1080
+    canvas.height = 1920
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    // Background gradient
+    const grad = ctx.createLinearGradient(0, 0, 1080, 1920)
+    if (isInstagram) {
+      grad.addColorStop(0, '#833ab4')
+      grad.addColorStop(0.5, '#fd1d1d')
+      grad.addColorStop(1, '#fcb045')
+    } else {
+      grad.addColorStop(0, '#25d366')
+      grad.addColorStop(1, '#128c7e')
+    }
+    ctx.fillStyle = grad
+    ctx.fillRect(0, 0, 1080, 1920)
+
+    // Try to draw item image
+    if (imageUrl) {
+      try {
+        const img = new window.Image()
+        img.crossOrigin = 'anonymous'
+        await new Promise<void>((resolve) => {
+          img.onload = () => resolve()
+          img.onerror = () => resolve()
+          img.src = imageUrl
+        })
+        if (img.complete && img.naturalWidth > 0) {
+          const size = 900
+          const x = (1080 - size) / 2
+          const y = 300
+          ctx.save()
+          ctx.beginPath()
+          const r = 60
+          ctx.moveTo(x + r, y)
+          ctx.lineTo(x + size - r, y)
+          ctx.quadraticCurveTo(x + size, y, x + size, y + r)
+          ctx.lineTo(x + size, y + size - r)
+          ctx.quadraticCurveTo(x + size, y + size, x + size - r, y + size)
+          ctx.lineTo(x + r, y + size)
+          ctx.quadraticCurveTo(x, y + size, x, y + size - r)
+          ctx.lineTo(x, y + r)
+          ctx.quadraticCurveTo(x, y, x + r, y)
+          ctx.closePath()
+          ctx.clip()
+          ctx.drawImage(img, x, y, size, size)
+          ctx.restore()
+        }
+      } catch {
+        // skip image on error
+      }
+    }
+
+    // Black semi-transparent overlay at bottom
+    ctx.fillStyle = 'rgba(0,0,0,0.45)'
+    ctx.fillRect(0, 1300, 1080, 620)
+
+    // Item name
+    ctx.fillStyle = '#ffffff'
+    ctx.textAlign = 'center'
+    ctx.font = 'bold 80px Arial, sans-serif'
+    const maxWidth = 960
+    const words = name.split(' ')
+    let line = ''
+    let y = 1420
+    for (const word of words) {
+      const test = line + (line ? ' ' : '') + word
+      if (ctx.measureText(test).width > maxWidth && line) {
+        ctx.fillText(line, 540, y)
+        line = word
+        y += 95
+      } else {
+        line = test
+      }
+    }
+    ctx.fillText(line, 540, y)
+    y += 80
+
+    // Description
+    if (description) {
+      ctx.font = '52px Arial, sans-serif'
+      ctx.fillStyle = 'rgba(255,255,255,0.85)'
+      const descWords = description.split(' ')
+      let dLine = ''
+      for (const word of descWords) {
+        const test = dLine + (dLine ? ' ' : '') + word
+        if (ctx.measureText(test).width > maxWidth && dLine) {
+          ctx.fillText(dLine, 540, y)
+          dLine = word
+          y += 65
+          if (y > MAX_STORY_TEXT_Y) break
+        } else {
+          dLine = test
+        }
+      }
+      if (y <= MAX_STORY_TEXT_Y) ctx.fillText(dLine, 540, y)
+    }
+
+    // Branding
+    ctx.font = 'bold 44px Arial, sans-serif'
+    ctx.fillStyle = 'rgba(255,255,255,0.6)'
+    ctx.textAlign = 'center'
+    ctx.fillText('AX Festas', 540, 1880)
+
+    const dataUrl = canvas.toDataURL('image/png')
+    const a = document.createElement('a')
+    a.href = dataUrl
+    a.download = `story-${name.replace(/[^\w\s-]/g, '').replace(/\s+/g, '-').toLowerCase().slice(0, 80)}.png`
+    a.click()
+    showSuccess('Imagem baixada! Compartilhe nos seus stories.')
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b">
+          <h2 className="text-base font-bold text-gray-800">Card para {platformLabel}</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600" aria-label="Fechar">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Story preview (9:16 ratio) */}
+        <div className="px-5 pt-4 pb-2">
+          <div
+            className="relative w-full rounded-xl overflow-hidden flex flex-col items-center justify-end"
+            style={{ ...gradientStyle, aspectRatio: '9/16' }}
+          >
+            {imageUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={imageUrl}
+                alt={name}
+                className="absolute inset-0 w-full h-full object-cover opacity-60"
+              />
+            )}
+            <div className="relative z-10 w-full bg-black/50 p-4 text-center">
+              <p className="text-white font-bold text-base leading-tight mb-1 line-clamp-2">{name}</p>
+              {description && (
+                <p className="text-white/80 text-xs line-clamp-2">{description}</p>
+              )}
+              <p className="text-white/50 text-xs mt-2 font-semibold">AX Festas</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="px-5 pb-5 pt-3 flex flex-col gap-3">
+          <button
+            onClick={handleDownload}
+            className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl font-semibold text-white transition-opacity hover:opacity-90"
+            style={gradientStyle}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Baixar imagem
+          </button>
+          <p className="text-xs text-center text-gray-500">
+            Baixe a imagem e compartilhe diretamente no {platformLabel}
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const ShareModal = ({ url, name, text, imageUrl, onClose }: ShareModalProps) => {
+  const { showSuccess } = useToast()
+  const [storyPlatform, setStoryPlatform] = useState<'instagram' | 'whatsapp' | null>(null)
 
   const encodedText = encodeURIComponent(`${text}\n${url}`)
   const encodedUrl = encodeURIComponent(url)
@@ -42,18 +236,19 @@ const ShareModal = ({ url, name, text, onClose }: ShareModalProps) => {
       await navigator.clipboard.writeText(url)
       showSuccess('Link copiado para a área de transferência!')
     } catch {
-      // fallback: show the url
+      // fallback
     }
     onClose()
   }
 
-  const handleCopyLinkForInstagram = async () => {
+  const handleInstagramChat = async () => {
     try {
       await navigator.clipboard.writeText(url)
-      showSuccess('Link copiado! Cole no Instagram (chat ou stories).')
+      showSuccess('Link copiado! Cole no Direct do Instagram.')
     } catch {
       // fallback
     }
+    window.open('https://www.instagram.com/direct/new/', '_blank', 'noopener,noreferrer')
     onClose()
   }
 
@@ -73,6 +268,18 @@ const ShareModal = ({ url, name, text, onClose }: ShareModalProps) => {
       }
     }
     onClose()
+  }
+
+  if (storyPlatform) {
+    return (
+      <StoryPreviewModal
+        name={name}
+        description={text}
+        imageUrl={imageUrl}
+        platform={storyPlatform}
+        onClose={() => setStoryPlatform(null)}
+      />
+    )
   }
 
   return (
@@ -101,19 +308,62 @@ const ShareModal = ({ url, name, text, onClose }: ShareModalProps) => {
           </button>
         </div>
         <div className="flex flex-col gap-3 pb-2">
-          {/* WhatsApp */}
-          <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={onClose}
-            className="flex items-center gap-3 w-full px-4 py-3 rounded-xl bg-green-50 hover:bg-green-100 transition-colors text-green-700 font-medium"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-            </svg>
-            WhatsApp (chat)
-          </a>
+          {/* WhatsApp — two sub-options */}
+          <div className="rounded-xl bg-green-50 overflow-hidden">
+            <p className="px-4 pt-3 pb-1 text-xs font-semibold text-green-800 uppercase tracking-wide">WhatsApp</p>
+            <div className="flex gap-2 px-3 pb-3">
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={onClose}
+                className="flex-1 flex flex-col items-center gap-1 px-3 py-3 rounded-xl bg-white hover:bg-green-100 transition-colors text-green-700 font-medium text-sm shadow-sm"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                </svg>
+                Chat
+              </a>
+              <button
+                onClick={() => setStoryPlatform('whatsapp')}
+                className="flex-1 flex flex-col items-center gap-1 px-3 py-3 rounded-xl bg-white hover:bg-green-100 transition-colors text-green-700 font-medium text-sm shadow-sm"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                  <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+                  <line x1="12" y1="18" x2="12.01" y2="18"/>
+                </svg>
+                Status
+              </button>
+            </div>
+          </div>
+
+          {/* Instagram — two sub-options */}
+          <div className="rounded-xl overflow-hidden" style={{ background: 'linear-gradient(135deg, #fdf0ff 0%, #fff0f0 100%)' }}>
+            <p className="px-4 pt-3 pb-1 text-xs font-semibold uppercase tracking-wide" style={{ color: '#833ab4' }}>Instagram</p>
+            <div className="flex gap-2 px-3 pb-3">
+              <button
+                onClick={handleInstagramChat}
+                className="flex-1 flex flex-col items-center gap-1 px-3 py-3 rounded-xl bg-white hover:bg-pink-50 transition-colors font-medium text-sm shadow-sm"
+                style={{ color: '#833ab4' }}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/>
+                </svg>
+                Chat
+              </button>
+              <button
+                onClick={() => setStoryPlatform('instagram')}
+                className="flex-1 flex flex-col items-center gap-1 px-3 py-3 rounded-xl bg-white hover:bg-pink-50 transition-colors font-medium text-sm shadow-sm"
+                style={{ color: '#833ab4' }}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                  <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+                  <line x1="12" y1="18" x2="12.01" y2="18"/>
+                </svg>
+                Story
+              </button>
+            </div>
+          </div>
 
           {/* Telegram */}
           <a
@@ -128,17 +378,6 @@ const ShareModal = ({ url, name, text, onClose }: ShareModalProps) => {
             </svg>
             Telegram
           </a>
-
-          {/* Instagram — copy link to paste in app */}
-          <button
-            onClick={handleCopyLinkForInstagram}
-            className="flex items-center gap-3 w-full px-4 py-3 rounded-xl bg-pink-50 hover:bg-pink-100 transition-colors text-pink-700 font-medium"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/>
-            </svg>
-            Instagram (Copiar link para chat ou stories)
-          </button>
 
           {/* Facebook */}
           <a
@@ -191,7 +430,7 @@ const ShareModal = ({ url, name, text, onClose }: ShareModalProps) => {
             Copiar link
           </button>
 
-          {/* Other apps — always visible; uses native share when available */}
+          {/* Other apps — uses native share sheet */}
           <button
             onClick={handleOtherApps}
             className="flex items-center gap-3 w-full px-4 py-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors text-gray-700 font-medium"
@@ -280,7 +519,7 @@ export default function CatalogPage() {
   const [search, setSearch] = useState('')
   const [filterCategory, setFilterCategory] = useState('')
   const [highlightedItem, setHighlightedItem] = useState<string | null>(null)
-  const [shareModal, setShareModal] = useState<{ url: string; name: string; text: string } | null>(null)
+  const [shareModal, setShareModal] = useState<{ url: string; name: string; text: string; imageUrl?: string } | null>(null)
   const { addItem } = useCart()
 
   // Reset search and category when switching tabs
@@ -396,10 +635,10 @@ export default function CatalogPage() {
     })
   }
 
-  const handleShare = (type: string, id: number, name: string, description?: string) => {
+  const handleShare = (type: string, id: number, name: string, description?: string, imageUrl?: string) => {
     const url = `${window.location.origin}/item/${type}/${id}`
     const text = description ? `${name} - ${description}` : name
-    setShareModal({ url, name, text })
+    setShareModal({ url, name, text, imageUrl })
   }
 
   // Highlight item when navigating via a shared link (hash in URL)
@@ -432,6 +671,7 @@ export default function CatalogPage() {
           url={shareModal.url}
           name={shareModal.name}
           text={shareModal.text}
+          imageUrl={shareModal.imageUrl}
           onClose={() => setShareModal(null)}
         />
       )}
@@ -574,7 +814,7 @@ export default function CatalogPage() {
                               <span className="text-white text-8xl">🎁</span>
                             )}
                             <button
-                              onClick={() => handleShare('kit', kit.id, kit.name, kit.description)}
+                              onClick={() => handleShare('kit', kit.id, kit.name, kit.description, kit.image_url)}
                               title="Compartilhar"
                               aria-label="Compartilhar"
                               className="absolute top-2 right-2 z-10 p-2 rounded-full bg-white/80 hover:bg-white transition-colors text-gray-600 shadow"
@@ -673,7 +913,7 @@ export default function CatalogPage() {
                               <span className="text-white text-6xl">📦</span>
                             )}
                             <button
-                              onClick={() => handleShare('item', item.id, item.name, item.description)}
+                              onClick={() => handleShare('item', item.id, item.name, item.description, item.image_url)}
                               title="Compartilhar"
                               aria-label="Compartilhar"
                               className="absolute top-2 right-2 z-10 p-2 rounded-full bg-white/80 hover:bg-white transition-colors text-gray-600 shadow"
@@ -789,7 +1029,7 @@ export default function CatalogPage() {
                               <span className="text-white text-6xl">🍰</span>
                             )}
                             <button
-                              onClick={() => handleShare('sweet', sweet.id, sweet.name, sweet.description)}
+                              onClick={() => handleShare('sweet', sweet.id, sweet.name, sweet.description, sweet.image_url)}
                               title="Compartilhar"
                               aria-label="Compartilhar"
                               className="absolute top-2 right-2 z-10 p-2 rounded-full bg-white/80 hover:bg-white transition-colors text-gray-600 shadow"
@@ -887,7 +1127,7 @@ export default function CatalogPage() {
                               <span className="text-white text-6xl">🎨</span>
                             )}
                             <button
-                              onClick={() => handleShare('design', design.id, design.name, design.description)}
+                              onClick={() => handleShare('design', design.id, design.name, design.description, design.image_url)}
                               title="Compartilhar"
                               aria-label="Compartilhar"
                               className="absolute top-2 right-2 z-10 p-2 rounded-full bg-white/80 hover:bg-white transition-colors text-gray-600 shadow"
@@ -976,7 +1216,7 @@ export default function CatalogPage() {
                               <span className="text-white text-6xl">🎭</span>
                             )}
                             <button
-                              onClick={() => handleShare('theme', theme.id, theme.name, theme.description)}
+                              onClick={() => handleShare('theme', theme.id, theme.name, theme.description, theme.image_url)}
                               title="Compartilhar"
                               aria-label="Compartilhar"
                               className="absolute top-2 right-2 z-10 p-2 rounded-full bg-white/80 hover:bg-white transition-colors text-gray-600 shadow"
