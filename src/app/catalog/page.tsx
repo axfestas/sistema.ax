@@ -36,16 +36,15 @@ const StoryPreviewModal = ({ name, description, imageUrl, platform, onClose }: S
     ? { background: 'linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%)' }
     : { background: 'linear-gradient(135deg, #25d366 0%, #128c7e 100%)' }
 
-  const MAX_STORY_TEXT_Y = 1870
-
-  const handleDownload = async () => {
+  // Build the story card on a canvas and return it as a Blob
+  const buildCardBlob = async (): Promise<Blob | null> => {
     const canvas = document.createElement('canvas')
     canvas.width = 1080
     canvas.height = 1920
     const ctx = canvas.getContext('2d')
-    if (!ctx) return
+    if (!ctx) return null
 
-    // Background gradient
+    // Background gradient (diagonal, matching the CSS gradient)
     const grad = ctx.createLinearGradient(0, 0, 1080, 1920)
     if (isInstagram) {
       grad.addColorStop(0, '#833ab4')
@@ -58,7 +57,32 @@ const StoryPreviewModal = ({ name, description, imageUrl, platform, onClose }: S
     ctx.fillStyle = grad
     ctx.fillRect(0, 0, 1080, 1920)
 
-    // Try to draw item image
+    // White card background (Spotify-style)
+    const cardX = 90
+    const cardY = 280
+    const cardW = 900
+    const cardH = 1100
+    const cardR = 48
+    ctx.fillStyle = 'rgba(255,255,255,0.12)'
+    ctx.beginPath()
+    ctx.moveTo(cardX + cardR, cardY)
+    ctx.lineTo(cardX + cardW - cardR, cardY)
+    ctx.quadraticCurveTo(cardX + cardW, cardY, cardX + cardW, cardY + cardR)
+    ctx.lineTo(cardX + cardW, cardY + cardH - cardR)
+    ctx.quadraticCurveTo(cardX + cardW, cardY + cardH, cardX + cardW - cardR, cardY + cardH)
+    ctx.lineTo(cardX + cardR, cardY + cardH)
+    ctx.quadraticCurveTo(cardX, cardY + cardH, cardX, cardY + cardH - cardR)
+    ctx.lineTo(cardX, cardY + cardR)
+    ctx.quadraticCurveTo(cardX, cardY, cardX + cardR, cardY)
+    ctx.closePath()
+    ctx.fill()
+
+    // Product image (contained square, not cropped)
+    const imgSize = 820
+    const imgX = (1080 - imgSize) / 2
+    const imgY = cardY + 40
+    const imgR = 32
+
     if (imageUrl) {
       try {
         const img = new window.Image()
@@ -69,24 +93,43 @@ const StoryPreviewModal = ({ name, description, imageUrl, platform, onClose }: S
           img.src = imageUrl
         })
         if (img.complete && img.naturalWidth > 0) {
-          const size = 900
-          const x = (1080 - size) / 2
-          const y = 300
+          // Draw image background (white) so transparent images look good
+          ctx.fillStyle = '#ffffff'
+          ctx.beginPath()
+          ctx.moveTo(imgX + imgR, imgY)
+          ctx.lineTo(imgX + imgSize - imgR, imgY)
+          ctx.quadraticCurveTo(imgX + imgSize, imgY, imgX + imgSize, imgY + imgR)
+          ctx.lineTo(imgX + imgSize, imgY + imgSize - imgR)
+          ctx.quadraticCurveTo(imgX + imgSize, imgY + imgSize, imgX + imgSize - imgR, imgY + imgSize)
+          ctx.lineTo(imgX + imgR, imgY + imgSize)
+          ctx.quadraticCurveTo(imgX, imgY + imgSize, imgX, imgY + imgSize - imgR)
+          ctx.lineTo(imgX, imgY + imgR)
+          ctx.quadraticCurveTo(imgX, imgY, imgX + imgR, imgY)
+          ctx.closePath()
+          ctx.fill()
+
+          // Clip and draw image with contain (letterbox) so nothing is cropped
           ctx.save()
           ctx.beginPath()
-          const r = 60
-          ctx.moveTo(x + r, y)
-          ctx.lineTo(x + size - r, y)
-          ctx.quadraticCurveTo(x + size, y, x + size, y + r)
-          ctx.lineTo(x + size, y + size - r)
-          ctx.quadraticCurveTo(x + size, y + size, x + size - r, y + size)
-          ctx.lineTo(x + r, y + size)
-          ctx.quadraticCurveTo(x, y + size, x, y + size - r)
-          ctx.lineTo(x, y + r)
-          ctx.quadraticCurveTo(x, y, x + r, y)
+          ctx.moveTo(imgX + imgR, imgY)
+          ctx.lineTo(imgX + imgSize - imgR, imgY)
+          ctx.quadraticCurveTo(imgX + imgSize, imgY, imgX + imgSize, imgY + imgR)
+          ctx.lineTo(imgX + imgSize, imgY + imgSize - imgR)
+          ctx.quadraticCurveTo(imgX + imgSize, imgY + imgSize, imgX + imgSize - imgR, imgY + imgSize)
+          ctx.lineTo(imgX + imgR, imgY + imgSize)
+          ctx.quadraticCurveTo(imgX, imgY + imgSize, imgX, imgY + imgSize - imgR)
+          ctx.lineTo(imgX, imgY + imgR)
+          ctx.quadraticCurveTo(imgX, imgY, imgX + imgR, imgY)
           ctx.closePath()
           ctx.clip()
-          ctx.drawImage(img, x, y, size, size)
+
+          // object-contain: scale to fit inside the square
+          const scale = Math.min(imgSize / img.naturalWidth, imgSize / img.naturalHeight)
+          const dw = img.naturalWidth * scale
+          const dh = img.naturalHeight * scale
+          const dx = imgX + (imgSize - dw) / 2
+          const dy = imgY + (imgSize - dh) / 2
+          ctx.drawImage(img, dx, dy, dw, dh)
           ctx.restore()
         }
       } catch {
@@ -94,64 +137,90 @@ const StoryPreviewModal = ({ name, description, imageUrl, platform, onClose }: S
       }
     }
 
-    // Black semi-transparent overlay at bottom
-    ctx.fillStyle = 'rgba(0,0,0,0.45)'
-    ctx.fillRect(0, 1300, 1080, 620)
-
-    // Item name
+    // Product name
+    const textStartY = imgY + imgSize + 72
     ctx.fillStyle = '#ffffff'
     ctx.textAlign = 'center'
-    ctx.font = 'bold 80px Arial, sans-serif'
-    const maxWidth = 960
+    ctx.font = 'bold 72px Arial, sans-serif'
+    const maxWidth = 860
     const words = name.split(' ')
     let line = ''
-    let y = 1420
+    let ty = textStartY
     for (const word of words) {
       const test = line + (line ? ' ' : '') + word
       if (ctx.measureText(test).width > maxWidth && line) {
-        ctx.fillText(line, 540, y)
+        ctx.fillText(line, 540, ty)
         line = word
-        y += 95
+        ty += 88
       } else {
         line = test
       }
     }
-    ctx.fillText(line, 540, y)
-    y += 80
+    ctx.fillText(line, 540, ty)
+    ty += 72
 
     // Description
     if (description) {
-      ctx.font = '52px Arial, sans-serif'
-      ctx.fillStyle = 'rgba(255,255,255,0.85)'
+      ctx.font = '48px Arial, sans-serif'
+      ctx.fillStyle = 'rgba(255,255,255,0.80)'
       const descWords = description.split(' ')
       let dLine = ''
+      const maxDescY = 1820
       for (const word of descWords) {
         const test = dLine + (dLine ? ' ' : '') + word
         if (ctx.measureText(test).width > maxWidth && dLine) {
-          ctx.fillText(dLine, 540, y)
+          if (ty > maxDescY) break
+          ctx.fillText(dLine, 540, ty)
           dLine = word
-          y += 65
-          if (y > MAX_STORY_TEXT_Y) break
+          ty += 60
+          if (ty > maxDescY) break
         } else {
           dLine = test
         }
       }
-      if (y <= MAX_STORY_TEXT_Y) ctx.fillText(dLine, 540, y)
+      if (ty <= maxDescY) ctx.fillText(dLine, 540, ty)
     }
 
-    // Branding
+    // Branding at bottom
     ctx.font = 'bold 44px Arial, sans-serif'
-    ctx.fillStyle = 'rgba(255,255,255,0.6)'
+    ctx.fillStyle = 'rgba(255,255,255,0.55)'
     ctx.textAlign = 'center'
     ctx.fillText('AX Festas', 540, 1880)
 
-    const dataUrl = canvas.toDataURL('image/png')
+    return new Promise<Blob | null>((resolve) => {
+      canvas.toBlob((blob) => resolve(blob), 'image/png')
+    })
+  }
+
+  const handleShare = async () => {
+    const blob = await buildCardBlob()
+    if (!blob) return
+
+    const fileName = `story-ax-${name.replace(/[^\w\s-]/g, '').replace(/\s+/g, '-').toLowerCase().slice(0, 60)}.png`
+    const file = new File([blob], fileName, { type: 'image/png' })
+
+    // Try Web Share API with files (supported on mobile browsers for direct story/status sharing)
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: name })
+        return
+      } catch (err) {
+        // If user cancelled (AbortError), don't fall through to download
+        if (err instanceof Error && err.name === 'AbortError') return
+      }
+    }
+
+    // Fallback: download the image
+    const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
-    a.href = dataUrl
-    a.download = `story-${name.replace(/[^\w\s-]/g, '').replace(/\s+/g, '-').toLowerCase().slice(0, 80)}.png`
+    a.href = url
+    a.download = fileName
     a.click()
+    URL.revokeObjectURL(url)
     showSuccess('Imagem baixada! Compartilhe nos seus stories.')
   }
+
+  const canShareDirectly = typeof navigator !== 'undefined' && !!navigator.canShare
 
   return (
     <div
@@ -172,44 +241,71 @@ const StoryPreviewModal = ({ name, description, imageUrl, platform, onClose }: S
           </button>
         </div>
 
-        {/* Story preview (9:16 ratio) */}
+        {/* Story card preview — Spotify-style (9:16 ratio) */}
         <div className="px-5 pt-4 pb-2">
           <div
-            className="relative w-full rounded-xl overflow-hidden flex flex-col items-center justify-end"
+            className="relative w-full rounded-xl overflow-hidden flex flex-col items-center"
             style={{ ...gradientStyle, aspectRatio: '9/16' }}
           >
-            {imageUrl && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={imageUrl}
-                alt={name}
-                className="absolute inset-0 w-full h-full object-cover opacity-60"
-              />
-            )}
-            <div className="relative z-10 w-full bg-black/50 p-4 text-center">
-              <p className="text-white font-bold text-base leading-tight mb-1 line-clamp-2">{name}</p>
-              {description && (
-                <p className="text-white/80 text-xs line-clamp-2">{description}</p>
-              )}
-              <p className="text-white/50 text-xs mt-2 font-semibold">AX Festas</p>
+            {/* Inner card */}
+            <div className="absolute inset-x-3 rounded-xl overflow-hidden flex flex-col items-center"
+              style={{ top: '7%', bottom: '12%', background: 'rgba(255,255,255,0.13)' }}
+            >
+              {/* Product image — contained, not cropped */}
+              <div className="w-full flex-1 flex items-center justify-center p-3">
+                {imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={imageUrl}
+                    alt={name}
+                    className="w-full h-full rounded-lg"
+                    style={{ objectFit: 'contain', maxHeight: '100%' }}
+                  />
+                ) : (
+                  <span className="text-5xl">🎉</span>
+                )}
+              </div>
+              {/* Text */}
+              <div className="w-full px-3 pb-3 text-center">
+                <p className="text-white font-bold text-sm leading-tight mb-1 line-clamp-2">{name}</p>
+                {description && (
+                  <p className="text-white/80 text-xs line-clamp-2">{description}</p>
+                )}
+              </div>
             </div>
+            {/* Branding at bottom */}
+            <p className="absolute bottom-1 text-white/50 text-[10px] font-semibold">AX Festas</p>
           </div>
         </div>
 
         {/* Actions */}
         <div className="px-5 pb-5 pt-3 flex flex-col gap-3">
           <button
-            onClick={handleDownload}
+            onClick={handleShare}
             className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl font-semibold text-white transition-opacity hover:opacity-90"
             style={gradientStyle}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
-            Baixar imagem
+            {canShareDirectly ? (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                </svg>
+                Compartilhar no {platformLabel}
+              </>
+            ) : (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Baixar imagem
+              </>
+            )}
           </button>
           <p className="text-xs text-center text-gray-500">
-            Baixe a imagem e compartilhe diretamente no {platformLabel}
+            {canShareDirectly
+              ? `Compartilhe o card diretamente no ${platformLabel}`
+              : `Baixe a imagem e compartilhe no ${platformLabel}`}
           </p>
         </div>
       </div>

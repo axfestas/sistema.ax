@@ -188,6 +188,7 @@ CREATE TABLE designs (
   name TEXT NOT NULL,
   description TEXT,
   price REAL NOT NULL,
+  quantity INTEGER NOT NULL DEFAULT 0,
   image_url TEXT,
   category TEXT,
   quantidade_cartela INTEGER DEFAULT 0,
