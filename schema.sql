@@ -190,6 +190,7 @@ CREATE TABLE designs (
   price REAL NOT NULL,
   image_url TEXT,
   category TEXT,
+  quantidade_cartela INTEGER DEFAULT 0,
   is_active INTEGER DEFAULT 1,
   show_in_catalog INTEGER DEFAULT 1,
   created_at INTEGER DEFAULT (strftime('%s', 'now'))

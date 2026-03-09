@@ -20,6 +20,7 @@ export interface Design {
   price: number;
   image_url?: string;
   category?: string;
+  quantidade_cartela?: number;
   is_active: number;
   show_in_catalog: number;
   created_at: number;
@@ -31,6 +32,7 @@ export interface DesignInput {
   price: number;
   image_url?: string;
   category?: string;
+  quantidade_cartela?: number;
   show_in_catalog?: number;
 }
 
@@ -87,8 +89,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     // Insert new design
     const result = await db
       .prepare(`
-        INSERT INTO designs (name, description, price, image_url, category, show_in_catalog)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO designs (name, description, price, image_url, category, quantidade_cartela, show_in_catalog)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
       `)
       .bind(
         body.name,
@@ -96,6 +98,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         body.price,
         body.image_url || null,
         body.category || null,
+        body.quantidade_cartela !== undefined ? body.quantidade_cartela : 0,
         body.show_in_catalog !== undefined ? body.show_in_catalog : 1
       )
       .run();
@@ -147,7 +150,7 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
       .prepare(`
         UPDATE designs 
         SET name = ?, description = ?, price = ?, image_url = ?, 
-            category = ?, show_in_catalog = ?
+            category = ?, quantidade_cartela = ?, show_in_catalog = ?
         WHERE id = ?
       `)
       .bind(
@@ -156,6 +159,7 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
         body.price,
         body.image_url || null,
         body.category || null,
+        body.quantidade_cartela !== undefined ? body.quantidade_cartela : 0,
         body.show_in_catalog,
         body.id
       )

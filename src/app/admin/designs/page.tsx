@@ -12,6 +12,7 @@ interface Design {
   price: number;
   image_url?: string;
   category?: string;
+  quantidade_cartela?: number;
   is_active: number;
   show_in_catalog: number;
   created_at: number;
@@ -23,6 +24,7 @@ interface FormData {
   price: string;
   image_url: string;
   category: string;
+  quantidade_cartela: string;
   show_in_catalog: boolean;
 }
 
@@ -40,6 +42,7 @@ export default function DesignsPage() {
     price: '',
     image_url: '',
     category: '',
+    quantidade_cartela: '',
     show_in_catalog: true,
   });
 
@@ -84,8 +87,8 @@ export default function DesignsPage() {
     try {
       const method = editingDesign ? 'PUT' : 'POST';
       const body = editingDesign 
-        ? { ...formData, id: editingDesign.id, price: parseFloat(formData.price), show_in_catalog: formData.show_in_catalog ? 1 : 0 }
-        : { ...formData, price: parseFloat(formData.price), show_in_catalog: formData.show_in_catalog ? 1 : 0 };
+        ? { ...formData, id: editingDesign.id, price: parseFloat(formData.price), quantidade_cartela: parseInt(formData.quantidade_cartela) || 0, show_in_catalog: formData.show_in_catalog ? 1 : 0 }
+        : { ...formData, price: parseFloat(formData.price), quantidade_cartela: parseInt(formData.quantidade_cartela) || 0, show_in_catalog: formData.show_in_catalog ? 1 : 0 };
 
       const res = await fetch('/api/designs', {
         method,
@@ -115,6 +118,7 @@ export default function DesignsPage() {
       price: '',
       image_url: '',
       category: '',
+      quantidade_cartela: '',
       show_in_catalog: true,
     });
   }
@@ -127,6 +131,7 @@ export default function DesignsPage() {
       price: design.price.toString(),
       image_url: design.image_url || '',
       category: design.category || '',
+      quantidade_cartela: (design.quantidade_cartela || 0).toString(),
       show_in_catalog: design.show_in_catalog === 1,
     });
     setShowForm(true);
@@ -253,6 +258,9 @@ export default function DesignsPage() {
                   {design.category && (
                     <p className="text-xs text-gray-500 mb-2">Categoria: {design.category}</p>
                   )}
+                  {(design.quantidade_cartela ?? 0) > 0 && (
+                    <p className="text-xs text-gray-500 mb-2">Qtd. Cartela: {design.quantidade_cartela}</p>
+                  )}
                   <div className="mb-3">
                     <span className="text-xl font-bold text-pink-600">
                       R$ {design.price.toFixed(2)}
@@ -317,6 +325,17 @@ export default function DesignsPage() {
                     value={formData.price}
                     onChange={(e) => setFormData({...formData, price: e.target.value})}
                     className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium mb-1">Quantidade da Cartela</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={formData.quantidade_cartela}
+                    onChange={(e) => setFormData({...formData, quantidade_cartela: e.target.value})}
+                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                    placeholder="0"
                   />
                 </div>
                 <div className="col-span-2">

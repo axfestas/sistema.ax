@@ -491,6 +491,7 @@ interface Design {
   price: number
   image_url?: string
   category?: string
+  quantidade_cartela?: number
 }
 
 interface Theme {
@@ -1148,6 +1149,11 @@ export default function CatalogPage() {
                             {design.category && (
                               <p className="text-xs text-gray-500 mb-4">
                                 Categoria: {design.category}
+                              </p>
+                            )}
+                            {(design.quantidade_cartela ?? 0) > 0 && (
+                              <p className="text-xs text-gray-500 mb-4">
+                                Quantidade da cartela: {design.quantidade_cartela}
                               </p>
                             )}
                             
