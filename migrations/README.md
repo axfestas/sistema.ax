@@ -52,6 +52,7 @@ wrangler d1 execute DB --local --command "PRAGMA table_info(users);"
 - `012_add_reservation_requests_table.sql` - Adds reservation requests table
 - `013_add_approved_rejected_statuses.sql` - Adds approved and rejected statuses
 - `014_add_active_column_to_users.sql` - **[CRITICAL]** Adds active column to users table
+- `021_add_quantity_to_designs.sql` - Adds quantity (stock) field to designs table
 
 ## Migration 014: Add active column
 
