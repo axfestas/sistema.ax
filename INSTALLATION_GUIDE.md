@@ -64,6 +64,10 @@ CREATE TABLE IF NOT EXISTS designs (
   created_at INTEGER DEFAULT (strftime('%s', 'now'))
 );
 
+-- Colunas adicionadas posteriormente na tabela designs
+ALTER TABLE designs ADD COLUMN quantidade_cartela INTEGER DEFAULT 0;
+ALTER TABLE designs ADD COLUMN quantity INTEGER NOT NULL DEFAULT 0;
+
 -- Tabela de Itens da Reserva (relacionamento)
 CREATE TABLE IF NOT EXISTS reservation_items (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -240,6 +244,19 @@ src/app/admin/
 ---
 
 ## 🚨 Troubleshooting
+
+### Problema: Não consigo inserir, salvar ou editar designs (erro 500)
+
+As colunas `quantity` e `quantidade_cartela` podem não ter sido adicionadas à tabela `designs`. Execute os seguintes comandos **no Console do Cloudflare D1**:
+
+```sql
+ALTER TABLE designs ADD COLUMN quantidade_cartela INTEGER DEFAULT 0;
+ALTER TABLE designs ADD COLUMN quantity INTEGER NOT NULL DEFAULT 0;
+```
+
+> Se receber "duplicate column name", as colunas já existem — pode ignorar.
+
+Ou, se preferir, acesse `/api/admin/migrate` via POST no seu ambiente para aplicar todas as migrações pendentes automaticamente.
 
 ### Problema: "Table already exists"
 Se você receber este erro, significa que as tabelas já foram criadas. Você pode:
