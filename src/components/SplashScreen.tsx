@@ -44,7 +44,7 @@ export default function SplashScreen() {
 
   return (
     <div
-      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-gradient-to-br from-brand-yellow via-brand-blue to-brand-purple transition-opacity duration-500 ${
+      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-brand-purple transition-opacity duration-500 ${
         fadingOut ? 'opacity-0' : 'opacity-100'
       }`}
       aria-hidden="true"

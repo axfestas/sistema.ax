@@ -203,14 +203,34 @@ const StoryPreviewModal = ({ name, description, imageUrl, platform, onClose }: S
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       try {
         await navigator.share({ files: [file], title: name })
+        return
       } catch (err) {
         // Ignore AbortError (user cancelled)
-        if (err instanceof Error && err.name !== 'AbortError') {
-          showError('Não foi possível compartilhar. Tente pelo app do Instagram ou WhatsApp.')
-        }
+        if (err instanceof Error && err.name === 'AbortError') return
+        // Fall through to download + deep link fallback
       }
+    }
+
+    // Fallback: download the image and try to open the app directly via deep link
+    const objectUrl = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = objectUrl
+    a.download = fileName
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(objectUrl)
+
+    if (isInstagram) {
+      showInfo('Imagem baixada! Abrindo Instagram — vá para Stories e adicione a imagem.')
+      setTimeout(() => {
+        window.open('instagram://story', '_blank', 'noopener,noreferrer')
+      }, 200)
     } else {
-      showInfo('Abra o Instagram ou WhatsApp e compartilhe nos Stories/Status.')
+      showInfo('Imagem baixada! Abrindo WhatsApp — vá para Status e adicione a imagem.')
+      setTimeout(() => {
+        window.open('whatsapp://status', '_blank', 'noopener,noreferrer')
+      }, 200)
     }
   }
 
@@ -433,7 +453,7 @@ const ShareModal = ({ url, name, text, imageUrl, onClose }: ShareModalProps) => 
                   <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
                   <line x1="12" y1="18" x2="12.01" y2="18"/>
                 </svg>
-                Story
+                Stories
               </button>
             </div>
           </div>
