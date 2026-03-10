@@ -10,7 +10,6 @@ interface Design {
   name: string;
   description?: string;
   price: number;
-  quantity: number;
   image_url?: string;
   category?: string;
   quantidade_cartela?: number;
@@ -23,7 +22,6 @@ interface FormData {
   name: string;
   description: string;
   price: string;
-  quantity: string;
   image_url: string;
   category: string;
   quantidade_cartela: string;
@@ -42,7 +40,6 @@ export default function DesignsPage() {
     name: '',
     description: '',
     price: '',
-    quantity: '',
     image_url: '',
     category: '',
     quantidade_cartela: '',
@@ -90,8 +87,8 @@ export default function DesignsPage() {
     try {
       const method = editingDesign ? 'PUT' : 'POST';
       const body = editingDesign 
-        ? { ...formData, id: editingDesign.id, price: parseFloat(formData.price), quantity: parseInt(formData.quantity) || 0, quantidade_cartela: parseInt(formData.quantidade_cartela) || 0, show_in_catalog: formData.show_in_catalog ? 1 : 0 }
-        : { ...formData, price: parseFloat(formData.price), quantity: parseInt(formData.quantity) || 0, quantidade_cartela: parseInt(formData.quantidade_cartela) || 0, show_in_catalog: formData.show_in_catalog ? 1 : 0 };
+        ? { ...formData, id: editingDesign.id, price: parseFloat(formData.price), quantidade_cartela: parseInt(formData.quantidade_cartela) || 0, show_in_catalog: formData.show_in_catalog ? 1 : 0 }
+        : { ...formData, price: parseFloat(formData.price), quantidade_cartela: parseInt(formData.quantidade_cartela) || 0, show_in_catalog: formData.show_in_catalog ? 1 : 0 };
 
       const res = await fetch('/api/designs', {
         method,
@@ -119,7 +116,6 @@ export default function DesignsPage() {
       name: '',
       description: '',
       price: '',
-      quantity: '',
       image_url: '',
       category: '',
       quantidade_cartela: '',
@@ -133,7 +129,6 @@ export default function DesignsPage() {
       name: design.name,
       description: design.description || '',
       price: design.price.toString(),
-      quantity: (design.quantity || 0).toString(),
       image_url: design.image_url || '',
       category: design.category || '',
       quantidade_cartela: (design.quantidade_cartela || 0).toString(),

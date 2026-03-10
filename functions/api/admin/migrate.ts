@@ -110,11 +110,6 @@ const MIGRATIONS: { desc: string; sql: string }[] = [
     desc: '020: designs.quantidade_cartela',
     sql: 'ALTER TABLE designs ADD COLUMN quantidade_cartela INTEGER DEFAULT 0',
   },
-  // 021 – quantity on designs
-  {
-    desc: '021: designs.quantity',
-    sql: 'ALTER TABLE designs ADD COLUMN quantity INTEGER NOT NULL DEFAULT 0',
-  },
 ];
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {

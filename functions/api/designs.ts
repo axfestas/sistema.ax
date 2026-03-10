@@ -18,7 +18,6 @@ export interface Design {
   name: string;
   description?: string;
   price: number;
-  quantity: number;
   image_url?: string;
   category?: string;
   quantidade_cartela?: number;
@@ -31,7 +30,6 @@ export interface DesignInput {
   name: string;
   description?: string;
   price: number;
-  quantity: number;
   image_url?: string;
   category?: string;
   quantidade_cartela?: number;
@@ -78,9 +76,9 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     const body = await context.request.json() as DesignInput;
 
     // Validate required fields
-    if (!body.name || body.price === undefined || body.price === null || body.quantity === undefined || body.quantity === null) {
+    if (!body.name || body.price === undefined || body.price === null) {
       return new Response(
-        JSON.stringify({ error: 'Name, price, and quantity are required' }), 
+        JSON.stringify({ error: 'Name and price are required' }), 
         { 
           status: 400,
           headers: { 'Content-Type': 'application/json' },
@@ -91,14 +89,13 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     // Insert new design
     const result = await db
       .prepare(`
-        INSERT INTO designs (name, description, price, quantity, image_url, category, quantidade_cartela, show_in_catalog)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO designs (name, description, price, image_url, category, quantidade_cartela, show_in_catalog)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
       `)
       .bind(
         body.name,
         body.description || null,
         body.price,
-        body.quantity,
         body.image_url || null,
         body.category || null,
         body.quantidade_cartela !== undefined ? body.quantidade_cartela : 0,
@@ -152,7 +149,7 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
     await db
       .prepare(`
         UPDATE designs 
-        SET name = ?, description = ?, price = ?, quantity = ?, image_url = ?, 
+        SET name = ?, description = ?, price = ?, image_url = ?, 
             category = ?, quantidade_cartela = ?, show_in_catalog = ?
         WHERE id = ?
       `)
@@ -160,7 +157,6 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
         body.name,
         body.description || null,
         body.price,
-        body.quantity,
         body.image_url || null,
         body.category || null,
         body.quantidade_cartela !== undefined ? body.quantidade_cartela : 0,
