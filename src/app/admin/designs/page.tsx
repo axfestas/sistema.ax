@@ -10,7 +10,6 @@ interface Design {
   name: string;
   description?: string;
   price: number;
-  quantity: number;
   image_url?: string;
   category?: string;
   quantidade_cartela?: number;
@@ -23,7 +22,6 @@ interface FormData {
   name: string;
   description: string;
   price: string;
-  quantity: string;
   image_url: string;
   category: string;
   quantidade_cartela: string;
@@ -42,7 +40,6 @@ export default function DesignsPage() {
     name: '',
     description: '',
     price: '',
-    quantity: '',
     image_url: '',
     category: '',
     quantidade_cartela: '',
@@ -90,8 +87,8 @@ export default function DesignsPage() {
     try {
       const method = editingDesign ? 'PUT' : 'POST';
       const body = editingDesign 
-        ? { ...formData, id: editingDesign.id, price: parseFloat(formData.price), quantity: parseInt(formData.quantity) || 0, quantidade_cartela: parseInt(formData.quantidade_cartela) || 0, show_in_catalog: formData.show_in_catalog ? 1 : 0 }
-        : { ...formData, price: parseFloat(formData.price), quantity: parseInt(formData.quantity) || 0, quantidade_cartela: parseInt(formData.quantidade_cartela) || 0, show_in_catalog: formData.show_in_catalog ? 1 : 0 };
+        ? { ...formData, id: editingDesign.id, price: parseFloat(formData.price), quantidade_cartela: parseInt(formData.quantidade_cartela) || 0, show_in_catalog: formData.show_in_catalog ? 1 : 0 }
+        : { ...formData, price: parseFloat(formData.price), quantidade_cartela: parseInt(formData.quantidade_cartela) || 0, show_in_catalog: formData.show_in_catalog ? 1 : 0 };
 
       const res = await fetch('/api/designs', {
         method,
@@ -119,7 +116,6 @@ export default function DesignsPage() {
       name: '',
       description: '',
       price: '',
-      quantity: '',
       image_url: '',
       category: '',
       quantidade_cartela: '',
@@ -133,7 +129,6 @@ export default function DesignsPage() {
       name: design.name,
       description: design.description || '',
       price: design.price.toString(),
-      quantity: (design.quantity || 0).toString(),
       image_url: design.image_url || '',
       category: design.category || '',
       quantidade_cartela: (design.quantidade_cartela || 0).toString(),
@@ -263,7 +258,6 @@ export default function DesignsPage() {
                   {design.category && (
                     <p className="text-xs text-gray-500 mb-2">Categoria: {design.category}</p>
                   )}
-                  <p className="text-xs text-gray-500 mb-2">Qtd. Estoque: {design.quantity ?? 0}</p>
                   {(design.quantidade_cartela ?? 0) > 0 && (
                     <p className="text-xs text-gray-500 mb-2">Qtd. Cartela: {design.quantidade_cartela}</p>
                   )}
@@ -331,18 +325,6 @@ export default function DesignsPage() {
                     value={formData.price}
                     onChange={(e) => setFormData({...formData, price: e.target.value})}
                     className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                  />
-                </div>
-                <div className="col-span-2">
-                  <label className="block text-sm font-medium mb-1">Quantidade (Estoque) *</label>
-                  <input
-                    type="number"
-                    min="0"
-                    required
-                    value={formData.quantity}
-                    onChange={(e) => setFormData({...formData, quantity: e.target.value})}
-                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                    placeholder="0"
                   />
                 </div>
                 <div className="col-span-2">

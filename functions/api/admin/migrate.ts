@@ -105,6 +105,11 @@ const MIGRATIONS: { desc: string; sql: string }[] = [
     desc: '019: reservations.items_json',
     sql: 'ALTER TABLE reservations ADD COLUMN items_json TEXT',
   },
+  // 020 – quantidade_cartela on designs
+  {
+    desc: '020: designs.quantidade_cartela',
+    sql: 'ALTER TABLE designs ADD COLUMN quantidade_cartela INTEGER DEFAULT 0',
+  },
 ];
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
