@@ -859,7 +859,7 @@ export default function CatalogPage() {
                       Kits Especiais
                     </h2>
                     <p className="text-lg text-gray-600">
-                      Pacotes completos para sua festa
+                      Informe no pedido as especificações e adicione o tema na seção Temas
                     </p>
                   </div>
 
@@ -954,7 +954,7 @@ export default function CatalogPage() {
                       Itens Individuais
                     </h2>
                     <p className="text-lg text-gray-600">
-                      Escolha itens avulsos para personalizar sua festa
+                      Escolha os itens avulsos e adicione o tema na seção Temas
                     </p>
                   </div>
 
@@ -1168,7 +1168,7 @@ export default function CatalogPage() {
                       Design e Personalizados
                     </h2>
                     <p className="text-lg text-gray-600">
-                      Designs exclusivos para tornar sua festa única
+                      Informe no pedido as especificações e adicione o tema na seção Temas
                     </p>
                   </div>
 
