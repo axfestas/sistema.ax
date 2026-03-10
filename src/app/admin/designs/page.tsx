@@ -263,7 +263,6 @@ export default function DesignsPage() {
                   {design.category && (
                     <p className="text-xs text-gray-500 mb-2">Categoria: {design.category}</p>
                   )}
-                  <p className="text-xs text-gray-500 mb-2">Qtd. Estoque: {design.quantity ?? 0}</p>
                   {(design.quantidade_cartela ?? 0) > 0 && (
                     <p className="text-xs text-gray-500 mb-2">Qtd. Cartela: {design.quantidade_cartela}</p>
                   )}
@@ -331,18 +330,6 @@ export default function DesignsPage() {
                     value={formData.price}
                     onChange={(e) => setFormData({...formData, price: e.target.value})}
                     className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                  />
-                </div>
-                <div className="col-span-2">
-                  <label className="block text-sm font-medium mb-1">Quantidade (Estoque) *</label>
-                  <input
-                    type="number"
-                    min="0"
-                    required
-                    value={formData.quantity}
-                    onChange={(e) => setFormData({...formData, quantity: e.target.value})}
-                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                    placeholder="0"
                   />
                 </div>
                 <div className="col-span-2">
