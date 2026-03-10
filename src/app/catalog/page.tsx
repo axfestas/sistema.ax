@@ -29,7 +29,7 @@ interface StoryPreviewModalProps {
 }
 
 const StoryPreviewModal = ({ name, description, imageUrl, platform, onClose }: StoryPreviewModalProps) => {
-  const { showSuccess } = useToast()
+  const { showError, showInfo } = useToast()
   const isInstagram = platform === 'instagram'
   const platformLabel = isInstagram ? 'Instagram Stories' : 'Status do WhatsApp'
   const gradientStyle = isInstagram
@@ -203,24 +203,16 @@ const StoryPreviewModal = ({ name, description, imageUrl, platform, onClose }: S
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       try {
         await navigator.share({ files: [file], title: name })
-        return
       } catch (err) {
-        // If user cancelled (AbortError), don't fall through to download
-        if (err instanceof Error && err.name === 'AbortError') return
+        // Ignore AbortError (user cancelled)
+        if (err instanceof Error && err.name !== 'AbortError') {
+          showError('Não foi possível compartilhar. Tente pelo app do Instagram ou WhatsApp.')
+        }
       }
+    } else {
+      showInfo('Abra o Instagram ou WhatsApp e compartilhe nos Stories/Status.')
     }
-
-    // Fallback: download the image
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = fileName
-    a.click()
-    URL.revokeObjectURL(url)
-    showSuccess('Imagem baixada! Compartilhe nos seus stories.')
   }
-
-  const canShareDirectly = typeof navigator !== 'undefined' && !!navigator.canShare
 
   return (
     <div
@@ -282,30 +274,16 @@ const StoryPreviewModal = ({ name, description, imageUrl, platform, onClose }: S
         <div className="px-5 pb-5 pt-3 flex flex-col gap-3">
           <button
             onClick={handleShare}
-            className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl font-semibold text-white transition-opacity hover:opacity-90"
-            style={gradientStyle}
+            className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl font-semibold text-white bg-gray-700 hover:bg-gray-800 transition-colors"
           >
-            {canShareDirectly ? (
-              <>
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-                </svg>
-                Compartilhar no {platformLabel}
-              </>
-            ) : (
-              <>
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-                Baixar imagem
-              </>
-            )}
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            </svg>
+            Compartilhar no {platformLabel}
           </button>
           <p className="text-xs text-center text-gray-500">
-            {canShareDirectly
-              ? `Compartilhe o card diretamente no ${platformLabel}`
-              : `Baixe a imagem e compartilhe no ${platformLabel}`}
+            Compartilhe o card diretamente no {platformLabel}
           </p>
         </div>
       </div>
@@ -422,7 +400,7 @@ const ShareModal = ({ url, name, text, imageUrl, onClose }: ShareModalProps) => 
               </a>
               <button
                 onClick={() => setStoryPlatform('whatsapp')}
-                className="flex-1 flex flex-col items-center gap-1 px-3 py-3 rounded-xl bg-white hover:bg-green-100 transition-colors text-green-700 font-medium text-sm shadow-sm"
+                className="flex-1 flex flex-col items-center gap-1 px-3 py-3 rounded-xl bg-white hover:bg-gray-100 transition-colors text-gray-700 font-medium text-sm shadow-sm"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                   <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
@@ -449,8 +427,7 @@ const ShareModal = ({ url, name, text, imageUrl, onClose }: ShareModalProps) => 
               </button>
               <button
                 onClick={() => setStoryPlatform('instagram')}
-                className="flex-1 flex flex-col items-center gap-1 px-3 py-3 rounded-xl bg-white hover:bg-pink-50 transition-colors font-medium text-sm shadow-sm"
-                style={{ color: '#833ab4' }}
+                className="flex-1 flex flex-col items-center gap-1 px-3 py-3 rounded-xl bg-white hover:bg-gray-100 transition-colors text-gray-700 font-medium text-sm shadow-sm"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                   <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
