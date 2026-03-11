@@ -16,6 +16,7 @@ interface ShareModalProps {
   url: string
   name: string
   text: string
+  description?: string
   imageUrl?: string
   price?: number
   onClose: () => void
@@ -23,7 +24,7 @@ interface ShareModalProps {
 
 interface StoryPreviewModalProps {
   name: string
-  description: string
+  description?: string
   imageUrl?: string
   price?: number
   platform: 'instagram' | 'whatsapp'
@@ -216,9 +217,9 @@ const StoryPreviewModal = ({ name, description, imageUrl, price, platform, onClo
         logoImg.src = svgUrl
       })
       if (logoImg.complete && logoImg.naturalWidth > 0) {
-        const logoSize = 160
+        const logoSize = 280
         const logoX = (1080 - logoSize) / 2
-        const logoY = 1760
+        const logoY = 1720
         ctx.globalAlpha = 0.55
         ctx.drawImage(logoImg, logoX, logoY, logoSize, logoSize)
         ctx.globalAlpha = 1.0
@@ -337,7 +338,7 @@ const StoryPreviewModal = ({ name, description, imageUrl, price, platform, onClo
             </div>
             {/* Branding at bottom */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logotipo.svg" alt="" className="absolute bottom-1 h-6 w-6 opacity-[0.55]" style={{ filter: 'brightness(0) invert(1)' }} aria-hidden="true" />
+            <img src="/logotipo.svg" alt="" className="absolute bottom-2 h-14 w-14 opacity-[0.55]" style={{ filter: 'brightness(0) invert(1)' }} aria-hidden="true" />
           </div>
         </div>
 
@@ -362,7 +363,7 @@ const StoryPreviewModal = ({ name, description, imageUrl, price, platform, onClo
   )
 }
 
-const ShareModal = ({ url, name, text, imageUrl, price, onClose }: ShareModalProps) => {
+const ShareModal = ({ url, name, text, description, imageUrl, price, onClose }: ShareModalProps) => {
   const { showSuccess } = useToast()
   const [storyPlatform, setStoryPlatform] = useState<'instagram' | 'whatsapp' | null>(null)
 
@@ -419,7 +420,7 @@ const ShareModal = ({ url, name, text, imageUrl, price, onClose }: ShareModalPro
     return (
       <StoryPreviewModal
         name={name}
-        description={text}
+        description={description}
         imageUrl={imageUrl}
         price={price}
         platform={storyPlatform}
@@ -664,7 +665,7 @@ export default function CatalogPage() {
   const [search, setSearch] = useState('')
   const [filterCategory, setFilterCategory] = useState('')
   const [highlightedItem, setHighlightedItem] = useState<string | null>(null)
-  const [shareModal, setShareModal] = useState<{ url: string; name: string; text: string; imageUrl?: string; price?: number } | null>(null)
+  const [shareModal, setShareModal] = useState<{ url: string; name: string; text: string; description?: string; imageUrl?: string; price?: number } | null>(null)
   const { addItem } = useCart()
 
   // Reset search and category when switching tabs
@@ -783,7 +784,7 @@ export default function CatalogPage() {
   const handleShare = (type: string, id: number, name: string, description?: string, imageUrl?: string, price?: number) => {
     const url = `${window.location.origin}/item/${type}/${id}`
     const text = description ? `${name} - ${description}` : name
-    setShareModal({ url, name, text, imageUrl, price })
+    setShareModal({ url, name, text, description, imageUrl, price })
   }
 
   // Highlight item when navigating via a shared link (hash in URL)
@@ -816,6 +817,7 @@ export default function CatalogPage() {
           url={shareModal.url}
           name={shareModal.name}
           text={shareModal.text}
+          description={shareModal.description}
           imageUrl={shareModal.imageUrl}
           price={shareModal.price}
           onClose={() => setShareModal(null)}
