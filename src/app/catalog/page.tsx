@@ -71,11 +71,13 @@ const StoryPreviewModal = ({ name, description, imageUrl, price, platform, onClo
     ctx.closePath()
     ctx.fill()
 
-    // Product image (contained square, not cropped)
-    const imgSize = 820
-    const imgX = (1080 - imgSize) / 2
+    // Product image — natural aspect ratio (no white letterbox margins)
+    const imgMaxW = 820
+    const imgX = (1080 - imgMaxW) / 2
     const imgY = cardY + 40
     const imgR = 32
+    // Track actual drawn image height for text placement; default to square when no image
+    let imgDrawH = imgMaxW
 
     if (imageUrl) {
       try {
@@ -87,43 +89,53 @@ const StoryPreviewModal = ({ name, description, imageUrl, price, platform, onClo
           img.src = imageUrl
         })
         if (img.complete && img.naturalWidth > 0) {
-          // Draw image background (white) so transparent images look good
+          // Scale so width = imgMaxW, height follows the natural aspect ratio
+          const scaleToWidth = imgMaxW / img.naturalWidth
+          const naturalH = Math.round(img.naturalHeight * scaleToWidth)
+          const imgW = imgMaxW
+          // Cap height at imgMaxW for very tall portraits — they get a center cover-crop
+          const imgH = Math.min(imgMaxW, naturalH)
+          imgDrawH = imgH
+
+          // Draw white background only for the actual image rect (no letterbox margins)
           ctx.fillStyle = '#ffffff'
           ctx.beginPath()
           ctx.moveTo(imgX + imgR, imgY)
-          ctx.lineTo(imgX + imgSize - imgR, imgY)
-          ctx.quadraticCurveTo(imgX + imgSize, imgY, imgX + imgSize, imgY + imgR)
-          ctx.lineTo(imgX + imgSize, imgY + imgSize - imgR)
-          ctx.quadraticCurveTo(imgX + imgSize, imgY + imgSize, imgX + imgSize - imgR, imgY + imgSize)
-          ctx.lineTo(imgX + imgR, imgY + imgSize)
-          ctx.quadraticCurveTo(imgX, imgY + imgSize, imgX, imgY + imgSize - imgR)
+          ctx.lineTo(imgX + imgW - imgR, imgY)
+          ctx.quadraticCurveTo(imgX + imgW, imgY, imgX + imgW, imgY + imgR)
+          ctx.lineTo(imgX + imgW, imgY + imgH - imgR)
+          ctx.quadraticCurveTo(imgX + imgW, imgY + imgH, imgX + imgW - imgR, imgY + imgH)
+          ctx.lineTo(imgX + imgR, imgY + imgH)
+          ctx.quadraticCurveTo(imgX, imgY + imgH, imgX, imgY + imgH - imgR)
           ctx.lineTo(imgX, imgY + imgR)
           ctx.quadraticCurveTo(imgX, imgY, imgX + imgR, imgY)
           ctx.closePath()
           ctx.fill()
 
-          // Clip and draw image with contain (letterbox) so nothing is cropped
+          // Clip to the image rectangle and draw
           ctx.save()
           ctx.beginPath()
           ctx.moveTo(imgX + imgR, imgY)
-          ctx.lineTo(imgX + imgSize - imgR, imgY)
-          ctx.quadraticCurveTo(imgX + imgSize, imgY, imgX + imgSize, imgY + imgR)
-          ctx.lineTo(imgX + imgSize, imgY + imgSize - imgR)
-          ctx.quadraticCurveTo(imgX + imgSize, imgY + imgSize, imgX + imgSize - imgR, imgY + imgSize)
-          ctx.lineTo(imgX + imgR, imgY + imgSize)
-          ctx.quadraticCurveTo(imgX, imgY + imgSize, imgX, imgY + imgSize - imgR)
+          ctx.lineTo(imgX + imgW - imgR, imgY)
+          ctx.quadraticCurveTo(imgX + imgW, imgY, imgX + imgW, imgY + imgR)
+          ctx.lineTo(imgX + imgW, imgY + imgH - imgR)
+          ctx.quadraticCurveTo(imgX + imgW, imgY + imgH, imgX + imgW - imgR, imgY + imgH)
+          ctx.lineTo(imgX + imgR, imgY + imgH)
+          ctx.quadraticCurveTo(imgX, imgY + imgH, imgX, imgY + imgH - imgR)
           ctx.lineTo(imgX, imgY + imgR)
           ctx.quadraticCurveTo(imgX, imgY, imgX + imgR, imgY)
           ctx.closePath()
           ctx.clip()
 
-          // object-contain: scale to fit inside the square
-          const scale = Math.min(imgSize / img.naturalWidth, imgSize / img.naturalHeight)
-          const dw = img.naturalWidth * scale
-          const dh = img.naturalHeight * scale
-          const dx = imgX + (imgSize - dw) / 2
-          const dy = imgY + (imgSize - dh) / 2
-          ctx.drawImage(img, dx, dy, dw, dh)
+          if (naturalH <= imgMaxW) {
+            // Landscape or square: image fits the full width at its natural height — no margins
+            ctx.drawImage(img, imgX, imgY, imgW, naturalH)
+          } else {
+            // Portrait taller than square: cover-crop vertically (center) to avoid side margins
+            const fullH = Math.round(img.naturalHeight * scaleToWidth)
+            const cropOffsetY = Math.round((fullH - imgMaxW) / 2)
+            ctx.drawImage(img, imgX, imgY - cropOffsetY, imgW, fullH)
+          }
           ctx.restore()
         }
       } catch {
@@ -131,8 +143,8 @@ const StoryPreviewModal = ({ name, description, imageUrl, price, platform, onClo
       }
     }
 
-    // Product name
-    const textStartY = imgY + imgSize + 72
+    // Product name — positioned below the actual image height
+    const textStartY = imgY + imgDrawH + 72
     ctx.fillStyle = '#ffffff'
     ctx.textAlign = 'center'
     ctx.font = 'bold 72px Arial, sans-serif'
@@ -296,18 +308,20 @@ const StoryPreviewModal = ({ name, description, imageUrl, price, platform, onClo
             <div className="absolute inset-x-3 rounded-xl overflow-hidden flex flex-col items-center"
               style={{ top: '7%', bottom: '12%', background: 'rgba(255,255,255,0.13)' }}
             >
-              {/* Product image — contained, not cropped */}
-              <div className="w-full flex-1 flex items-center justify-center p-3">
+              {/* Product image — cover fill, no white margins */}
+              <div className="w-full flex-1 overflow-hidden">
                 {imageUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={imageUrl}
                     alt={name}
-                    className="w-full h-full rounded-lg"
-                    style={{ objectFit: 'contain', maxHeight: '100%' }}
+                    className="w-full h-full rounded-xl"
+                    style={{ objectFit: 'cover' }}
                   />
                 ) : (
-                  <span className="text-5xl">🎉</span>
+                  <div className="w-full h-full flex items-center justify-center">
+                    <span className="text-5xl">🎉</span>
+                  </div>
                 )}
               </div>
               {/* Text */}
@@ -323,7 +337,7 @@ const StoryPreviewModal = ({ name, description, imageUrl, price, platform, onClo
             </div>
             {/* Branding at bottom */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logotipo.svg" alt="Ax Festas" className="absolute bottom-1 h-6 w-6 opacity-[0.55]" style={{ filter: 'brightness(0) invert(1)' }} aria-hidden="true" />
+            <img src="/logotipo.svg" alt="" className="absolute bottom-1 h-6 w-6 opacity-[0.55]" style={{ filter: 'brightness(0) invert(1)' }} aria-hidden="true" />
           </div>
         </div>
 
