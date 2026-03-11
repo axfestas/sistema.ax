@@ -188,11 +188,37 @@ const StoryPreviewModal = ({ name, description, imageUrl, price, platform, onClo
       ctx.fillText(`R$ ${price.toFixed(2)}`, 540, Math.min(ty + 20, MAX_PRICE_Y))
     }
 
-    // Branding at bottom
-    ctx.font = 'bold 44px Arial, sans-serif'
-    ctx.fillStyle = 'rgba(255,255,255,0.55)'
-    ctx.textAlign = 'center'
-    ctx.fillText('AX Festas', 540, 1880)
+    // Branding at bottom — Ax Festas logo
+    try {
+      const svgResponse = await fetch('/logotipo.svg')
+      if (!svgResponse.ok) throw new Error()
+      const svgText = await svgResponse.text()
+      // Replace black fill with white so it is visible on the dark gradient background
+      const whiteSvg = svgText.replace(/fill="(#000(000)?|black|rgb\(0,\s*0,\s*0\))"/gi, 'fill="#ffffff"')
+      const svgBlob = new Blob([whiteSvg], { type: 'image/svg+xml' })
+      const svgUrl = URL.createObjectURL(svgBlob)
+      const logoImg = new window.Image()
+      await new Promise<void>((resolve) => {
+        logoImg.onload = () => resolve()
+        logoImg.onerror = () => resolve()
+        logoImg.src = svgUrl
+      })
+      if (logoImg.complete && logoImg.naturalWidth > 0) {
+        const logoSize = 160
+        const logoX = (1080 - logoSize) / 2
+        const logoY = 1760
+        ctx.globalAlpha = 0.55
+        ctx.drawImage(logoImg, logoX, logoY, logoSize, logoSize)
+        ctx.globalAlpha = 1.0
+      }
+      URL.revokeObjectURL(svgUrl)
+    } catch {
+      // Fallback to text branding if logo fails to load
+      ctx.font = 'bold 44px Arial, sans-serif'
+      ctx.fillStyle = 'rgba(255,255,255,0.55)'
+      ctx.textAlign = 'center'
+      ctx.fillText('AX Festas', 540, 1880)
+    }
 
     return new Promise<Blob | null>((resolve) => {
       canvas.toBlob((blob) => resolve(blob), 'image/png')
@@ -296,7 +322,8 @@ const StoryPreviewModal = ({ name, description, imageUrl, price, platform, onClo
               </div>
             </div>
             {/* Branding at bottom */}
-            <p className="absolute bottom-1 text-white/50 text-[10px] font-semibold">AX Festas</p>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logotipo.svg" alt="Ax Festas" className="absolute bottom-1 h-6 w-6 opacity-[0.55]" style={{ filter: 'brightness(0) invert(1)' }} aria-hidden="true" />
           </div>
         </div>
 
