@@ -848,7 +848,7 @@ export default function CatalogPage() {
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              🎁 Kits ({kits.length})
+              🎁 Kits
             </button>
             <button
               onClick={() => handleTabChange('items')}
@@ -858,7 +858,7 @@ export default function CatalogPage() {
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              📦 Itens ({items.length})
+              📦 Itens
             </button>
             <button
               onClick={() => handleTabChange('sweets')}
@@ -868,7 +868,7 @@ export default function CatalogPage() {
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              🍰 Doces ({sweets.length})
+              🍰 Doces
             </button>
             <button
               onClick={() => handleTabChange('designs')}
@@ -878,7 +878,7 @@ export default function CatalogPage() {
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              🎨 Design ({designs.length})
+              🎨 Design
             </button>
             <button
               onClick={() => handleTabChange('themes')}
@@ -888,7 +888,7 @@ export default function CatalogPage() {
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              🎭 Temas ({themes.length})
+              🎭 Temas
             </button>
           </div>
 
