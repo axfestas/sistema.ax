@@ -110,6 +110,44 @@ const MIGRATIONS: { desc: string; sql: string }[] = [
     desc: '020: designs.quantidade_cartela',
     sql: 'ALTER TABLE designs ADD COLUMN quantidade_cartela INTEGER DEFAULT 0',
   },
+  // 021 – artes_criadas table (marketing content)
+  {
+    desc: '021: artes_criadas table',
+    sql: `CREATE TABLE IF NOT EXISTS artes_criadas (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      caption TEXT,
+      image_url TEXT,
+      suggested_date TEXT,
+      status TEXT NOT NULL DEFAULT 'rascunho',
+      created_at INTEGER DEFAULT (strftime('%s', 'now'))
+    )`,
+  },
+  {
+    desc: '021: idx_artes_criadas_status',
+    sql: `CREATE INDEX IF NOT EXISTS idx_artes_criadas_status ON artes_criadas(status)`,
+  },
+  // 022 – publicacoes table (social media publications)
+  {
+    desc: '022: publicacoes table',
+    sql: `CREATE TABLE IF NOT EXISTS publicacoes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      arte_id INTEGER REFERENCES artes_criadas(id) ON DELETE SET NULL,
+      platform TEXT NOT NULL DEFAULT 'instagram',
+      publish_date TEXT,
+      status TEXT NOT NULL DEFAULT 'agendado',
+      notes TEXT,
+      created_at INTEGER DEFAULT (strftime('%s', 'now'))
+    )`,
+  },
+  {
+    desc: '022: idx_publicacoes_status',
+    sql: `CREATE INDEX IF NOT EXISTS idx_publicacoes_status ON publicacoes(status)`,
+  },
+  {
+    desc: '022: idx_publicacoes_date',
+    sql: `CREATE INDEX IF NOT EXISTS idx_publicacoes_date ON publicacoes(publish_date)`,
+  },
 ];
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
