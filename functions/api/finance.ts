@@ -102,7 +102,16 @@ export async function onRequestPost(context: {
       );
     }
 
-    const newRecord = await createFinancial(db, body);
+    const newRecord = await createFinancial(db, {
+      type: body.type,
+      description: body.description,
+      amount: body.amount,
+      date: body.date,
+      category: body.category,
+      payment_method: body.payment_method,
+      status: body.status,
+      receipt_url: body.receipt_url,
+    });
 
     return new Response(JSON.stringify(newRecord), {
       status: 201,

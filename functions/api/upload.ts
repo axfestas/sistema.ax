@@ -64,12 +64,12 @@ export async function onRequestPost(context: {
       );
     }
 
-    // Validar tipo de arquivo (apenas imagens)
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    // Validar tipo de arquivo (imagens e PDFs)
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'];
     if (!allowedTypes.includes(file.type)) {
       return new Response(
         JSON.stringify({ 
-          error: 'Invalid file type. Only images are allowed (JPEG, PNG, GIF, WEBP)' 
+          error: 'Invalid file type. Allowed types: JPEG, PNG, GIF, WEBP, PDF' 
         }),
         {
           status: 400,
