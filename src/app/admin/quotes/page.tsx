@@ -362,7 +362,7 @@ export default function QuotesPage() {
                   setClientSearch(e.target.value);
                   if (!e.target.value) { setSelectedClientId(''); setSelectedClient(null); }
                 }}
-                className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-400"
+                className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
               />
               {clientSearch && !selectedClientId && (
                 <div className="absolute z-10 w-full bg-white border rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto">
@@ -373,7 +373,7 @@ export default function QuotesPage() {
                       key={c.id}
                       type="button"
                       onClick={() => handleClientSelect(c)}
-                      className="w-full text-left px-4 py-2 hover:bg-pink-50 text-sm"
+                      className="w-full text-left px-4 py-2 hover:bg-blue-50 text-sm"
                     >
                       <span className="font-medium">{c.name}</span>
                       <span className="text-gray-400 ml-2">{c.phone}</span>
@@ -384,7 +384,7 @@ export default function QuotesPage() {
             </div>
 
             {selectedClient && (
-              <div className="bg-pink-50 rounded-lg p-4 grid grid-cols-2 gap-3 text-sm">
+              <div className="bg-blue-50 rounded-lg p-4 grid grid-cols-2 gap-3 text-sm">
                 <div><span className="text-gray-500">Nome:</span> <strong>{selectedClient.name}</strong></div>
                 <div><span className="text-gray-500">Telefone:</span> {selectedClient.phone}</div>
                 {selectedClient.email && <div><span className="text-gray-500">Email:</span> {selectedClient.email}</div>}
@@ -404,7 +404,7 @@ export default function QuotesPage() {
                   type="date"
                   value={formEventDate}
                   onChange={(e) => setFormEventDate(e.target.value)}
-                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-400"
+                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 />
               </div>
               <div>
@@ -414,7 +414,7 @@ export default function QuotesPage() {
                   value={formEventLocation}
                   onChange={(e) => setFormEventLocation(e.target.value)}
                   placeholder="Ex: Salão do Clube, Residência..."
-                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-400"
+                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 />
               </div>
             </div>
@@ -425,7 +425,7 @@ export default function QuotesPage() {
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-semibold text-gray-700">Itens do Orçamento</h3>
               <button type="button" onClick={addItem}
-                className="text-sm text-pink-600 hover:text-pink-800 font-medium">
+                className="text-sm text-blue-600 hover:text-blue-800 font-medium">
                 + Adicionar item
               </button>
             </div>
@@ -442,20 +442,20 @@ export default function QuotesPage() {
               {formItems.map((item, idx) => (
                 <div key={idx} className="grid grid-cols-12 gap-2 items-center">
                   <input
-                    className="col-span-5 border rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-pink-400"
+                    className="col-span-5 border rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
                     placeholder="Descrição do item"
                     value={item.description}
                     onChange={(e) => updateItem(idx, 'description', e.target.value)}
                   />
                   <input
-                    className="col-span-2 border rounded px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-1 focus:ring-pink-400"
+                    className="col-span-2 border rounded px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-1 focus:ring-blue-400"
                     type="number"
                     min="1"
                     value={item.quantity}
                     onChange={(e) => updateItem(idx, 'quantity', e.target.value)}
                   />
                   <input
-                    className="col-span-2 border rounded px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-1 focus:ring-pink-400"
+                    className="col-span-2 border rounded px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-1 focus:ring-blue-400"
                     type="number"
                     min="0"
                     step="0.01"
@@ -490,11 +490,11 @@ export default function QuotesPage() {
                   step="0.01"
                   value={formDiscount}
                   onChange={(e) => setFormDiscount(Number(e.target.value) || 0)}
-                  className="border rounded px-2 py-1 w-32 text-right text-sm focus:outline-none focus:ring-1 focus:ring-pink-400"
+                  className="border rounded px-2 py-1 w-32 text-right text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
                 />
               </div>
               <div className="flex justify-between font-bold text-base text-gray-900">
-                <span>Total:</span><span className="text-pink-600">{BRL(formTotal)}</span>
+                <span>Total:</span><span className="text-blue-600">{BRL(formTotal)}</span>
               </div>
             </div>
           </div>
@@ -507,7 +507,7 @@ export default function QuotesPage() {
                 <select
                   value={formStatus}
                   onChange={(e) => setFormStatus(e.target.value as QuoteStatus)}
-                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-400"
+                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 >
                   {Object.entries(STATUS_LABELS).map(([v, l]) => (
                     <option key={v} value={v}>{l}</option>
@@ -520,7 +520,7 @@ export default function QuotesPage() {
                   value={formNotes}
                   onChange={(e) => setFormNotes(e.target.value)}
                   rows={2}
-                  className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400"
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                 />
               </div>
             </div>
@@ -532,7 +532,7 @@ export default function QuotesPage() {
               Cancelar
             </button>
             <button type="submit" disabled={saving}
-              className="px-5 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors disabled:opacity-50">
+              className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50">
               {saving ? 'Salvando...' : editingQuote ? 'Salvar Alterações' : 'Criar Orçamento'}
             </button>
           </div>
@@ -628,7 +628,7 @@ export default function QuotesPage() {
                 </div>
               )}
               <div className="flex justify-between font-bold text-base">
-                <span>Total</span><span className="text-pink-600">{BRL(detailQuote.total)}</span>
+                <span>Total</span><span className="text-blue-600">{BRL(detailQuote.total)}</span>
               </div>
             </div>
           </div>
@@ -656,7 +656,7 @@ export default function QuotesPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Orçamentos</h1>
         <button onClick={openNew}
-          className="bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700 transition-colors">
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
           + Novo Orçamento
         </button>
       </div>
@@ -668,12 +668,12 @@ export default function QuotesPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Buscar por cliente ou ID..."
-          className="border rounded-lg px-3 py-2 flex-1 focus:outline-none focus:ring-2 focus:ring-pink-400"
+          className="border rounded-lg px-3 py-2 flex-1 focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-400"
+          className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
         >
           <option value="">Todos os status</option>
           {Object.entries(STATUS_LABELS).map(([v, l]) => (
@@ -684,7 +684,7 @@ export default function QuotesPage() {
 
       {loading ? (
         <div className="text-center py-12">
-          <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-pink-500" />
+          <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500" />
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -719,7 +719,7 @@ export default function QuotesPage() {
                         ? new Date(q.event_date + 'T00:00:00').toLocaleDateString('pt-BR')
                         : <span className="text-gray-300">-</span>}
                     </td>
-                    <td className="p-3 font-semibold text-sm text-pink-600">{BRL(q.total)}</td>
+                    <td className="p-3 font-semibold text-sm text-blue-600">{BRL(q.total)}</td>
                     <td className="p-3">
                       <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${STATUS_COLORS[q.status]}`}>
                         {STATUS_LABELS[q.status]}

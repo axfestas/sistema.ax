@@ -481,7 +481,7 @@ export default function KitsPage() {
                   ⭐ Em destaque
                 </label>
               </div>
-              <div className="flex items-center p-3 bg-rose-50 rounded">
+              <div className="flex items-center p-3 bg-blue-50 rounded">
                 <input
                   type="checkbox"
                   id="kit_is_promotion"
@@ -489,7 +489,7 @@ export default function KitsPage() {
                   onChange={(e) => setFormData({ ...formData, is_promotion: e.target.checked ? 1 : 0 })}
                   className="mr-3 w-4 h-4"
                 />
-                <label htmlFor="kit_is_promotion" className="text-sm font-semibold text-rose-900 cursor-pointer">
+                <label htmlFor="kit_is_promotion" className="text-sm font-semibold text-blue-900 cursor-pointer">
                   🏷️ Em promoção
                 </label>
               </div>

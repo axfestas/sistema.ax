@@ -26,7 +26,7 @@ interface CatalogItem {
   is_featured?: number
   is_promotion?: number
   created_at?: string
-  type: 'kit' | 'sweet' | 'theme' | 'item'
+  type: 'kit' | 'sweet' | 'theme' | 'item' | 'design'
 }
 
 interface Testimonial {
@@ -94,7 +94,7 @@ function ProductCard({ item }: { item: CatalogItem }) {
       className="block bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-200 group cursor-pointer"
     >
       {/* Image */}
-      <div className="relative h-48 bg-gradient-to-br from-pink-50 to-rose-50">
+      <div className="relative h-48 bg-gradient-to-br from-blue-50 to-indigo-50">
         {item.image_url ? (
           <Image
             src={item.image_url}
@@ -104,7 +104,7 @@ function ProductCard({ item }: { item: CatalogItem }) {
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-5xl">
-            {item.type === 'kit' ? '🎉' : item.type === 'sweet' ? '🍭' : item.type === 'theme' ? '✨' : '🎈'}
+            {item.type === 'kit' ? '🎁' : item.type === 'sweet' ? '🍰' : item.type === 'theme' ? '🎭' : item.type === 'design' ? '🎨' : '📦'}
           </div>
         )}
 
@@ -116,7 +116,7 @@ function ProductCard({ item }: { item: CatalogItem }) {
             </span>
           )}
           {showPromo && (
-            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-rose-500 text-white shadow-sm">
+            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-500 text-white shadow-sm">
               💸 Promoção
             </span>
           )}
@@ -139,12 +139,12 @@ function ProductCard({ item }: { item: CatalogItem }) {
               <span className="text-gray-400 text-xs line-through block">
                 {formatCurrency(item.original_price)}
               </span>
-              <span className="text-rose-600 font-bold text-base">
+              <span className="text-blue-600 font-bold text-base">
                 {formatCurrency(item.price)}
               </span>
             </div>
           ) : item.price > 0 ? (
-            <span className="text-rose-600 font-bold text-base">
+            <span className="text-blue-600 font-bold text-base">
               {formatCurrency(item.price)}
             </span>
           ) : (
@@ -214,7 +214,7 @@ function ReviewModal({ onClose }: { onClose: () => void }) {
             <p className="text-4xl mb-3">🎉</p>
             <h3 className="text-xl font-bold text-gray-900 mb-2">Obrigado pela avaliação!</h3>
             <p className="text-gray-500 text-sm mb-5">Sua avaliação será analisada e publicada em breve.</p>
-            <button onClick={onClose} className="bg-rose-500 hover:bg-rose-600 text-white font-bold px-6 py-2.5 rounded-full transition">Fechar</button>
+            <button onClick={onClose} className="bg-blue-500 hover:bg-blue-600 text-white font-bold px-6 py-2.5 rounded-full transition">Fechar</button>
           </div>
         ) : (
           <>
@@ -229,7 +229,7 @@ function ReviewModal({ onClose }: { onClose: () => void }) {
                   type="text"
                   value={name}
                   onChange={e => setName(e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
                   placeholder="Seu nome"
                   required
                 />
@@ -244,7 +244,7 @@ function ReviewModal({ onClose }: { onClose: () => void }) {
                   value={comment}
                   onChange={e => setComment(e.target.value)}
                   rows={3}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 resize-none"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 resize-none"
                   placeholder="Conte como foi sua experiência..."
                   required
                 />
@@ -253,7 +253,7 @@ function ReviewModal({ onClose }: { onClose: () => void }) {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full bg-rose-500 hover:bg-rose-600 disabled:bg-gray-300 text-white font-bold py-3 rounded-full transition"
+                className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white font-bold py-3 rounded-full transition"
               >
                 {submitting ? 'Enviando...' : 'Enviar avaliação'}
               </button>
@@ -274,7 +274,8 @@ export default function Home() {
   const [loadingPortfolio, setLoadingPortfolio] = useState(true)
   const [loadingCatalog, setLoadingCatalog] = useState(true)
   const [lightbox, setLightbox] = useState<PortfolioImage | null>(null)
-  const [catalogTab, setCatalogTab] = useState<'all' | 'kit' | 'sweet' | 'theme'>('all')
+  const [catalogTab, setCatalogTab] = useState<'all' | 'kit' | 'sweet' | 'theme' | 'item' | 'design'>('all')
+  const [catalogSearch, setCatalogSearch] = useState('')
   const [portfolioLimit, setPortfolioLimit] = useState(8)
   const [catalogVisible, setCatalogVisible] = useState(CATALOG_PAGE_SIZE)
   const [showReviewModal, setShowReviewModal] = useState(false)
@@ -304,6 +305,8 @@ export default function Home() {
       { type: 'kit', url: '/api/kits?activeOnly=true' },
       { type: 'sweet', url: '/api/sweets?catalog=true' },
       { type: 'theme', url: '/api/themes?catalog=true' },
+      { type: 'item', url: '/api/items?catalogOnly=true' },
+      { type: 'design', url: '/api/designs?catalog=true' },
     ]
 
     Promise.allSettled(sources.map(s => fetch(s.url).then(r => r.ok ? r.json() : [])))
@@ -340,9 +343,9 @@ export default function Home() {
       .catch(() => setTestimonials([]))
   }, [])
 
-  const filteredCatalog = catalogTab === 'all'
-    ? catalogItems
-    : catalogItems.filter(i => i.type === catalogTab)
+  const filteredCatalog = catalogItems
+    .filter(i => catalogTab === 'all' || i.type === catalogTab)
+    .filter(i => !catalogSearch || i.name.toLowerCase().includes(catalogSearch.toLowerCase()))
 
   const visibleCatalog = filteredCatalog.slice(0, catalogVisible)
   const hasMoreCatalog = filteredCatalog.length > catalogVisible
@@ -358,7 +361,7 @@ export default function Home() {
   const hasMorePortfolio = portfolioImages.length > portfolioLimit
 
   // Reset visible count when tab changes
-  const handleTabChange = (tab: typeof catalogTab) => {
+  const handleTabChange = (tab: 'all' | 'kit' | 'sweet' | 'theme' | 'item' | 'design') => {
     setCatalogTab(tab)
     setCatalogVisible(CATALOG_PAGE_SIZE)
   }
@@ -367,7 +370,7 @@ export default function Home() {
     <div className="min-h-screen bg-white">
 
       {/* ── Hero ─────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-rose-400 via-pink-400 to-amber-300 py-24 px-4">
+      <section className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-500 to-violet-500 py-24 px-4">
         <div className="absolute -top-20 -left-20 w-96 h-96 rounded-full bg-white/10 pointer-events-none" />
         <div className="absolute -bottom-32 -right-20 w-[500px] h-[500px] rounded-full bg-white/10 pointer-events-none" />
         <div className="relative max-w-5xl mx-auto text-center">
@@ -379,7 +382,7 @@ export default function Home() {
           </h1>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a href="/#catalogo"
-              className="inline-block bg-white text-rose-500 font-bold py-4 px-9 rounded-full hover:bg-rose-50 transition shadow-lg shadow-rose-700/20 text-base">
+              className="inline-block bg-white text-blue-500 font-bold py-4 px-9 rounded-full hover:bg-blue-50 transition shadow-lg shadow-blue-700/20 text-base">
               Ver Catálogo
             </a>
             <a href="#portfolio"
@@ -394,9 +397,27 @@ export default function Home() {
       <section id="catalogo" className="py-20 px-4 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-10">
-            <span className="text-rose-400 font-semibold text-sm uppercase tracking-widest">Produtos</span>
+            <span className="text-blue-400 font-semibold text-sm uppercase tracking-widest">Produtos</span>
             <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mt-2 mb-3">Catálogo de Produtos</h2>
             <p className="text-gray-500 max-w-xl mx-auto">Kits completos, doces personalizados e temas exclusivos para a sua festa</p>
+            {/* Search bar */}
+            <div className="mt-5 max-w-md mx-auto">
+              <div className="relative">
+                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input
+                  type="text"
+                  value={catalogSearch}
+                  onChange={e => { setCatalogSearch(e.target.value); setCatalogVisible(CATALOG_PAGE_SIZE) }}
+                  placeholder="Pesquisar produtos..."
+                  className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 bg-gray-50"
+                />
+                {catalogSearch && (
+                  <button onClick={() => { setCatalogSearch(''); setCatalogVisible(CATALOG_PAGE_SIZE) }} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">✕</button>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* ── Featured sub-section ──────────────────────────────── */}
@@ -434,15 +455,17 @@ export default function Home() {
           <div className="flex gap-2 justify-center flex-wrap mb-10">
             {([
               { key: 'all', label: 'Todos' },
-              { key: 'kit', label: '🎉 Kits' },
-              { key: 'sweet', label: '🍭 Doces' },
-              { key: 'theme', label: '✨ Temas' },
+              { key: 'kit', label: '🎁 Kits' },
+              { key: 'sweet', label: '🍰 Doces' },
+              { key: 'theme', label: '🎭 Temas' },
+              { key: 'item', label: '📦 Itens' },
+              { key: 'design', label: '🎨 Designs' },
             ] as const).map(tab => (
               <button key={tab.key} onClick={() => handleTabChange(tab.key)}
                 className={`px-5 py-2 rounded-full text-sm font-semibold transition-colors ${
                   catalogTab === tab.key
-                    ? 'bg-rose-500 text-white shadow-sm'
-                    : 'bg-gray-100 text-gray-600 hover:bg-rose-50 hover:text-rose-500'
+                    ? 'bg-blue-500 text-white shadow-sm'
+                    : 'bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-500'
                 }`}>
                 {tab.label}
               </button>
@@ -451,7 +474,7 @@ export default function Home() {
 
           {loadingCatalog ? (
             <div className="text-center py-12">
-              <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-rose-400" />
+              <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-blue-400" />
             </div>
           ) : filteredCatalog.length === 0 ? (
             <div className="text-center py-12 text-gray-400">
@@ -470,7 +493,7 @@ export default function Home() {
                 <div className="text-center mt-10">
                   <button
                     onClick={() => setCatalogVisible(v => v + CATALOG_PAGE_SIZE)}
-                    className="inline-block border-2 border-rose-400 text-rose-500 font-bold py-3 px-8 rounded-full hover:bg-rose-50 transition"
+                    className="inline-block border-2 border-blue-400 text-blue-500 font-bold py-3 px-8 rounded-full hover:bg-blue-50 transition"
                   >
                     Ver mais produtos ({filteredCatalog.length - catalogVisible} restantes)
                   </button>
@@ -485,14 +508,14 @@ export default function Home() {
       <section id="portfolio" className="py-20 px-4 bg-gray-50">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <span className="text-rose-400 font-semibold text-sm uppercase tracking-widest">Nosso trabalho</span>
+            <span className="text-blue-400 font-semibold text-sm uppercase tracking-widest">Nosso trabalho</span>
             <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mt-2 mb-3">Portfólio</h2>
             <p className="text-gray-500 max-w-xl mx-auto">Veja fotos reais de festas que realizamos com amor e dedicação</p>
           </div>
 
           {loadingPortfolio ? (
             <div className="text-center py-12">
-              <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-rose-400" />
+              <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-blue-400" />
             </div>
           ) : portfolioImages.length === 0 ? (
             <div className="text-center py-12 text-gray-400">
@@ -517,7 +540,7 @@ export default function Home() {
               {hasMorePortfolio && (
                 <div className="text-center mt-10">
                   <button onClick={() => setPortfolioLimit(p => p + 8)}
-                    className="inline-block border-2 border-rose-400 text-rose-500 font-bold py-3 px-8 rounded-full hover:bg-rose-50 transition">
+                    className="inline-block border-2 border-blue-400 text-blue-500 font-bold py-3 px-8 rounded-full hover:bg-blue-50 transition">
                     Ver mais trabalhos
                   </button>
                 </div>
@@ -531,7 +554,7 @@ export default function Home() {
       <section className="py-20 px-4 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <span className="text-rose-400 font-semibold text-sm uppercase tracking-widest">❤️ Clientes satisfeitos</span>
+            <span className="text-blue-400 font-semibold text-sm uppercase tracking-widest">❤️ Clientes satisfeitos</span>
             <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mt-2 mb-3">O que dizem sobre nós</h2>
           </div>
 
@@ -557,7 +580,7 @@ export default function Home() {
           <div className="text-center mt-8">
             <button
               onClick={() => setShowReviewModal(true)}
-              className="inline-block bg-rose-500 hover:bg-rose-600 text-white font-bold py-3.5 px-8 rounded-full transition shadow-lg shadow-rose-500/25"
+              className="inline-block bg-blue-500 hover:bg-blue-600 text-white font-bold py-3.5 px-8 rounded-full transition shadow-lg shadow-blue-500/25"
             >
               💬 Deixar avaliação
             </button>
@@ -566,7 +589,7 @@ export default function Home() {
       </section>
 
       {/* ── Final CTA ────────────────────────────────────────────────── */}
-      <section id="contato" className="py-20 px-4 bg-gradient-to-br from-rose-500 via-pink-500 to-amber-400">
+      <section id="contato" className="py-20 px-4 bg-gradient-to-br from-blue-700 via-blue-600 to-violet-600">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-5">
             Pronto para montar sua festa?
@@ -575,7 +598,7 @@ export default function Home() {
             Escolha entre nossos kits exclusivos, doces personalizados e temas encantadores
           </p>
           <a href="/#catalogo"
-            className="inline-block bg-white text-rose-500 font-bold py-4 px-10 rounded-full hover:bg-rose-50 transition shadow-xl shadow-rose-700/25 text-base">
+            className="inline-block bg-white text-blue-500 font-bold py-4 px-10 rounded-full hover:bg-blue-50 transition shadow-xl shadow-blue-700/25 text-base">
             Ver catálogo
           </a>
         </div>

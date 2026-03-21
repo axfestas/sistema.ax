@@ -40,6 +40,7 @@ CREATE TABLE reservations (
   payment_type TEXT,
   payment_receipt_url TEXT,
   contract_url TEXT,
+  items_json TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (item_id) REFERENCES items(id),
@@ -58,10 +59,14 @@ CREATE TABLE maintenance (
 
 CREATE TABLE financial_records (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  type TEXT NOT NULL, -- 'income' or 'expense'
+  type TEXT NOT NULL CHECK (type IN ('income', 'expense', 'purchase')), -- 'income', 'expense', or 'purchase'
   description TEXT,
   amount REAL NOT NULL,
-  date DATE NOT NULL
+  date DATE NOT NULL,
+  category TEXT,
+  payment_method TEXT,
+  status TEXT NOT NULL DEFAULT 'paid' CHECK (status IN ('paid', 'pending')),
+  receipt_url TEXT
 );
 
 CREATE TABLE users (
@@ -175,6 +180,41 @@ CREATE TABLE clients (
   created_at INTEGER DEFAULT (strftime('%s', 'now'))
 );
 
+-- Tabela de Orçamentos
+CREATE TABLE quotes (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  client_id INTEGER NOT NULL,
+  event_date TEXT,
+  event_location TEXT,
+  items_json TEXT NOT NULL DEFAULT '[]',
+  discount REAL NOT NULL DEFAULT 0,
+  total REAL NOT NULL DEFAULT 0,
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','sent','approved','rejected')),
+  notes TEXT,
+  created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  FOREIGN KEY (client_id) REFERENCES clients(id)
+);
+
+-- Tabela de Contratos
+CREATE TABLE contracts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  client_id INTEGER NOT NULL,
+  quote_id INTEGER,
+  event_date TEXT,
+  event_location TEXT,
+  pickup_date TEXT,
+  return_date TEXT,
+  items_json TEXT NOT NULL DEFAULT '[]',
+  discount REAL NOT NULL DEFAULT 0,
+  total REAL NOT NULL DEFAULT 0,
+  payment_method TEXT,
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','sent','signed','completed')),
+  notes TEXT,
+  created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  FOREIGN KEY (client_id) REFERENCES clients(id),
+  FOREIGN KEY (quote_id) REFERENCES quotes(id)
+);
+
 -- Tabela de Doces
 CREATE TABLE sweets (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -274,6 +314,10 @@ CREATE INDEX idx_categories_section ON categories(section);
 CREATE INDEX idx_reservation_requests_status ON reservation_requests(status);
 CREATE INDEX idx_reservation_requests_created_at ON reservation_requests(created_at);
 CREATE INDEX idx_reservation_requests_custom_id ON reservation_requests(custom_id);
+CREATE INDEX idx_quotes_client_id ON quotes(client_id);
+CREATE INDEX idx_quotes_status ON quotes(status);
+CREATE INDEX idx_contracts_client_id ON contracts(client_id);
+CREATE INDEX idx_contracts_status ON contracts(status);
 
 -- Tabela de Avaliações
 CREATE TABLE testimonials (

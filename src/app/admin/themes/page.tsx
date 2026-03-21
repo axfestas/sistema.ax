@@ -187,7 +187,7 @@ export default function ThemesPage() {
 
       {loading ? (
         <div className="text-center py-12">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600"></div>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           <p className="mt-4 text-gray-600">Carregando temas...</p>
         </div>
       ) : (
@@ -214,7 +214,7 @@ export default function ThemesPage() {
                 </div>
                 <div className="p-4">
                   <div className="flex items-start justify-between mb-2">
-                    <span className="inline-block bg-pink-100 text-pink-800 text-xs font-bold px-2 py-1 rounded">
+                    <span className="inline-block bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded">
                       {formatThemeId(theme.id)}
                     </span>
                     {theme.show_in_catalog === 1 && (
@@ -267,7 +267,7 @@ export default function ThemesPage() {
                     required
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div className="col-span-2">
@@ -275,7 +275,7 @@ export default function ThemesPage() {
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     rows={3}
                   />
                 </div>
@@ -292,7 +292,7 @@ export default function ThemesPage() {
                   <select
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Sem categoria</option>
                     {categories.length === 0 ? (
@@ -310,7 +310,7 @@ export default function ThemesPage() {
                       type="checkbox"
                       checked={formData.show_in_catalog}
                       onChange={(e) => setFormData({ ...formData, show_in_catalog: e.target.checked })}
-                      className="mr-2 h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded"
+                      className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
                     <span className="text-sm font-medium">Exibir no Catálogo</span>
                   </label>

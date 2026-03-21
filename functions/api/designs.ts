@@ -41,8 +41,22 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   const db = context.env.DB;
   const url = new URL(context.request.url);
   const catalogOnly = url.searchParams.get('catalog') === 'true';
+  const designId = url.searchParams.get('id');
 
   try {
+    if (designId) {
+      const result = await db.prepare('SELECT * FROM designs WHERE id = ?').bind(Number(designId)).first();
+      if (!result) {
+        return new Response(JSON.stringify({ error: 'Design not found' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      return new Response(JSON.stringify(result), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     let query = 'SELECT * FROM designs WHERE is_active = 1';
     
     if (catalogOnly) {

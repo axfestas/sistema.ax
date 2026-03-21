@@ -269,7 +269,7 @@ export default function ClientsPage() {
                     required
                     value={formData.name}
                     onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
@@ -279,7 +279,7 @@ export default function ClientsPage() {
                     required
                     value={formData.phone}
                     onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="(00) 00000-0000"
                   />
                 </div>
@@ -289,7 +289,7 @@ export default function ClientsPage() {
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({...formData, email: e.target.value})}
-                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
@@ -298,7 +298,7 @@ export default function ClientsPage() {
                     type="text"
                     value={formData.cpf}
                     onChange={(e) => setFormData({...formData, cpf: e.target.value})}
-                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="000.000.000-00"
                   />
                 </div>
@@ -308,7 +308,7 @@ export default function ClientsPage() {
                     type="text"
                     value={formData.address}
                     onChange={(e) => setFormData({...formData, address: e.target.value})}
-                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
@@ -317,7 +317,7 @@ export default function ClientsPage() {
                     type="text"
                     value={formData.city}
                     onChange={(e) => setFormData({...formData, city: e.target.value})}
-                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
@@ -326,7 +326,7 @@ export default function ClientsPage() {
                     type="text"
                     value={formData.state}
                     onChange={(e) => setFormData({...formData, state: e.target.value})}
-                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     maxLength={2}
                     placeholder="SP"
                   />
@@ -337,7 +337,7 @@ export default function ClientsPage() {
                     type="text"
                     value={formData.zip_code}
                     onChange={(e) => setFormData({...formData, zip_code: e.target.value})}
-                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="00000-000"
                   />
                 </div>
@@ -346,7 +346,7 @@ export default function ClientsPage() {
                   <textarea
                     value={formData.notes}
                     onChange={(e) => setFormData({...formData, notes: e.target.value})}
-                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     rows={3}
                   />
                 </div>
