@@ -148,6 +148,190 @@ const MIGRATIONS: { desc: string; sql: string }[] = [
     desc: '022: idx_publicacoes_date',
     sql: `CREATE INDEX IF NOT EXISTS idx_publicacoes_date ON publicacoes(publish_date)`,
   },
+  // 023 – reservation_requests table (cart-based reservation requests)
+  {
+    desc: '023: reservation_requests table',
+    sql: `CREATE TABLE IF NOT EXISTS reservation_requests (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      custom_id TEXT UNIQUE,
+      customer_name TEXT NOT NULL,
+      customer_email TEXT NOT NULL,
+      customer_phone TEXT NOT NULL,
+      event_date DATE NOT NULL,
+      message TEXT,
+      items_json TEXT NOT NULL,
+      total_amount REAL NOT NULL,
+      status TEXT DEFAULT 'pending',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`,
+  },
+  {
+    desc: '023: idx_reservation_requests_status',
+    sql: `CREATE INDEX IF NOT EXISTS idx_reservation_requests_status ON reservation_requests(status)`,
+  },
+  {
+    desc: '023: idx_reservation_requests_created_at',
+    sql: `CREATE INDEX IF NOT EXISTS idx_reservation_requests_created_at ON reservation_requests(created_at)`,
+  },
+  {
+    desc: '023: idx_reservation_requests_custom_id',
+    sql: `CREATE INDEX IF NOT EXISTS idx_reservation_requests_custom_id ON reservation_requests(custom_id)`,
+  },
+  // 024 – designs.quantity (stock quantity field)
+  {
+    desc: '024: designs.quantity',
+    sql: `ALTER TABLE designs ADD COLUMN quantity INTEGER NOT NULL DEFAULT 0`,
+  },
+  // 025 – enhance financial_records (category, payment_method, status, receipt_url)
+  {
+    desc: '025: financial_records.category',
+    sql: `ALTER TABLE financial_records ADD COLUMN category TEXT`,
+  },
+  {
+    desc: '025: financial_records.payment_method',
+    sql: `ALTER TABLE financial_records ADD COLUMN payment_method TEXT`,
+  },
+  {
+    desc: '025: financial_records.status',
+    sql: `ALTER TABLE financial_records ADD COLUMN status TEXT DEFAULT 'paid'`,
+  },
+  {
+    desc: '025: financial_records.receipt_url',
+    sql: `ALTER TABLE financial_records ADD COLUMN receipt_url TEXT`,
+  },
+  // 026 – quotes table (orçamentos)
+  {
+    desc: '026: quotes table',
+    sql: `CREATE TABLE IF NOT EXISTS quotes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      client_id INTEGER NOT NULL,
+      event_date TEXT,
+      event_location TEXT,
+      items_json TEXT NOT NULL DEFAULT '[]',
+      discount REAL NOT NULL DEFAULT 0,
+      total REAL NOT NULL DEFAULT 0,
+      status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','sent','approved','rejected')),
+      notes TEXT,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+      FOREIGN KEY (client_id) REFERENCES clients(id)
+    )`,
+  },
+  {
+    desc: '026: idx_quotes_client_id',
+    sql: `CREATE INDEX IF NOT EXISTS idx_quotes_client_id ON quotes(client_id)`,
+  },
+  {
+    desc: '026: idx_quotes_status',
+    sql: `CREATE INDEX IF NOT EXISTS idx_quotes_status ON quotes(status)`,
+  },
+  // 027 – contracts table (contratos)
+  {
+    desc: '027: contracts table',
+    sql: `CREATE TABLE IF NOT EXISTS contracts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      client_id INTEGER NOT NULL,
+      quote_id INTEGER,
+      event_date TEXT,
+      event_location TEXT,
+      pickup_date TEXT,
+      return_date TEXT,
+      items_json TEXT NOT NULL DEFAULT '[]',
+      discount REAL NOT NULL DEFAULT 0,
+      total REAL NOT NULL DEFAULT 0,
+      payment_method TEXT,
+      status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','sent','signed','completed')),
+      notes TEXT,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+      FOREIGN KEY (client_id) REFERENCES clients(id),
+      FOREIGN KEY (quote_id) REFERENCES quotes(id)
+    )`,
+  },
+  {
+    desc: '027: idx_contracts_client_id',
+    sql: `CREATE INDEX IF NOT EXISTS idx_contracts_client_id ON contracts(client_id)`,
+  },
+  {
+    desc: '027: idx_contracts_status',
+    sql: `CREATE INDEX IF NOT EXISTS idx_contracts_status ON contracts(status)`,
+  },
+  // 028 – catalog feature flags on all catalog entities
+  {
+    desc: '028: items.is_featured',
+    sql: `ALTER TABLE items ADD COLUMN is_featured INTEGER DEFAULT 0`,
+  },
+  {
+    desc: '028: items.is_promotion',
+    sql: `ALTER TABLE items ADD COLUMN is_promotion INTEGER DEFAULT 0`,
+  },
+  {
+    desc: '028: items.original_price',
+    sql: `ALTER TABLE items ADD COLUMN original_price REAL`,
+  },
+  {
+    desc: '028: kits.is_featured',
+    sql: `ALTER TABLE kits ADD COLUMN is_featured INTEGER DEFAULT 0`,
+  },
+  {
+    desc: '028: kits.is_promotion',
+    sql: `ALTER TABLE kits ADD COLUMN is_promotion INTEGER DEFAULT 0`,
+  },
+  {
+    desc: '028: kits.original_price',
+    sql: `ALTER TABLE kits ADD COLUMN original_price REAL`,
+  },
+  {
+    desc: '028: sweets.is_featured',
+    sql: `ALTER TABLE sweets ADD COLUMN is_featured INTEGER DEFAULT 0`,
+  },
+  {
+    desc: '028: sweets.is_promotion',
+    sql: `ALTER TABLE sweets ADD COLUMN is_promotion INTEGER DEFAULT 0`,
+  },
+  {
+    desc: '028: sweets.original_price',
+    sql: `ALTER TABLE sweets ADD COLUMN original_price REAL`,
+  },
+  {
+    desc: '028: designs.is_featured',
+    sql: `ALTER TABLE designs ADD COLUMN is_featured INTEGER DEFAULT 0`,
+  },
+  {
+    desc: '028: designs.is_promotion',
+    sql: `ALTER TABLE designs ADD COLUMN is_promotion INTEGER DEFAULT 0`,
+  },
+  {
+    desc: '028: designs.original_price',
+    sql: `ALTER TABLE designs ADD COLUMN original_price REAL`,
+  },
+  {
+    desc: '028: themes.is_featured',
+    sql: `ALTER TABLE themes ADD COLUMN is_featured INTEGER DEFAULT 0`,
+  },
+  {
+    desc: '028: themes.is_promotion',
+    sql: `ALTER TABLE themes ADD COLUMN is_promotion INTEGER DEFAULT 0`,
+  },
+  {
+    desc: '028: themes.original_price',
+    sql: `ALTER TABLE themes ADD COLUMN original_price REAL`,
+  },
+  // 029 – testimonials table
+  {
+    desc: '029: testimonials table',
+    sql: `CREATE TABLE IF NOT EXISTS testimonials (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      stars INTEGER NOT NULL CHECK (stars >= 1 AND stars <= 5),
+      comment TEXT NOT NULL,
+      status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`,
+  },
+  {
+    desc: '029: idx_testimonials_status',
+    sql: `CREATE INDEX IF NOT EXISTS idx_testimonials_status ON testimonials(status)`,
+  },
 ];
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
