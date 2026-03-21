@@ -413,6 +413,7 @@ export default function FinancePage() {
       if (!res.ok) throw new Error('Upload falhou');
       const data = await res.json() as Record<string, unknown>;
       if (typeof data.url !== 'string') throw new Error('URL inválida');
+      // data.url type is guaranteed as string by the check above
       setFormData((prev) => ({ ...prev, receipt_url: data.url as string }));
       showSuccess('Comprovante enviado!');
     } catch {

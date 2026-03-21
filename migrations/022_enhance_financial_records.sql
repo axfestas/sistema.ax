@@ -4,5 +4,5 @@
 
 ALTER TABLE financial_records ADD COLUMN category TEXT;
 ALTER TABLE financial_records ADD COLUMN payment_method TEXT;
-ALTER TABLE financial_records ADD COLUMN status TEXT NOT NULL DEFAULT 'paid';
+ALTER TABLE financial_records ADD COLUMN status TEXT NOT NULL DEFAULT 'paid' CHECK (status IN ('paid', 'pending'));
 ALTER TABLE financial_records ADD COLUMN receipt_url TEXT;
