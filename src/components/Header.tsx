@@ -62,6 +62,14 @@ export default function Header() {
             <span className="ml-3 text-xl font-bold text-brand-gray">{companyName}</span>
           </Link>
 
+          {/* Desktop navigation */}
+          <nav className="hidden md:flex items-center gap-1">
+            <Link href="/" className="px-3 py-1.5 text-sm font-medium text-brand-gray hover:text-pink-500 transition-colors">Início</Link>
+            <Link href="/catalog" className="px-3 py-1.5 text-sm font-medium text-brand-gray hover:text-pink-500 transition-colors">Catálogo</Link>
+            <Link href="/#portfolio" className="px-3 py-1.5 text-sm font-medium text-brand-gray hover:text-pink-500 transition-colors">Portfólio</Link>
+            <Link href="/#contato" className="px-3 py-1.5 text-sm font-medium text-brand-gray hover:text-pink-500 transition-colors">Contato</Link>
+          </nav>
+
           {/* Right side: Cart + Hamburger Menu */}
           <div className="flex items-center space-x-4">
             {/* Shopping Cart Icon */}
@@ -110,11 +118,18 @@ export default function Header() {
                 Catálogo
               </Link>
               <Link
-                href="/cart"
+                href="/#portfolio"
                 className="px-4 py-2 hover:bg-brand-yellow/10 rounded-md transition text-brand-gray"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Carrinho
+                Portfólio
+              </Link>
+              <Link
+                href="/#contato"
+                className="px-4 py-2 hover:bg-brand-yellow/10 rounded-md transition text-brand-gray"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Contato
               </Link>
               <hr className="border-gray-200" />
               <Link

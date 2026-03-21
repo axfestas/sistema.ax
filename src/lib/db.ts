@@ -127,22 +127,31 @@ export interface MaintenanceInput {
 
 export interface FinancialRecord {
   id: number;
-  type: 'income' | 'expense';
+  type: 'income' | 'expense' | 'purchase';
   description: string;
   amount: number;
   date: string; // YYYY-MM-DD
+  category?: string;
+  payment_method?: string;
+  status: 'paid' | 'pending';
+  receipt_url?: string;
 }
 
 export interface FinancialInput {
-  type: 'income' | 'expense';
+  type: 'income' | 'expense' | 'purchase';
   description: string;
   amount: number;
   date: string;
+  category?: string;
+  payment_method?: string;
+  status?: 'paid' | 'pending';
+  receipt_url?: string;
 }
 
 export interface FinancialSummary {
   totalIncome: number;
   totalExpense: number;
+  totalPurchase: number;
   balance: number;
   period: {
     startDate: string;
@@ -959,9 +968,18 @@ export async function createFinancial(
 ): Promise<FinancialRecord> {
   const result = await db
     .prepare(
-      'INSERT INTO financial_records (type, description, amount, date) VALUES (?, ?, ?, ?) RETURNING *'
+      'INSERT INTO financial_records (type, description, amount, date, category, payment_method, status, receipt_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING *'
     )
-    .bind(record.type, record.description, record.amount, record.date)
+    .bind(
+      record.type,
+      record.description,
+      record.amount,
+      record.date,
+      record.category ?? null,
+      record.payment_method ?? null,
+      record.status ?? 'paid',
+      record.receipt_url ?? null
+    )
     .first();
   return result as unknown as FinancialRecord;
 }
@@ -992,6 +1010,22 @@ export async function updateFinancial(
   if (updates.date !== undefined) {
     fields.push('date = ?');
     values.push(updates.date);
+  }
+  if (updates.category !== undefined) {
+    fields.push('category = ?');
+    values.push(updates.category);
+  }
+  if (updates.payment_method !== undefined) {
+    fields.push('payment_method = ?');
+    values.push(updates.payment_method);
+  }
+  if (updates.status !== undefined) {
+    fields.push('status = ?');
+    values.push(updates.status);
+  }
+  if (updates.receipt_url !== undefined) {
+    fields.push('receipt_url = ?');
+    values.push(updates.receipt_url);
   }
 
   if (fields.length === 0) {
@@ -1050,19 +1084,23 @@ export async function getFinancialSummary(
 
   let totalIncome = 0;
   let totalExpense = 0;
+  let totalPurchase = 0;
 
   records.forEach((record) => {
     if (record.type === 'income') {
       totalIncome = record.total || 0;
     } else if (record.type === 'expense') {
       totalExpense = record.total || 0;
+    } else if (record.type === 'purchase') {
+      totalPurchase = record.total || 0;
     }
   });
 
   return {
     totalIncome,
     totalExpense,
-    balance: totalIncome - totalExpense,
+    totalPurchase,
+    balance: totalIncome - totalExpense - totalPurchase,
     period: {
       startDate: startDate || 'all-time',
       endDate: endDate || 'all-time',

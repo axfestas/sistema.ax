@@ -5,6 +5,71 @@ import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import LogoutButton from '@/components/LogoutButton';
 
+interface NavItem {
+  href: string;
+  label: string;
+  icon: string;
+}
+
+interface NavGroup {
+  title: string;
+  items: NavItem[];
+}
+
+const navGroups: NavGroup[] = [
+  {
+    title: 'Geral',
+    items: [
+      { href: '/admin', label: 'Dashboard', icon: '📊' },
+    ],
+  },
+  {
+    title: 'Operações',
+    items: [
+      { href: '/admin/reservation-requests', label: 'Solicitações', icon: '📋' },
+      { href: '/admin/reservations', label: 'Reservas', icon: '📅' },
+    ],
+  },
+  {
+    title: 'Catálogo',
+    items: [
+      { href: '/admin/inventory', label: 'Estoque', icon: '📦' },
+      { href: '/admin/kits', label: 'Kits', icon: '🎁' },
+      { href: '/admin/sweets', label: 'Doces', icon: '🍰' },
+      { href: '/admin/categories', label: 'Categorias', icon: '🏷️' },
+      { href: '/admin/themes', label: 'Temas', icon: '🎭' },
+    ],
+  },
+  {
+    title: 'Comunicação',
+    items: [
+      { href: '/admin/designs', label: 'Artes Criadas', icon: '🎨' },
+      { href: '/admin/portfolio', label: 'Controle de Publicações', icon: '📢' },
+    ],
+  },
+  {
+    title: 'Comercial',
+    items: [
+      { href: '/admin/quotes', label: 'Orçamentos', icon: '📝' },
+      { href: '/admin/contracts', label: 'Contratos', icon: '📄' },
+    ],
+  },
+  {
+    title: 'Administrativo',
+    items: [
+      { href: '/admin/clients', label: 'Clientes', icon: '👥' },
+      { href: '/admin/finance', label: 'Financeiro', icon: '💰' },
+    ],
+  },
+];
+
+const allNavItems: NavItem[] = navGroups.flatMap((g) => g.items);
+
+const initialOpenGroups: Record<string, boolean> = navGroups.reduce<Record<string, boolean>>((acc, group) => {
+  acc[group.title] = true;
+  return acc;
+}, {});
+
 export default function AdminLayout({
   children,
 }: {
@@ -12,20 +77,11 @@ export default function AdminLayout({
 }) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(initialOpenGroups);
 
-  const navItems = [
-    { href: '/admin', label: 'Dashboard', icon: '📊' },
-    { href: '/admin/reservation-requests', label: 'Solicitações', icon: '📋' },
-    { href: '/admin/reservations', label: 'Reservas', icon: '📅' },
-    { href: '/admin/inventory', label: 'Estoque', icon: '📦' },
-    { href: '/admin/kits', label: 'Kits', icon: '🎁' },
-    { href: '/admin/sweets', label: 'Doces', icon: '🍰' },
-    { href: '/admin/designs', label: 'Design', icon: '🎨' },
-    { href: '/admin/themes', label: 'Temas', icon: '🎭' },
-    { href: '/admin/clients', label: 'Clientes', icon: '👥' },
-    { href: '/admin/finance', label: 'Financeiro', icon: '💰' },
-    { href: '/admin/categories', label: 'Categorias', icon: '🏷️' },
-  ];
+  const toggleGroup = (title: string) => {
+    setOpenGroups((prev) => ({ ...prev, [title]: !prev[title] }));
+  };
 
   const SidebarContent = () => (
     <>
@@ -33,28 +89,56 @@ export default function AdminLayout({
         <h1 className="text-xl font-bold text-gray-900">Ax Festas</h1>
         <p className="text-sm text-gray-600">Painel Admin</p>
       </div>
-      <nav className="p-4 flex-1 overflow-y-auto">
-        <ul className="space-y-2">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href;
-            return (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
-                    isActive
-                      ? 'bg-pink-100 text-pink-700 font-medium'
-                      : 'text-gray-700 hover:bg-gray-100'
-                  }`}
+      <nav className="p-3 flex-1 overflow-y-auto">
+        {navGroups.map((group, groupIndex) => {
+          const isOpen = openGroups[group.title];
+          const hasActiveItem = group.items.some((item) => pathname === item.href);
+          return (
+            <div key={group.title} className={groupIndex > 0 ? 'mt-2 pt-2 border-t border-gray-100' : ''}>
+              <button
+                onClick={() => toggleGroup(group.title)}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-colors ${
+                  hasActiveItem
+                    ? 'text-pink-600 bg-pink-50'
+                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                <span>{group.title}</span>
+                <svg
+                  className={`w-3.5 h-3.5 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  <span className="text-xl">{item.icon}</span>
-                  <span>{item.label}</span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {isOpen && (
+                <ul className="mt-1 space-y-0.5">
+                  {group.items.map((item) => {
+                    const isActive = pathname === item.href;
+                    return (
+                      <li key={item.href}>
+                        <Link
+                          href={item.href}
+                          onClick={() => setSidebarOpen(false)}
+                          className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                            isActive
+                              ? 'bg-pink-100 text-pink-700 font-medium'
+                              : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                          }`}
+                        >
+                          <span className="text-lg w-6 text-center">{item.icon}</span>
+                          <span className="text-sm">{item.label}</span>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+          );
+        })}
       </nav>
       <div className="p-4 border-t">
         <LogoutButton />
@@ -96,7 +180,7 @@ export default function AdminLayout({
               </svg>
             </button>
             <h1 className="text-xl md:text-2xl font-bold text-gray-900">
-              {navItems.find(item => item.href === pathname)?.label || 'Admin'}
+              {allNavItems.find(item => item.href === pathname)?.label || 'Admin'}
             </h1>
           </div>
         </header>

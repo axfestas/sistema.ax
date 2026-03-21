@@ -33,6 +33,14 @@ export function formatReservationId(id: number): string {
   return `RES-A${String(id).padStart(3, '0')}`;
 }
 
+export function formatQuoteId(id: number): string {
+  return `ORC-A${String(id).padStart(3, '0')}`;
+}
+
+export function formatContractId(id: number): string {
+  return `CTR-A${String(id).padStart(3, '0')}`;
+}
+
 // Função genérica
 export function formatCustomId(prefix: string, id: number): string {
   return `${prefix}-A${String(id).padStart(3, '0')}`;
