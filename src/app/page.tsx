@@ -94,7 +94,7 @@ function ProductCard({ item }: { item: CatalogItem }) {
       className="block bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-200 group cursor-pointer"
     >
       {/* Image */}
-      <div className="relative h-48 bg-gradient-to-br from-blue-50 to-indigo-50">
+      <div className="relative h-48 bg-gradient-to-br from-yellow-50 to-amber-50">
         {item.image_url ? (
           <Image
             src={item.image_url}
@@ -116,7 +116,7 @@ function ProductCard({ item }: { item: CatalogItem }) {
             </span>
           )}
           {showPromo && (
-            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-500 text-white shadow-sm">
+            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-brand-yellow text-brand-gray shadow-sm">
               💸 Promoção
             </span>
           )}
@@ -139,12 +139,12 @@ function ProductCard({ item }: { item: CatalogItem }) {
               <span className="text-gray-400 text-xs line-through block">
                 {formatCurrency(item.original_price)}
               </span>
-              <span className="text-blue-600 font-bold text-base">
+              <span className="text-brand-gray font-bold text-base">
                 {formatCurrency(item.price)}
               </span>
             </div>
           ) : item.price > 0 ? (
-            <span className="text-blue-600 font-bold text-base">
+            <span className="text-brand-gray font-bold text-base">
               {formatCurrency(item.price)}
             </span>
           ) : (
@@ -214,7 +214,7 @@ function ReviewModal({ onClose }: { onClose: () => void }) {
             <p className="text-4xl mb-3">🎉</p>
             <h3 className="text-xl font-bold text-gray-900 mb-2">Obrigado pela avaliação!</h3>
             <p className="text-gray-500 text-sm mb-5">Sua avaliação será analisada e publicada em breve.</p>
-            <button onClick={onClose} className="bg-blue-500 hover:bg-blue-600 text-white font-bold px-6 py-2.5 rounded-full transition">Fechar</button>
+            <button onClick={onClose} className="bg-brand-yellow hover:bg-yellow-400 text-brand-gray font-bold px-6 py-2.5 rounded-full transition">Fechar</button>
           </div>
         ) : (
           <>
@@ -229,7 +229,7 @@ function ReviewModal({ onClose }: { onClose: () => void }) {
                   type="text"
                   value={name}
                   onChange={e => setName(e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow"
                   placeholder="Seu nome"
                   required
                 />
@@ -244,7 +244,7 @@ function ReviewModal({ onClose }: { onClose: () => void }) {
                   value={comment}
                   onChange={e => setComment(e.target.value)}
                   rows={3}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 resize-none"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow resize-none"
                   placeholder="Conte como foi sua experiência..."
                   required
                 />
@@ -253,7 +253,7 @@ function ReviewModal({ onClose }: { onClose: () => void }) {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white font-bold py-3 rounded-full transition"
+                className="w-full bg-brand-yellow hover:bg-yellow-400 disabled:bg-gray-300 text-brand-gray font-bold py-3 rounded-full transition"
               >
                 {submitting ? 'Enviando...' : 'Enviar avaliação'}
               </button>
@@ -370,7 +370,7 @@ export default function Home() {
     <div className="min-h-screen bg-white">
 
       {/* ── Hero ─────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-500 to-violet-500 py-24 px-4">
+      <section className="relative overflow-hidden bg-gradient-to-br from-brand-gray via-[#5a5a5a] to-[#383838] py-24 px-4">
         <div className="absolute -top-20 -left-20 w-96 h-96 rounded-full bg-white/10 pointer-events-none" />
         <div className="absolute -bottom-32 -right-20 w-[500px] h-[500px] rounded-full bg-white/10 pointer-events-none" />
         <div className="relative max-w-5xl mx-auto text-center">
@@ -382,7 +382,7 @@ export default function Home() {
           </h1>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a href="/#catalogo"
-              className="inline-block bg-white text-blue-500 font-bold py-4 px-9 rounded-full hover:bg-blue-50 transition shadow-lg shadow-blue-700/20 text-base">
+              className="inline-block bg-brand-yellow text-brand-gray font-bold py-4 px-9 rounded-full hover:bg-yellow-400 transition shadow-lg shadow-yellow-700/20 text-base">
               Ver Catálogo
             </a>
             <a href="#portfolio"
@@ -397,7 +397,7 @@ export default function Home() {
       <section id="catalogo" className="py-20 px-4 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-10">
-            <span className="text-blue-400 font-semibold text-sm uppercase tracking-widest">Produtos</span>
+            <span className="text-brand-yellow font-semibold text-sm uppercase tracking-widest">Produtos</span>
             <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mt-2 mb-3">Catálogo de Produtos</h2>
             <p className="text-gray-500 max-w-xl mx-auto">Kits completos, doces personalizados e temas exclusivos para a sua festa</p>
             {/* Search bar */}
@@ -411,7 +411,7 @@ export default function Home() {
                   value={catalogSearch}
                   onChange={e => { setCatalogSearch(e.target.value); setCatalogVisible(CATALOG_PAGE_SIZE) }}
                   placeholder="Pesquisar produtos..."
-                  className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 bg-gray-50"
+                  className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow bg-gray-50"
                 />
                 {catalogSearch && (
                   <button onClick={() => { setCatalogSearch(''); setCatalogVisible(CATALOG_PAGE_SIZE) }} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">✕</button>
@@ -464,8 +464,8 @@ export default function Home() {
               <button key={tab.key} onClick={() => handleTabChange(tab.key)}
                 className={`px-5 py-2 rounded-full text-sm font-semibold transition-colors ${
                   catalogTab === tab.key
-                    ? 'bg-blue-500 text-white shadow-sm'
-                    : 'bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-500'
+                    ? 'bg-brand-yellow text-brand-gray shadow-sm'
+                    : 'bg-gray-100 text-gray-600 hover:bg-yellow-50 hover:text-brand-yellow'
                 }`}>
                 {tab.label}
               </button>
@@ -474,7 +474,7 @@ export default function Home() {
 
           {loadingCatalog ? (
             <div className="text-center py-12">
-              <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-blue-400" />
+              <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-brand-yellow" />
             </div>
           ) : filteredCatalog.length === 0 ? (
             <div className="text-center py-12 text-gray-400">
@@ -493,9 +493,9 @@ export default function Home() {
                 <div className="text-center mt-10">
                   <button
                     onClick={() => setCatalogVisible(v => v + CATALOG_PAGE_SIZE)}
-                    className="inline-block border-2 border-blue-400 text-blue-500 font-bold py-3 px-8 rounded-full hover:bg-blue-50 transition"
+                    className="inline-block border-2 border-brand-yellow text-brand-yellow font-bold py-3 px-8 rounded-full hover:bg-yellow-50 transition"
                   >
-                    Ver mais produtos ({filteredCatalog.length - catalogVisible} restantes)
+                    Ver mais produtos
                   </button>
                 </div>
               )}
@@ -508,14 +508,14 @@ export default function Home() {
       <section id="portfolio" className="py-20 px-4 bg-gray-50">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <span className="text-blue-400 font-semibold text-sm uppercase tracking-widest">Nosso trabalho</span>
+            <span className="text-brand-yellow font-semibold text-sm uppercase tracking-widest">Nosso trabalho</span>
             <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mt-2 mb-3">Portfólio</h2>
             <p className="text-gray-500 max-w-xl mx-auto">Veja fotos reais de festas que realizamos com amor e dedicação</p>
           </div>
 
           {loadingPortfolio ? (
             <div className="text-center py-12">
-              <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-blue-400" />
+              <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-brand-yellow" />
             </div>
           ) : portfolioImages.length === 0 ? (
             <div className="text-center py-12 text-gray-400">
@@ -540,7 +540,7 @@ export default function Home() {
               {hasMorePortfolio && (
                 <div className="text-center mt-10">
                   <button onClick={() => setPortfolioLimit(p => p + 8)}
-                    className="inline-block border-2 border-blue-400 text-blue-500 font-bold py-3 px-8 rounded-full hover:bg-blue-50 transition">
+                    className="inline-block border-2 border-brand-yellow text-brand-yellow font-bold py-3 px-8 rounded-full hover:bg-yellow-50 transition">
                     Ver mais trabalhos
                   </button>
                 </div>
@@ -554,7 +554,7 @@ export default function Home() {
       <section className="py-20 px-4 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <span className="text-blue-400 font-semibold text-sm uppercase tracking-widest">❤️ Clientes satisfeitos</span>
+            <span className="text-brand-yellow font-semibold text-sm uppercase tracking-widest">❤️ Clientes satisfeitos</span>
             <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mt-2 mb-3">O que dizem sobre nós</h2>
           </div>
 
@@ -580,7 +580,7 @@ export default function Home() {
           <div className="text-center mt-8">
             <button
               onClick={() => setShowReviewModal(true)}
-              className="inline-block bg-blue-500 hover:bg-blue-600 text-white font-bold py-3.5 px-8 rounded-full transition shadow-lg shadow-blue-500/25"
+              className="inline-block bg-brand-yellow hover:bg-yellow-400 text-brand-gray font-bold py-3.5 px-8 rounded-full transition shadow-lg shadow-yellow-500/25"
             >
               💬 Deixar avaliação
             </button>
@@ -589,7 +589,7 @@ export default function Home() {
       </section>
 
       {/* ── Final CTA ────────────────────────────────────────────────── */}
-      <section id="contato" className="py-20 px-4 bg-gradient-to-br from-blue-700 via-blue-600 to-violet-600">
+      <section id="contato" className="py-20 px-4 bg-gradient-to-br from-brand-gray via-[#5a5a5a] to-[#383838]">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-5">
             Pronto para montar sua festa?
@@ -598,7 +598,7 @@ export default function Home() {
             Escolha entre nossos kits exclusivos, doces personalizados e temas encantadores
           </p>
           <a href="/#catalogo"
-            className="inline-block bg-white text-blue-500 font-bold py-4 px-10 rounded-full hover:bg-blue-50 transition shadow-xl shadow-blue-700/25 text-base">
+            className="inline-block bg-brand-yellow text-brand-gray font-bold py-4 px-10 rounded-full hover:bg-yellow-400 transition shadow-xl shadow-yellow-700/25 text-base">
             Ver catálogo
           </a>
         </div>

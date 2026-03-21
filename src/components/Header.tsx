@@ -64,10 +64,10 @@ export default function Header() {
 
           {/* Desktop navigation */}
           <nav className="hidden md:flex items-center gap-1">
-            <Link href="/" className="px-3 py-1.5 text-sm font-medium text-brand-gray hover:text-blue-500 transition-colors">Início</Link>
-            <Link href="/#catalogo" className="px-3 py-1.5 text-sm font-medium text-brand-gray hover:text-blue-500 transition-colors">Catálogo</Link>
-            <Link href="/#portfolio" className="px-3 py-1.5 text-sm font-medium text-brand-gray hover:text-blue-500 transition-colors">Portfólio</Link>
-            <Link href="/#contato" className="px-3 py-1.5 text-sm font-medium text-brand-gray hover:text-blue-500 transition-colors">Contato</Link>
+            <Link href="/" className="px-3 py-1.5 text-sm font-medium text-brand-gray hover:text-brand-yellow transition-colors">Início</Link>
+            <Link href="/#catalogo" className="px-3 py-1.5 text-sm font-medium text-brand-gray hover:text-brand-yellow transition-colors">Catálogo</Link>
+            <Link href="/#portfolio" className="px-3 py-1.5 text-sm font-medium text-brand-gray hover:text-brand-yellow transition-colors">Portfólio</Link>
+            <Link href="/#contato" className="px-3 py-1.5 text-sm font-medium text-brand-gray hover:text-brand-yellow transition-colors">Contato</Link>
           </nav>
 
           {/* Right side: Cart + Hamburger Menu */}
