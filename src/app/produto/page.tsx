@@ -55,13 +55,15 @@ const TYPE_LABELS: Record<string, string> = {
   sweet: 'Doce',
   theme: 'Tema',
   item: 'Item',
+  design: 'Design',
 }
 
 const TYPE_EMOJI: Record<string, string> = {
-  kit: '🎉',
-  sweet: '🍭',
-  theme: '✨',
-  item: '🎈',
+  kit: '🎁',
+  sweet: '🍰',
+  theme: '🎭',
+  item: '📦',
+  design: '🎨',
 }
 
 function buildApiUrl(type: string, id: string): string {
@@ -70,6 +72,7 @@ function buildApiUrl(type: string, id: string): string {
     case 'sweet': return `/api/sweets?id=${id}`
     case 'theme': return `/api/themes?id=${id}`
     case 'item': return `/api/items?id=${id}`
+    case 'design': return `/api/designs?id=${id}`
     default: return ''
   }
 }

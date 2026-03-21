@@ -26,7 +26,7 @@ interface CatalogItem {
   is_featured?: number
   is_promotion?: number
   created_at?: string
-  type: 'kit' | 'sweet' | 'theme' | 'item'
+  type: 'kit' | 'sweet' | 'theme' | 'item' | 'design'
 }
 
 interface Testimonial {
@@ -104,7 +104,7 @@ function ProductCard({ item }: { item: CatalogItem }) {
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-5xl">
-            {item.type === 'kit' ? '🎉' : item.type === 'sweet' ? '🍭' : item.type === 'theme' ? '✨' : '🎈'}
+            {item.type === 'kit' ? '🎁' : item.type === 'sweet' ? '🍰' : item.type === 'theme' ? '🎭' : item.type === 'design' ? '🎨' : '📦'}
           </div>
         )}
 
@@ -274,7 +274,8 @@ export default function Home() {
   const [loadingPortfolio, setLoadingPortfolio] = useState(true)
   const [loadingCatalog, setLoadingCatalog] = useState(true)
   const [lightbox, setLightbox] = useState<PortfolioImage | null>(null)
-  const [catalogTab, setCatalogTab] = useState<'all' | 'kit' | 'sweet' | 'theme'>('all')
+  const [catalogTab, setCatalogTab] = useState<'all' | 'kit' | 'sweet' | 'theme' | 'item' | 'design'>('all')
+  const [catalogSearch, setCatalogSearch] = useState('')
   const [portfolioLimit, setPortfolioLimit] = useState(8)
   const [catalogVisible, setCatalogVisible] = useState(CATALOG_PAGE_SIZE)
   const [showReviewModal, setShowReviewModal] = useState(false)
@@ -304,6 +305,8 @@ export default function Home() {
       { type: 'kit', url: '/api/kits?activeOnly=true' },
       { type: 'sweet', url: '/api/sweets?catalog=true' },
       { type: 'theme', url: '/api/themes?catalog=true' },
+      { type: 'item', url: '/api/items?catalogOnly=true' },
+      { type: 'design', url: '/api/designs?catalog=true' },
     ]
 
     Promise.allSettled(sources.map(s => fetch(s.url).then(r => r.ok ? r.json() : [])))
@@ -340,9 +343,9 @@ export default function Home() {
       .catch(() => setTestimonials([]))
   }, [])
 
-  const filteredCatalog = catalogTab === 'all'
-    ? catalogItems
-    : catalogItems.filter(i => i.type === catalogTab)
+  const filteredCatalog = catalogItems
+    .filter(i => catalogTab === 'all' || i.type === catalogTab)
+    .filter(i => !catalogSearch || i.name.toLowerCase().includes(catalogSearch.toLowerCase()))
 
   const visibleCatalog = filteredCatalog.slice(0, catalogVisible)
   const hasMoreCatalog = filteredCatalog.length > catalogVisible
@@ -358,7 +361,7 @@ export default function Home() {
   const hasMorePortfolio = portfolioImages.length > portfolioLimit
 
   // Reset visible count when tab changes
-  const handleTabChange = (tab: typeof catalogTab) => {
+  const handleTabChange = (tab: 'all' | 'kit' | 'sweet' | 'theme' | 'item' | 'design') => {
     setCatalogTab(tab)
     setCatalogVisible(CATALOG_PAGE_SIZE)
   }
@@ -397,6 +400,24 @@ export default function Home() {
             <span className="text-blue-400 font-semibold text-sm uppercase tracking-widest">Produtos</span>
             <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mt-2 mb-3">Catálogo de Produtos</h2>
             <p className="text-gray-500 max-w-xl mx-auto">Kits completos, doces personalizados e temas exclusivos para a sua festa</p>
+            {/* Search bar */}
+            <div className="mt-5 max-w-md mx-auto">
+              <div className="relative">
+                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input
+                  type="text"
+                  value={catalogSearch}
+                  onChange={e => { setCatalogSearch(e.target.value); setCatalogVisible(CATALOG_PAGE_SIZE) }}
+                  placeholder="Pesquisar produtos..."
+                  className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 bg-gray-50"
+                />
+                {catalogSearch && (
+                  <button onClick={() => { setCatalogSearch(''); setCatalogVisible(CATALOG_PAGE_SIZE) }} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">✕</button>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* ── Featured sub-section ──────────────────────────────── */}
@@ -434,9 +455,11 @@ export default function Home() {
           <div className="flex gap-2 justify-center flex-wrap mb-10">
             {([
               { key: 'all', label: 'Todos' },
-              { key: 'kit', label: '🎉 Kits' },
-              { key: 'sweet', label: '🍭 Doces' },
-              { key: 'theme', label: '✨ Temas' },
+              { key: 'kit', label: '🎁 Kits' },
+              { key: 'sweet', label: '🍰 Doces' },
+              { key: 'theme', label: '🎭 Temas' },
+              { key: 'item', label: '📦 Itens' },
+              { key: 'design', label: '🎨 Designs' },
             ] as const).map(tab => (
               <button key={tab.key} onClick={() => handleTabChange(tab.key)}
                 className={`px-5 py-2 rounded-full text-sm font-semibold transition-colors ${
