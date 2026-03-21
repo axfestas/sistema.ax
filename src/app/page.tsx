@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -35,6 +36,10 @@ interface Testimonial {
   stars: number
 }
 
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const CATALOG_PAGE_SIZE = 8
+
 // ─── Star rating ──────────────────────────────────────────────────────────────
 
 function Stars({ count, interactive = false, onChange = () => {} }: { count: number; interactive?: boolean; onChange?: (n: number) => void }) {
@@ -50,7 +55,7 @@ function Stars({ count, interactive = false, onChange = () => {} }: { count: num
           viewBox="0 0 20 20"
           onMouseEnter={() => interactive && setHovered(i + 1)}
           onMouseLeave={() => interactive && setHovered(0)}
-          onClick={() => interactive && onChange && onChange(i + 1)}
+          onClick={() => interactive && onChange(i + 1)}
         >
           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
         </svg>
@@ -63,10 +68,13 @@ function Stars({ count, interactive = false, onChange = () => {} }: { count: num
 
 function isNewItem(createdAt?: string): boolean {
   if (!createdAt) return false
-  const created = new Date(createdAt)
+  const created = new Date(
+    typeof createdAt === 'string' && /^\d+$/.test(createdAt)
+      ? Number(createdAt) * 1000
+      : createdAt
+  )
   if (isNaN(created.getTime())) return false
-  const diffDays = (Date.now() - created.getTime()) / (1000 * 60 * 60 * 24)
-  return diffDays <= 7
+  return (Date.now() - created.getTime()) / (1000 * 60 * 60 * 24) <= 7
 }
 
 function formatCurrency(value: number) {
@@ -80,53 +88,71 @@ function ProductCard({ item }: { item: CatalogItem }) {
   const showFeatured = item.is_featured === 1
   const showPromo = item.is_promotion === 1 && item.original_price != null && item.original_price > item.price
 
-  const badge = showFeatured ? '⭐ Destaque' : showPromo ? '🏷️ Promoção' : showNew ? '🆕 Novo' : null
-  const badgeClass = showFeatured
-    ? 'bg-yellow-400 text-gray-900'
-    : showPromo
-    ? 'bg-rose-500 text-white'
-    : 'bg-emerald-500 text-white'
-
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow group">
+    <Link
+      href={`/produto?type=${item.type}&id=${item.id}`}
+      className="block bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-200 group cursor-pointer"
+    >
+      {/* Image */}
       <div className="relative h-48 bg-gradient-to-br from-pink-50 to-rose-50">
         {item.image_url ? (
-          <Image src={item.image_url} alt={item.name} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
+          <Image
+            src={item.image_url}
+            alt={item.name}
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
+          />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-5xl">
             {item.type === 'kit' ? '🎉' : item.type === 'sweet' ? '🍭' : item.type === 'theme' ? '✨' : '🎈'}
           </div>
         )}
-        {badge && (
-          <span className={`absolute top-2 left-2 text-xs font-bold px-2 py-0.5 rounded-full ${badgeClass}`}>
-            {badge}
-          </span>
-        )}
-      </div>
-      <div className="p-4">
-        <h3 className="font-semibold text-gray-800 text-sm leading-snug line-clamp-2 mb-1">{item.name}</h3>
-        {item.description && (
-          <p className="text-xs text-gray-500 line-clamp-2 mb-2">{item.description}</p>
-        )}
-        <div className="flex items-center justify-between mt-3">
-          <div>
-            {showPromo && item.original_price != null ? (
-              <div>
-                <span className="text-gray-400 text-xs line-through block">{formatCurrency(item.original_price)}</span>
-                <span className="text-rose-600 font-bold text-base">{formatCurrency(item.price)}</span>
-              </div>
-            ) : item.price > 0 ? (
-              <span className="text-rose-600 font-bold text-base">{formatCurrency(item.price)}</span>
-            ) : (
-              <span className="text-gray-400 text-sm">Sob consulta</span>
-            )}
-          </div>
-          <a href="/catalog" className="text-xs font-semibold bg-rose-500 hover:bg-rose-600 text-white px-3 py-1.5 rounded-lg transition-colors">
-            Ver detalhes
-          </a>
+
+        {/* Tags */}
+        <div className="absolute top-2 left-2 flex flex-col gap-1">
+          {showFeatured && (
+            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-yellow-400 text-gray-900 shadow-sm">
+              🔥 Em destaque
+            </span>
+          )}
+          {showPromo && (
+            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-rose-500 text-white shadow-sm">
+              💸 Promoção
+            </span>
+          )}
+          {showNew && !showFeatured && !showPromo && (
+            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-500 text-white shadow-sm">
+              🆕 Novo
+            </span>
+          )}
         </div>
       </div>
-    </div>
+
+      {/* Info */}
+      <div className="p-4">
+        <h3 className="font-semibold text-gray-800 text-sm leading-snug line-clamp-2 mb-2">
+          {item.name}
+        </h3>
+        <div>
+          {showPromo && item.original_price != null ? (
+            <div>
+              <span className="text-gray-400 text-xs line-through block">
+                {formatCurrency(item.original_price)}
+              </span>
+              <span className="text-rose-600 font-bold text-base">
+                {formatCurrency(item.price)}
+              </span>
+            </div>
+          ) : item.price > 0 ? (
+            <span className="text-rose-600 font-bold text-base">
+              {formatCurrency(item.price)}
+            </span>
+          ) : (
+            <span className="text-gray-400 text-sm">Sob consulta</span>
+          )}
+        </div>
+      </div>
+    </Link>
   )
 }
 
@@ -145,11 +171,7 @@ interface ApiItem {
 
 // ─── Review form modal ────────────────────────────────────────────────────────
 
-interface ReviewModalProps {
-  onClose: () => void
-}
-
-function ReviewModal({ onClose }: ReviewModalProps) {
+function ReviewModal({ onClose }: { onClose: () => void }) {
   const [name, setName] = useState('')
   const [stars, setStars] = useState(0)
   const [comment, setComment] = useState('')
@@ -254,12 +276,12 @@ export default function Home() {
   const [lightbox, setLightbox] = useState<PortfolioImage | null>(null)
   const [catalogTab, setCatalogTab] = useState<'all' | 'kit' | 'sweet' | 'theme'>('all')
   const [portfolioLimit, setPortfolioLimit] = useState(8)
+  const [catalogVisible, setCatalogVisible] = useState(CATALOG_PAGE_SIZE)
   const [showReviewModal, setShowReviewModal] = useState(false)
-  const carouselRef = useRef<HTMLDivElement>(null)
+  const featuredCarouselRef = useRef<HTMLDivElement>(null)
 
   const closeLightbox = useCallback(() => setLightbox(null), [])
 
-  // Close lightbox on Escape
   useEffect(() => {
     if (!lightbox) return
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeLightbox() }
@@ -276,7 +298,7 @@ export default function Home() {
       .finally(() => setLoadingPortfolio(false))
   }, [])
 
-  // Load catalog (kits + sweets + themes)
+  // Load ALL catalog items (no per-type limit)
   useEffect(() => {
     const sources: Array<{ type: CatalogItem['type']; url: string }> = [
       { type: 'kit', url: '/api/kits?activeOnly=true' },
@@ -290,7 +312,7 @@ export default function Home() {
         results.forEach((result, idx) => {
           if (result.status !== 'fulfilled') return
           const items = Array.isArray(result.value) ? result.value : []
-          items.slice(0, 12).forEach((item: ApiItem) => {
+          items.forEach((item: ApiItem) => {
             combined.push({
               id: item.id,
               name: item.name,
@@ -322,15 +344,24 @@ export default function Home() {
     ? catalogItems
     : catalogItems.filter(i => i.type === catalogTab)
 
-  // Featured items controlled by is_featured flag
+  const visibleCatalog = filteredCatalog.slice(0, catalogVisible)
+  const hasMoreCatalog = filteredCatalog.length > catalogVisible
+
+  // Featured items (manual flag)
   const featuredItems = catalogItems.filter(i => i.is_featured === 1)
 
-  const scrollCarousel = (dir: 'left' | 'right') => {
-    carouselRef.current?.scrollBy({ left: dir === 'right' ? 300 : -300, behavior: 'smooth' })
+  const scrollFeatured = (dir: 'left' | 'right') => {
+    featuredCarouselRef.current?.scrollBy({ left: dir === 'right' ? 300 : -300, behavior: 'smooth' })
   }
 
   const displayedPortfolio = portfolioImages.slice(0, portfolioLimit)
   const hasMorePortfolio = portfolioImages.length > portfolioLimit
+
+  // Reset visible count when tab changes
+  const handleTabChange = (tab: typeof catalogTab) => {
+    setCatalogTab(tab)
+    setCatalogVisible(CATALOG_PAGE_SIZE)
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -347,7 +378,7 @@ export default function Home() {
             Aqui seu sonho<br className="hidden md:block" /> vira realidade
           </h1>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="/catalog"
+            <a href="/#catalogo"
               className="inline-block bg-white text-rose-500 font-bold py-4 px-9 rounded-full hover:bg-rose-50 transition shadow-lg shadow-rose-700/20 text-base">
               Ver Catálogo
             </a>
@@ -368,6 +399,38 @@ export default function Home() {
             <p className="text-gray-500 max-w-xl mx-auto">Kits completos, doces personalizados e temas exclusivos para a sua festa</p>
           </div>
 
+          {/* ── Featured sub-section ──────────────────────────────── */}
+          {featuredItems.length > 0 && (
+            <div className="mb-12">
+              <div className="flex items-center gap-2 mb-5">
+                <h3 className="text-xl font-extrabold text-gray-900">🔥 Em destaque</h3>
+              </div>
+              <div className="relative">
+                <button onClick={() => scrollFeatured('left')}
+                  className="hidden md:flex absolute -left-4 top-1/2 -translate-y-1/2 z-10 w-9 h-9 bg-white rounded-full shadow-md items-center justify-center hover:bg-gray-50 transition text-lg leading-none">
+                  ‹
+                </button>
+                <div
+                  ref={featuredCarouselRef}
+                  className="flex gap-4 overflow-x-auto pb-2 scroll-smooth snap-x snap-mandatory"
+                  style={{ scrollbarWidth: 'none' }}
+                >
+                  {featuredItems.map(item => (
+                    <div key={`f-${item.type}-${item.id}`} className="snap-start flex-shrink-0 w-48 sm:w-56">
+                      <ProductCard item={item} />
+                    </div>
+                  ))}
+                </div>
+                <button onClick={() => scrollFeatured('right')}
+                  className="hidden md:flex absolute -right-4 top-1/2 -translate-y-1/2 z-10 w-9 h-9 bg-white rounded-full shadow-md items-center justify-center hover:bg-gray-50 transition text-lg leading-none">
+                  ›
+                </button>
+              </div>
+              <hr className="mt-10 border-gray-100" />
+            </div>
+          )}
+
+          {/* Tab filters */}
           <div className="flex gap-2 justify-center flex-wrap mb-10">
             {([
               { key: 'all', label: 'Todos' },
@@ -375,7 +438,7 @@ export default function Home() {
               { key: 'sweet', label: '🍭 Doces' },
               { key: 'theme', label: '✨ Temas' },
             ] as const).map(tab => (
-              <button key={tab.key} onClick={() => setCatalogTab(tab.key)}
+              <button key={tab.key} onClick={() => handleTabChange(tab.key)}
                 className={`px-5 py-2 rounded-full text-sm font-semibold transition-colors ${
                   catalogTab === tab.key
                     ? 'bg-rose-500 text-white shadow-sm'
@@ -392,53 +455,31 @@ export default function Home() {
             </div>
           ) : filteredCatalog.length === 0 ? (
             <div className="text-center py-12 text-gray-400">
-              <p className="text-5xl mb-4">🎈</p>
+              <p className="text-5xl mb-4">��</p>
               <p>Nenhum produto encontrado nesta categoria</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {filteredCatalog.map(item => (
-                <ProductCard key={`${item.type}-${item.id}`} item={item} />
-              ))}
-            </div>
-          )}
-
-          <div className="text-center mt-10">
-            <a href="/catalog"
-              className="inline-block bg-rose-500 hover:bg-rose-600 text-white font-bold py-3.5 px-10 rounded-full transition shadow-lg shadow-rose-500/25">
-              Ver catálogo completo
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Featured carousel ─────────────────────────────────────────── */}
-      {featuredItems.length > 0 && (
-        <section className="py-20 px-4 bg-gradient-to-br from-rose-50 to-pink-50">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-10">
-              <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-3">🔥 Em destaque</h2>
-            </div>
-            <div className="relative">
-              <button onClick={() => scrollCarousel('left')}
-                className="hidden md:flex absolute -left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white rounded-full shadow-md items-center justify-center hover:bg-gray-50 transition">
-                ‹
-              </button>
-              <div ref={carouselRef} className="flex gap-4 overflow-x-auto pb-2 scroll-smooth snap-x snap-mandatory" style={{ scrollbarWidth: 'none' }}>
-                {featuredItems.map(item => (
-                  <div key={`f-${item.type}-${item.id}`} className="snap-start flex-shrink-0 w-56 sm:w-64">
-                    <ProductCard item={item} />
-                  </div>
+            <>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                {visibleCatalog.map(item => (
+                  <ProductCard key={`${item.type}-${item.id}`} item={item} />
                 ))}
               </div>
-              <button onClick={() => scrollCarousel('right')}
-                className="hidden md:flex absolute -right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white rounded-full shadow-md items-center justify-center hover:bg-gray-50 transition">
-                ›
-              </button>
-            </div>
-          </div>
-        </section>
-      )}
+
+              {hasMoreCatalog && (
+                <div className="text-center mt-10">
+                  <button
+                    onClick={() => setCatalogVisible(v => v + CATALOG_PAGE_SIZE)}
+                    className="inline-block border-2 border-rose-400 text-rose-500 font-bold py-3 px-8 rounded-full hover:bg-rose-50 transition"
+                  >
+                    Ver mais produtos ({filteredCatalog.length - catalogVisible} restantes)
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </section>
 
       {/* ── Portfolio ────────────────────────────────────────────────── */}
       <section id="portfolio" className="py-20 px-4 bg-gray-50">
@@ -533,9 +574,9 @@ export default function Home() {
           <p className="text-white/85 text-lg mb-8 max-w-xl mx-auto">
             Escolha entre nossos kits exclusivos, doces personalizados e temas encantadores
           </p>
-          <a href="/catalog"
+          <a href="/#catalogo"
             className="inline-block bg-white text-rose-500 font-bold py-4 px-10 rounded-full hover:bg-rose-50 transition shadow-xl shadow-rose-700/25 text-base">
-            Ver catálogo completo
+            Ver catálogo
           </a>
         </div>
       </section>
