@@ -45,6 +45,7 @@ const navGroups: NavGroup[] = [
     items: [
       { href: '/admin/designs', label: 'Artes Criadas', icon: '🎨' },
       { href: '/admin/portfolio', label: 'Controle de Publicações', icon: '📢' },
+      { href: '/admin/testimonials', label: 'Avaliações', icon: '⭐' },
     ],
   },
   {

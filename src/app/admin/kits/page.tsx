@@ -13,6 +13,9 @@ interface Kit {
   price: number
   image_url?: string
   is_active: number
+  is_featured?: number
+  is_promotion?: number
+  original_price?: number
 }
 
 interface Item {
@@ -48,6 +51,9 @@ export default function KitsPage() {
     price: '',
     image_url: '',
     is_active: 1,
+    is_featured: 0,
+    is_promotion: 0,
+    original_price: '',
   })
   const [formKitItems, setFormKitItems] = useState<Array<{ item_id: number; item_name: string; quantity: number }>>([])
   const [newFormItem, setNewFormItem] = useState({
@@ -164,6 +170,9 @@ export default function KitsPage() {
       price: parseFloat(formData.price),
       image_url: formData.image_url || undefined,
       is_active: formData.is_active,
+      is_featured: formData.is_featured,
+      is_promotion: formData.is_promotion,
+      original_price: formData.original_price ? parseFloat(formData.original_price) : undefined,
     }
 
     try {
@@ -223,7 +232,7 @@ export default function KitsPage() {
         await loadKits()
         setShowForm(false)
         setEditingKit(null)
-        setFormData({ name: '', description: '', price: '', image_url: '', is_active: 1 })
+        setFormData({ name: '', description: '', price: '', image_url: '', is_active: 1, is_featured: 0, is_promotion: 0, original_price: '' })
         setFormKitItems([])
         showSuccess(editingKit ? 'Kit atualizado com sucesso!' : 'Kit criado com sucesso!')
       } else {
@@ -244,6 +253,9 @@ export default function KitsPage() {
       price: kit.price.toString(),
       image_url: kit.image_url || '',
       is_active: kit.is_active,
+      is_featured: kit.is_featured ?? 0,
+      is_promotion: kit.is_promotion ?? 0,
+      original_price: kit.original_price != null ? kit.original_price.toString() : '',
     })
     
     // Load kit items for editing
@@ -313,7 +325,7 @@ export default function KitsPage() {
           onClick={() => {
             setShowForm(true)
             setEditingKit(null)
-            setFormData({ name: '', description: '', price: '', image_url: '', is_active: 1 })
+            setFormData({ name: '', description: '', price: '', image_url: '', is_active: 1, is_featured: 0, is_promotion: 0, original_price: '' })
             setFormKitItems([])
           }}
           className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded"
@@ -455,6 +467,43 @@ export default function KitsPage() {
                 className="mr-2"
               />
               <label htmlFor="is_active" className="text-sm font-medium">Ativo</label>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="flex items-center p-3 bg-yellow-50 rounded">
+                <input
+                  type="checkbox"
+                  id="kit_is_featured"
+                  checked={formData.is_featured === 1}
+                  onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked ? 1 : 0 })}
+                  className="mr-3 w-4 h-4"
+                />
+                <label htmlFor="kit_is_featured" className="text-sm font-semibold text-yellow-900 cursor-pointer">
+                  ⭐ Em destaque
+                </label>
+              </div>
+              <div className="flex items-center p-3 bg-rose-50 rounded">
+                <input
+                  type="checkbox"
+                  id="kit_is_promotion"
+                  checked={formData.is_promotion === 1}
+                  onChange={(e) => setFormData({ ...formData, is_promotion: e.target.checked ? 1 : 0 })}
+                  className="mr-3 w-4 h-4"
+                />
+                <label htmlFor="kit_is_promotion" className="text-sm font-semibold text-rose-900 cursor-pointer">
+                  🏷️ Em promoção
+                </label>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Preço original (antes da promoção)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={formData.original_price}
+                  onChange={(e) => setFormData({ ...formData, original_price: e.target.value })}
+                  className="w-full px-3 py-2 border rounded"
+                  placeholder="Ex: 150.00"
+                />
+              </div>
             </div>
             <div className="flex gap-2">
               <button

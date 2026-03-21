@@ -11,7 +11,11 @@ CREATE TABLE items (
   quantity INTEGER NOT NULL,
   image_url TEXT,
   category TEXT,
-  show_in_catalog INTEGER DEFAULT 1
+  show_in_catalog INTEGER DEFAULT 1,
+  is_featured INTEGER DEFAULT 0,
+  is_promotion INTEGER DEFAULT 0,
+  original_price REAL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE reservations (
@@ -114,6 +118,9 @@ CREATE TABLE kits (
   price REAL NOT NULL,
   image_url TEXT,
   is_active INTEGER DEFAULT 1,
+  is_featured INTEGER DEFAULT 0,
+  is_promotion INTEGER DEFAULT 0,
+  original_price REAL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -179,6 +186,9 @@ CREATE TABLE sweets (
   category TEXT,
   is_active INTEGER DEFAULT 1,
   show_in_catalog INTEGER DEFAULT 1,
+  is_featured INTEGER DEFAULT 0,
+  is_promotion INTEGER DEFAULT 0,
+  original_price REAL,
   created_at INTEGER DEFAULT (strftime('%s', 'now'))
 );
 
@@ -194,6 +204,9 @@ CREATE TABLE designs (
   quantidade_cartela INTEGER DEFAULT 0,
   is_active INTEGER DEFAULT 1,
   show_in_catalog INTEGER DEFAULT 1,
+  is_featured INTEGER DEFAULT 0,
+  is_promotion INTEGER DEFAULT 0,
+  original_price REAL,
   created_at INTEGER DEFAULT (strftime('%s', 'now'))
 );
 
@@ -206,6 +219,9 @@ CREATE TABLE themes (
   category TEXT,
   is_active INTEGER DEFAULT 1,
   show_in_catalog INTEGER DEFAULT 1,
+  is_featured INTEGER DEFAULT 0,
+  is_promotion INTEGER DEFAULT 0,
+  original_price REAL,
   created_at INTEGER DEFAULT (strftime('%s', 'now'))
 );
 
@@ -236,6 +252,8 @@ CREATE TABLE reservation_requests (
 -- Índices para melhorar performance
 CREATE INDEX idx_items_show_in_catalog ON items(show_in_catalog);
 CREATE INDEX idx_items_custom_id ON items(custom_id);
+CREATE INDEX idx_items_featured ON items(is_featured);
+CREATE INDEX idx_items_promotion ON items(is_promotion);
 CREATE INDEX idx_kits_custom_id ON kits(custom_id);
 CREATE INDEX idx_reservations_custom_id ON reservations(custom_id);
 CREATE INDEX idx_maintenance_custom_id ON maintenance(custom_id);
@@ -256,6 +274,18 @@ CREATE INDEX idx_categories_section ON categories(section);
 CREATE INDEX idx_reservation_requests_status ON reservation_requests(status);
 CREATE INDEX idx_reservation_requests_created_at ON reservation_requests(created_at);
 CREATE INDEX idx_reservation_requests_custom_id ON reservation_requests(custom_id);
+
+-- Tabela de Avaliações
+CREATE TABLE testimonials (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  stars INTEGER NOT NULL CHECK (stars >= 1 AND stars <= 5),
+  comment TEXT NOT NULL,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_testimonials_status ON testimonials(status);
 
 -- Sample data: Add Kit Festa Completo to catalog
 INSERT OR IGNORE INTO items (id, name, description, price, quantity) 
