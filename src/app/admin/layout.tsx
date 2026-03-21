@@ -48,6 +48,13 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
+    title: 'Comercial',
+    items: [
+      { href: '/admin/quotes', label: 'Orçamentos', icon: '📝' },
+      { href: '/admin/contracts', label: 'Contratos', icon: '📄' },
+    ],
+  },
+  {
     title: 'Administrativo',
     items: [
       { href: '/admin/clients', label: 'Clientes', icon: '👥' },
