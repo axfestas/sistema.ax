@@ -15,6 +15,9 @@ interface Item {
   image_url?: string;
   category?: string;
   show_in_catalog?: number; // 1 = show, 0 = hide
+  is_featured?: number;
+  is_promotion?: number;
+  original_price?: number;
 }
 
 export default function InventoryPage() {
@@ -33,6 +36,9 @@ export default function InventoryPage() {
     image_url: '',
     category: '',
     show_in_catalog: 1,
+    is_featured: 0,
+    is_promotion: 0,
+    original_price: '',
   });
   const { showSuccess, showError } = useToast();
 
@@ -94,6 +100,9 @@ export default function InventoryPage() {
       image_url: formData.image_url || undefined,
       category: formData.category || undefined,
       show_in_catalog: formData.show_in_catalog,
+      is_featured: formData.is_featured,
+      is_promotion: formData.is_promotion,
+      original_price: formData.original_price ? parseFloat(formData.original_price) : undefined,
     };
 
     try {
@@ -116,7 +125,7 @@ export default function InventoryPage() {
         await loadItems();
         setShowForm(false);
         setEditingItem(null);
-        setFormData({ name: '', description: '', price: '', quantity: '', image_url: '', category: '', show_in_catalog: 1 });
+        setFormData({ name: '', description: '', price: '', quantity: '', image_url: '', category: '', show_in_catalog: 1, is_featured: 0, is_promotion: 0, original_price: '' });
         showSuccess(editingItem ? 'Item atualizado com sucesso!' : 'Item salvo com sucesso!');
       } else {
         const error: any = await response.json();
@@ -138,6 +147,9 @@ export default function InventoryPage() {
       image_url: item.image_url || '',
       category: item.category || '',
       show_in_catalog: item.show_in_catalog !== undefined ? item.show_in_catalog : 1,
+      is_featured: item.is_featured ?? 0,
+      is_promotion: item.is_promotion ?? 0,
+      original_price: item.original_price != null ? item.original_price.toString() : '',
     });
     setShowForm(true);
   };
@@ -178,7 +190,7 @@ export default function InventoryPage() {
           onClick={() => {
             setShowForm(true);
             setEditingItem(null);
-            setFormData({ name: '', description: '', price: '', quantity: '', image_url: '', category: '', show_in_catalog: 1 });
+            setFormData({ name: '', description: '', price: '', quantity: '', image_url: '', category: '', show_in_catalog: 1, is_featured: 0, is_promotion: 0, original_price: '' });
           }}
           className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded"
         >
@@ -294,6 +306,43 @@ export default function InventoryPage() {
                 </p>
               </div>
             </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="flex items-center p-3 bg-yellow-50 rounded">
+                <input
+                  type="checkbox"
+                  id="is_featured"
+                  checked={formData.is_featured === 1}
+                  onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked ? 1 : 0 })}
+                  className="mr-3 w-4 h-4"
+                />
+                <label htmlFor="is_featured" className="text-sm font-semibold text-yellow-900 cursor-pointer">
+                  ⭐ Em destaque
+                </label>
+              </div>
+              <div className="flex items-center p-3 bg-rose-50 rounded">
+                <input
+                  type="checkbox"
+                  id="is_promotion"
+                  checked={formData.is_promotion === 1}
+                  onChange={(e) => setFormData({ ...formData, is_promotion: e.target.checked ? 1 : 0 })}
+                  className="mr-3 w-4 h-4"
+                />
+                <label htmlFor="is_promotion" className="text-sm font-semibold text-rose-900 cursor-pointer">
+                  🏷️ Em promoção
+                </label>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Preço original (antes da promoção)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={formData.original_price}
+                  onChange={(e) => setFormData({ ...formData, original_price: e.target.value })}
+                  className="w-full px-3 py-2 border rounded"
+                  placeholder="Ex: 150.00"
+                />
+              </div>
+            </div>
             <div className="flex gap-2">
               <button
                 type="submit"
@@ -306,7 +355,7 @@ export default function InventoryPage() {
                 onClick={() => {
                   setShowForm(false);
                   setEditingItem(null);
-                  setFormData({ name: '', description: '', price: '', quantity: '', image_url: '', category: '', show_in_catalog: 1 });
+                  setFormData({ name: '', description: '', price: '', quantity: '', image_url: '', category: '', show_in_catalog: 1, is_featured: 0, is_promotion: 0, original_price: '' });
                 }}
                 className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
               >

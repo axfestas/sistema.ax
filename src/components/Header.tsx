@@ -65,7 +65,7 @@ export default function Header() {
           {/* Desktop navigation */}
           <nav className="hidden md:flex items-center gap-1">
             <Link href="/" className="px-3 py-1.5 text-sm font-medium text-brand-gray hover:text-pink-500 transition-colors">Início</Link>
-            <Link href="/catalog" className="px-3 py-1.5 text-sm font-medium text-brand-gray hover:text-pink-500 transition-colors">Catálogo</Link>
+            <Link href="/#catalogo" className="px-3 py-1.5 text-sm font-medium text-brand-gray hover:text-pink-500 transition-colors">Catálogo</Link>
             <Link href="/#portfolio" className="px-3 py-1.5 text-sm font-medium text-brand-gray hover:text-pink-500 transition-colors">Portfólio</Link>
             <Link href="/#contato" className="px-3 py-1.5 text-sm font-medium text-brand-gray hover:text-pink-500 transition-colors">Contato</Link>
           </nav>
@@ -111,7 +111,7 @@ export default function Header() {
                 Início
               </Link>
               <Link
-                href="/catalog"
+                href="/#catalogo"
                 className="px-4 py-2 hover:bg-brand-yellow/10 rounded-md transition text-brand-gray"
                 onClick={() => setIsMenuOpen(false)}
               >

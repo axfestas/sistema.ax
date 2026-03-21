@@ -29,6 +29,10 @@ export interface Item {
   image_url?: string;
   category?: string;
   show_in_catalog?: number; // 1 = show in catalog, 0 = hide
+  is_featured?: number; // 1 = featured, 0 = not featured
+  is_promotion?: number; // 1 = on promotion, 0 = regular price
+  original_price?: number; // original price before promotion
+  created_at?: string;
 }
 
 export interface ItemInput {
@@ -40,6 +44,9 @@ export interface ItemInput {
   show_in_catalog?: number;
   category?: string;
   custom_id?: string; // Optional - will be auto-generated if not provided
+  is_featured?: number;
+  is_promotion?: number;
+  original_price?: number;
 }
 
 export interface PortfolioImage {
@@ -169,6 +176,9 @@ export interface Kit {
   price: number;
   image_url?: string;
   is_active: number;
+  is_featured?: number;
+  is_promotion?: number;
+  original_price?: number;
   created_at?: string;
   updated_at?: string;
 }
@@ -180,6 +190,9 @@ export interface KitInput {
   image_url?: string;
   is_active?: number;
   custom_id?: string; // Optional - will be auto-generated if not provided
+  is_featured?: number;
+  is_promotion?: number;
+  original_price?: number;
 }
 
 export interface KitItem {
@@ -341,10 +354,10 @@ export async function createItem(
   }
 
   try {
-    // Try to insert with all columns including show_in_catalog, custom_id, and category
+    // Try to insert with all columns including show_in_catalog, custom_id, category, and new feature flags
     const result = await db
       .prepare(
-        'INSERT INTO items (name, description, price, quantity, show_in_catalog, custom_id, category, image_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING *'
+        'INSERT INTO items (name, description, price, quantity, show_in_catalog, custom_id, category, image_url, is_featured, is_promotion, original_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *'
       )
       .bind(
         item.name,
@@ -354,7 +367,10 @@ export async function createItem(
         item.show_in_catalog !== undefined ? item.show_in_catalog : 1,
         customId,
         item.category || null,
-        item.image_url || null
+        item.image_url || null,
+        item.is_featured !== undefined ? item.is_featured : 0,
+        item.is_promotion !== undefined ? item.is_promotion : 0,
+        item.original_price ?? null
       )
       .first();
     return result as unknown as Item;
@@ -424,6 +440,18 @@ export async function updateItem(
   if (updates.image_url !== undefined) {
     fields.push('image_url = ?');
     values.push(updates.image_url);
+  }
+  if (updates.is_featured !== undefined) {
+    fields.push('is_featured = ?');
+    values.push(updates.is_featured);
+  }
+  if (updates.is_promotion !== undefined) {
+    fields.push('is_promotion = ?');
+    values.push(updates.is_promotion);
+  }
+  if (updates.original_price !== undefined) {
+    fields.push('original_price = ?');
+    values.push(updates.original_price ?? null);
   }
 
   if (fields.length === 0) {
@@ -1517,10 +1545,10 @@ export async function createKit(
   }
 
   try {
-    // Try to insert with custom_id
+    // Try to insert with custom_id and feature flags
     const result = await db
       .prepare(
-        'INSERT INTO kits (name, description, price, image_url, is_active, custom_id) VALUES (?, ?, ?, ?, ?, ?) RETURNING *'
+        'INSERT INTO kits (name, description, price, image_url, is_active, custom_id, is_featured, is_promotion, original_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *'
       )
       .bind(
         kit.name,
@@ -1528,7 +1556,10 @@ export async function createKit(
         kit.price,
         kit.image_url || null,
         kit.is_active !== undefined ? kit.is_active : 1,
-        customId
+        customId,
+        kit.is_featured !== undefined ? kit.is_featured : 0,
+        kit.is_promotion !== undefined ? kit.is_promotion : 0,
+        kit.original_price ?? null
       )
       .first();
     return result as unknown as Kit;
@@ -1589,6 +1620,18 @@ export async function updateKit(
   if (updates.is_active !== undefined) {
     fields.push('is_active = ?');
     values.push(updates.is_active);
+  }
+  if (updates.is_featured !== undefined) {
+    fields.push('is_featured = ?');
+    values.push(updates.is_featured);
+  }
+  if (updates.is_promotion !== undefined) {
+    fields.push('is_promotion = ?');
+    values.push(updates.is_promotion);
+  }
+  if (updates.original_price !== undefined) {
+    fields.push('original_price = ?');
+    values.push(updates.original_price ?? null);
   }
 
   if (fields.length === 0) {
@@ -1814,4 +1857,101 @@ export async function checkItemAvailability(
     available: quantityAvailable >= quantityNeeded,
     quantityAvailable: Math.max(0, quantityAvailable),
   };
+}
+
+// ==================== TESTIMONIALS (AVALIAÇÕES) ====================
+
+export interface Testimonial {
+  id: number;
+  name: string;
+  stars: number;
+  comment: string;
+  status: 'pending' | 'approved' | 'rejected';
+  created_at?: string;
+}
+
+export interface TestimonialInput {
+  name: string;
+  stars: number;
+  comment: string;
+}
+
+/**
+ * Busca avaliações com filtro de status
+ */
+export async function getTestimonials(
+  db: D1Database,
+  options?: { status?: 'pending' | 'approved' | 'rejected' }
+): Promise<Testimonial[]> {
+  let query = 'SELECT * FROM testimonials';
+  const params: any[] = [];
+
+  if (options?.status) {
+    query += ' WHERE status = ?';
+    params.push(options.status);
+  }
+
+  query += ' ORDER BY created_at DESC';
+
+  const result = await db.prepare(query).bind(...params).all();
+  return (result.results as unknown as Testimonial[]) || [];
+}
+
+/**
+ * Busca uma avaliação pelo ID
+ */
+export async function getTestimonialById(
+  db: D1Database,
+  id: number
+): Promise<Testimonial | null> {
+  const result = await db
+    .prepare('SELECT * FROM testimonials WHERE id = ?')
+    .bind(id)
+    .first();
+  return result ? (result as unknown as Testimonial) : null;
+}
+
+/**
+ * Cria uma nova avaliação (status inicial: pending)
+ */
+export async function createTestimonial(
+  db: D1Database,
+  input: TestimonialInput
+): Promise<Testimonial> {
+  const result = await db
+    .prepare(
+      'INSERT INTO testimonials (name, stars, comment, status) VALUES (?, ?, ?, ?) RETURNING *'
+    )
+    .bind(input.name, input.stars, input.comment, 'pending')
+    .first();
+  return result as unknown as Testimonial;
+}
+
+/**
+ * Atualiza o status de uma avaliação (aprovar/rejeitar)
+ */
+export async function updateTestimonialStatus(
+  db: D1Database,
+  id: number,
+  status: 'approved' | 'rejected'
+): Promise<Testimonial | null> {
+  const result = await db
+    .prepare('UPDATE testimonials SET status = ? WHERE id = ? RETURNING *')
+    .bind(status, id)
+    .first();
+  return result ? (result as unknown as Testimonial) : null;
+}
+
+/**
+ * Deleta uma avaliação
+ */
+export async function deleteTestimonial(
+  db: D1Database,
+  id: number
+): Promise<boolean> {
+  const result = await db
+    .prepare('DELETE FROM testimonials WHERE id = ?')
+    .bind(id)
+    .run();
+  return result.success;
 }

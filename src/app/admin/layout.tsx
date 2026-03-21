@@ -36,15 +36,18 @@ const navGroups: NavGroup[] = [
       { href: '/admin/inventory', label: 'Estoque', icon: '📦' },
       { href: '/admin/kits', label: 'Kits', icon: '🎁' },
       { href: '/admin/sweets', label: 'Doces', icon: '🍰' },
-      { href: '/admin/categories', label: 'Categorias', icon: '🏷️' },
+      { href: '/admin/designs', label: 'Designs', icon: '🎨' },
       { href: '/admin/themes', label: 'Temas', icon: '🎭' },
+      { href: '/admin/categories', label: 'Categorias', icon: '🏷️' },
     ],
   },
   {
     title: 'Comunicação',
     items: [
-      { href: '/admin/designs', label: 'Artes Criadas', icon: '🎨' },
-      { href: '/admin/portfolio', label: 'Controle de Publicações', icon: '📢' },
+      { href: '/admin/portfolio', label: 'Portfólio', icon: '🖼️' },
+      { href: '/admin/artes', label: 'Artes Criadas', icon: '✏️' },
+      { href: '/admin/publicacoes', label: 'Controle de Publicações', icon: '📢' },
+      { href: '/admin/testimonials', label: 'Avaliações', icon: '⭐' },
     ],
   },
   {
