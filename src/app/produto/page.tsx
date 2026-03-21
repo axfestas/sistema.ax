@@ -128,7 +128,7 @@ function ProductDetail() {
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-400" />
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400" />
       </div>
     )
   }
@@ -139,7 +139,7 @@ function ProductDetail() {
         <p className="text-6xl mb-4">🔍</p>
         <h1 className="text-2xl font-bold text-gray-800 mb-2">Produto não encontrado</h1>
         <p className="text-gray-500 mb-6">O produto que você procura não existe ou foi removido.</p>
-        <Link href="/#catalogo" className="bg-rose-500 hover:bg-rose-600 text-white font-bold px-6 py-3 rounded-full transition">
+        <Link href="/#catalogo" className="bg-blue-500 hover:bg-blue-600 text-white font-bold px-6 py-3 rounded-full transition">
           ← Voltar ao catálogo
         </Link>
       </div>
@@ -160,7 +160,7 @@ function ProductDetail() {
         <div className="max-w-6xl mx-auto px-4 py-3">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-sm text-gray-500 hover:text-rose-500 transition-colors"
+            className="flex items-center gap-2 text-sm text-gray-500 hover:text-blue-500 transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -175,7 +175,7 @@ function ProductDetail() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
 
             {/* ── Image ────────────────────────────────────────────── */}
-            <div className="relative min-h-72 md:min-h-[480px] bg-gradient-to-br from-pink-50 to-rose-50">
+            <div className="relative min-h-72 md:min-h-[480px] bg-gradient-to-br from-blue-50 to-indigo-50">
               {product.image_url ? (
                 <Image
                   src={product.image_url}
@@ -199,7 +199,7 @@ function ProductDetail() {
                   </span>
                 )}
                 {showPromo && (
-                  <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-rose-500 text-white shadow">
+                  <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-blue-500 text-white shadow">
                     💸 Promoção
                   </span>
                 )}
@@ -215,7 +215,7 @@ function ProductDetail() {
             <div className="p-6 md:p-8 flex flex-col">
               {/* Category label */}
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-xs font-semibold uppercase tracking-widest text-rose-400">
+                <span className="text-xs font-semibold uppercase tracking-widest text-blue-400">
                   {typeLabel}
                 </span>
                 {product.category && (
@@ -239,12 +239,12 @@ function ProductDetail() {
                       <span className="text-gray-400 text-sm line-through block">
                         {formatCurrency(product.original_price)}
                       </span>
-                      <span className="text-3xl font-extrabold text-rose-600">
+                      <span className="text-3xl font-extrabold text-blue-600">
                         {formatCurrency(product.price ?? 0)}
                       </span>
                     </div>
                   ) : (
-                    <span className="text-3xl font-extrabold text-rose-600">
+                    <span className="text-3xl font-extrabold text-blue-600">
                       {formatCurrency(product.price ?? 0)}
                     </span>
                   )}
@@ -275,7 +275,7 @@ function ProductDetail() {
                   <ul className="space-y-1.5">
                     {product.items.map(kitItem => (
                       <li key={kitItem.id} className="flex items-center gap-2 text-sm text-gray-600">
-                        <span className="w-5 h-5 bg-rose-100 text-rose-500 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
+                        <span className="w-5 h-5 bg-blue-100 text-blue-500 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
                           ✓
                         </span>
                         <span className="font-medium">{kitItem.quantity}×</span>
@@ -301,7 +301,7 @@ function ProductDetail() {
                 </a>
                 <Link
                   href="/cart"
-                  className="w-full flex items-center justify-center gap-2 border-2 border-rose-500 text-rose-500 hover:bg-rose-50 font-bold py-3.5 px-6 rounded-full transition text-base"
+                  className="w-full flex items-center justify-center gap-2 border-2 border-blue-500 text-blue-500 hover:bg-blue-50 font-bold py-3.5 px-6 rounded-full transition text-base"
                 >
                   📋 Solicitar orçamento
                 </Link>
@@ -320,7 +320,7 @@ export default function ProductoPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-400" />
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400" />
       </div>
     }>
       <ProductDetail />

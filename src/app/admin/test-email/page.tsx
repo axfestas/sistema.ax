@@ -136,7 +136,7 @@ export default function TestEmailPage() {
       title: 'Confirmação de Reserva',
       description: 'Email enviado ao cliente quando uma reserva é criada/confirmada no sistema.',
       handler: testReservation,
-      color: 'pink',
+      color: 'blue',
     },
     {
       type: 'password-reset',
@@ -176,7 +176,6 @@ export default function TestEmailPage() {
   ];
 
   const colorMap: Record<string, string> = {
-    pink: 'bg-pink-500 hover:bg-pink-600 disabled:bg-pink-300',
     blue: 'bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300',
     green: 'bg-green-500 hover:bg-green-600 disabled:bg-green-300',
     amber: 'bg-amber-500 hover:bg-amber-600 disabled:bg-amber-300',
@@ -230,7 +229,7 @@ export default function TestEmailPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="seu@email.com"
-            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-pink-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <p className="text-xs text-gray-500 mt-1">
             O email de teste será enviado para este endereço.

@@ -102,7 +102,7 @@ export default function AdminLayout({
                 onClick={() => toggleGroup(group.title)}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-colors ${
                   hasActiveItem
-                    ? 'text-pink-600 bg-pink-50'
+                    ? 'text-blue-600 bg-blue-50'
                     : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
                 }`}
               >
@@ -127,7 +127,7 @@ export default function AdminLayout({
                           onClick={() => setSidebarOpen(false)}
                           className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                             isActive
-                              ? 'bg-pink-100 text-pink-700 font-medium'
+                              ? 'bg-blue-100 text-blue-700 font-medium'
                               : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                           }`}
                         >

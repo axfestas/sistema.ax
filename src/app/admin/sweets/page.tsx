@@ -215,7 +215,7 @@ export default function SweetsPage() {
 
       {loading ? (
         <div className="text-center py-12">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600"></div>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           <p className="mt-4 text-gray-600">Carregando doces...</p>
         </div>
       ) : (
@@ -242,7 +242,7 @@ export default function SweetsPage() {
                 </div>
                 <div className="p-4">
                   <div className="flex items-start justify-between mb-2">
-                    <span className="inline-block bg-pink-100 text-pink-800 text-xs font-bold px-2 py-1 rounded">
+                    <span className="inline-block bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded">
                       {formatSweetId(sweet.id)}
                     </span>
                     {sweet.show_in_catalog === 1 && (
@@ -259,7 +259,7 @@ export default function SweetsPage() {
                     <p className="text-xs text-gray-500 mb-2">Categoria: {sweet.category}</p>
                   )}
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-xl font-bold text-pink-600">
+                    <span className="text-xl font-bold text-blue-600">
                       R$ {sweet.price.toFixed(2)}
                     </span>
                     <span className="text-sm text-gray-600">
@@ -303,7 +303,7 @@ export default function SweetsPage() {
                     required
                     value={formData.name}
                     onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div className="col-span-2">
@@ -311,7 +311,7 @@ export default function SweetsPage() {
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({...formData, description: e.target.value})}
-                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     rows={3}
                   />
                 </div>
@@ -324,7 +324,7 @@ export default function SweetsPage() {
                     required
                     value={formData.price}
                     onChange={(e) => setFormData({...formData, price: e.target.value})}
-                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
@@ -335,7 +335,7 @@ export default function SweetsPage() {
                     required
                     value={formData.quantity}
                     onChange={(e) => setFormData({...formData, quantity: e.target.value})}
-                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div className="col-span-2">
@@ -351,7 +351,7 @@ export default function SweetsPage() {
                   <select
                     value={formData.category}
                     onChange={(e) => setFormData({...formData, category: e.target.value})}
-                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Sem categoria</option>
                     {sweetsCategories.map((cat, idx) => (
@@ -365,7 +365,7 @@ export default function SweetsPage() {
                       type="checkbox"
                       checked={formData.show_in_catalog}
                       onChange={(e) => setFormData({...formData, show_in_catalog: e.target.checked})}
-                      className="mr-2 h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded"
+                      className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
                     <span className="text-sm font-medium">Exibir no Catálogo</span>
                   </label>

@@ -512,7 +512,7 @@ export default function FinancePage() {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-pink-500 mx-auto mb-3" />
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500 mx-auto mb-3" />
           <p className="text-gray-500">Carregando dados financeiros…</p>
         </div>
       </div>
@@ -530,7 +530,7 @@ export default function FinancePage() {
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => { setShowForm(!showForm); setEditingRecord(null); setFormData(defaultForm()); }}
-            className="inline-flex items-center gap-1.5 bg-pink-600 hover:bg-pink-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors"
+            className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors"
           >
             <span className="text-base leading-none">＋</span> Novo Registro
           </button>
@@ -584,7 +584,7 @@ export default function FinancePage() {
                 <select
                   value={formData.type}
                   onChange={(e) => setFormData({ ...formData, type: e.target.value as RecordFormData['type'], category: '' })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-400"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                 >
                   <option value="income">Receita</option>
                   <option value="expense">Despesa</option>
@@ -598,7 +598,7 @@ export default function FinancePage() {
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Ex: Aluguel Kit Princesa, Manutenção Trailer…"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-400"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                   required
                 />
               </div>
@@ -609,7 +609,7 @@ export default function FinancePage() {
                   value={formData.amount}
                   onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                   placeholder="0,00"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-400"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                   required
                 />
               </div>
@@ -618,7 +618,7 @@ export default function FinancePage() {
                 <input
                   type="date" value={formData.date}
                   onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-400"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                   required
                 />
               </div>
@@ -627,7 +627,7 @@ export default function FinancePage() {
                 <select
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-400"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                 >
                   <option value="">Selecione…</option>
                   {CATEGORIES[formData.type].map((c) => <option key={c} value={c}>{c}</option>)}
@@ -638,7 +638,7 @@ export default function FinancePage() {
                 <select
                   value={formData.payment_method}
                   onChange={(e) => setFormData({ ...formData, payment_method: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-400"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                 >
                   <option value="">Selecione…</option>
                   {PAYMENT_METHODS.map((m) => <option key={m} value={m}>{m}</option>)}
@@ -650,7 +650,7 @@ export default function FinancePage() {
                   {(['paid', 'pending'] as const).map((s) => (
                     <label key={s} className="flex items-center gap-2 cursor-pointer">
                       <input type="radio" name="status" value={s} checked={formData.status === s}
-                        onChange={() => setFormData({ ...formData, status: s })} className="accent-pink-500" />
+                        onChange={() => setFormData({ ...formData, status: s })} className="accent-blue-500" />
                       <span className="text-sm text-gray-700">{STATUS_LABELS[s]}</span>
                     </label>
                   ))}
@@ -674,7 +674,7 @@ export default function FinancePage() {
             </div>
             <div className="flex gap-2 mt-6">
               <button type="submit"
-                className="bg-pink-600 hover:bg-pink-700 text-white font-semibold py-2 px-5 rounded-lg text-sm transition-colors">
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-5 rounded-lg text-sm transition-colors">
                 {editingRecord ? 'Atualizar' : 'Salvar'}
               </button>
               <button type="button" onClick={() => { setShowForm(false); setEditingRecord(null); }}
@@ -693,7 +693,7 @@ export default function FinancePage() {
           <div>
             <label className="block text-xs text-gray-500 mb-1">Período</label>
             <select value={filterMonth} onChange={(e) => setFilterMonth(e.target.value)}
-              className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-pink-400">
+              className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400">
               <option value="">Todos os períodos</option>
               {availableMonths.map((m) => <option key={m} value={m}>{formatMonthLabel(m)}</option>)}
             </select>
@@ -701,7 +701,7 @@ export default function FinancePage() {
           <div>
             <label className="block text-xs text-gray-500 mb-1">Tipo</label>
             <select value={filterType} onChange={(e) => setFilterType(e.target.value)}
-              className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-pink-400">
+              className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400">
               <option value="">Todos</option>
               <option value="income">Receita</option>
               <option value="expense">Despesa</option>
@@ -711,7 +711,7 @@ export default function FinancePage() {
           <div>
             <label className="block text-xs text-gray-500 mb-1">Categoria</label>
             <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}
-              className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-pink-400">
+              className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400">
               <option value="">Todas</option>
               {allCategories.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
@@ -719,7 +719,7 @@ export default function FinancePage() {
           <div>
             <label className="block text-xs text-gray-500 mb-1">Status</label>
             <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}
-              className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-pink-400">
+              className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400">
               <option value="">Todos</option>
               <option value="paid">Pago</option>
               <option value="pending">Pendente</option>
@@ -729,7 +729,7 @@ export default function FinancePage() {
         {(filterMonth || filterType || filterCategory || filterStatus) && (
           <button
             onClick={() => { setFilterMonth(''); setFilterType(''); setFilterCategory(''); setFilterStatus(''); }}
-            className="mt-2 text-xs text-pink-600 hover:text-pink-800 font-medium">
+            className="mt-2 text-xs text-blue-600 hover:text-blue-800 font-medium">
             ✕ Limpar filtros
           </button>
         )}
@@ -740,7 +740,7 @@ export default function FinancePage() {
         {(['list', 'charts'] as const).map((tab) => (
           <button key={tab} onClick={() => setActiveTab(tab)}
             className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
-              activeTab === tab ? 'bg-pink-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+              activeTab === tab ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
             }`}>
             {tab === 'list' ? '📋 Registros' : '📊 Gráficos'}
           </button>

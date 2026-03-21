@@ -215,7 +215,7 @@ export default function DesignsPage() {
 
       {loading ? (
         <div className="text-center py-12">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600"></div>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           <p className="mt-4 text-gray-600">Carregando designs...</p>
         </div>
       ) : (
@@ -262,7 +262,7 @@ export default function DesignsPage() {
                     <p className="text-xs text-gray-500 mb-2">Qtd. Cartela: {design.quantidade_cartela}</p>
                   )}
                   <div className="mb-3">
-                    <span className="text-xl font-bold text-pink-600">
+                    <span className="text-xl font-bold text-blue-600">
                       R$ {design.price.toFixed(2)}
                     </span>
                   </div>
@@ -303,7 +303,7 @@ export default function DesignsPage() {
                     required
                     value={formData.name}
                     onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div className="col-span-2">
@@ -311,7 +311,7 @@ export default function DesignsPage() {
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({...formData, description: e.target.value})}
-                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     rows={3}
                   />
                 </div>
@@ -324,7 +324,7 @@ export default function DesignsPage() {
                     required
                     value={formData.price}
                     onChange={(e) => setFormData({...formData, price: e.target.value})}
-                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div className="col-span-2">
@@ -334,7 +334,7 @@ export default function DesignsPage() {
                     min="0"
                     value={formData.quantidade_cartela}
                     onChange={(e) => setFormData({...formData, quantidade_cartela: e.target.value})}
-                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="0"
                   />
                 </div>
@@ -351,7 +351,7 @@ export default function DesignsPage() {
                   <select
                     value={formData.category}
                     onChange={(e) => setFormData({...formData, category: e.target.value})}
-                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Sem categoria</option>
                     {designsCategories.map((cat, idx) => (
@@ -365,7 +365,7 @@ export default function DesignsPage() {
                       type="checkbox"
                       checked={formData.show_in_catalog}
                       onChange={(e) => setFormData({...formData, show_in_catalog: e.target.checked})}
-                      className="mr-2 h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded"
+                      className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
                     <span className="text-sm font-medium">Exibir no Catálogo</span>
                   </label>
