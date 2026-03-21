@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/useToast';
+import ImageUpload from '@/components/ImageUpload';
 
 interface SiteSettings {
   id: number;
@@ -14,6 +15,7 @@ interface SiteSettings {
   facebook_url?: string;
   instagram_url?: string;
   whatsapp_url?: string;
+  hero_image_url?: string;
 }
 
 interface MigrationResult {
@@ -40,6 +42,7 @@ export default function SettingsPage() {
     facebook_url: '',
     instagram_url: '',
     whatsapp_url: '',
+    hero_image_url: '',
   });
 
   useEffect(() => {
@@ -81,6 +84,7 @@ export default function SettingsPage() {
           facebook_url: data.facebook_url || '',
           instagram_url: data.instagram_url || '',
           whatsapp_url: data.whatsapp_url || '',
+          hero_image_url: data.hero_image_url || '',
         });
       } else {
         showError('Erro ao carregar configurações');
@@ -269,6 +273,31 @@ export default function SettingsPage() {
                 placeholder="A definir"
               />
             </div>
+          </div>
+
+          {/* Hero Image */}
+          <div className="mb-8">
+            <h2 className="text-xl font-bold mb-4 text-gray-800 border-b pb-2">
+              Imagem do Hero
+            </h2>
+            <p className="text-sm text-gray-500 mb-4">
+              Imagem exibida como fundo na seção &quot;Aqui seu sonho vira realidade&quot; da página inicial. Se não definida, o gradiente padrão será exibido.
+            </p>
+            <ImageUpload
+              currentImage={formData.hero_image_url}
+              onUpload={(url) => setFormData((prev) => ({ ...prev, hero_image_url: url }))}
+              folder="hero"
+              label="Imagem do Hero"
+            />
+            {formData.hero_image_url && (
+              <button
+                type="button"
+                onClick={() => setFormData((prev) => ({ ...prev, hero_image_url: '' }))}
+                className="mt-2 text-sm text-red-600 hover:text-red-800"
+              >
+                Remover imagem do hero
+              </button>
+            )}
           </div>
 
           {/* Social Media */}

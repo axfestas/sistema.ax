@@ -1301,6 +1301,7 @@ export interface SiteSettings {
   facebook_url?: string;
   instagram_url?: string;
   whatsapp_url?: string;
+  hero_image_url?: string;
   updated_at?: string;
 }
 
@@ -1313,6 +1314,7 @@ export interface SiteSettingsInput {
   facebook_url?: string;
   instagram_url?: string;
   whatsapp_url?: string;
+  hero_image_url?: string;
 }
 
 /**
@@ -1368,6 +1370,10 @@ export async function updateSiteSettings(
   if (updates.whatsapp_url !== undefined) {
     fields.push('whatsapp_url = ?');
     values.push(updates.whatsapp_url || null);
+  }
+  if (updates.hero_image_url !== undefined) {
+    fields.push('hero_image_url = ?');
+    values.push(updates.hero_image_url || null);
   }
   
   if (fields.length === 0) {

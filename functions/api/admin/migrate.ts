@@ -332,6 +332,11 @@ const MIGRATIONS: { desc: string; sql: string }[] = [
     desc: '029: idx_testimonials_status',
     sql: `CREATE INDEX IF NOT EXISTS idx_testimonials_status ON testimonials(status)`,
   },
+  // 030 – hero_image_url on site_settings
+  {
+    desc: '030: site_settings.hero_image_url',
+    sql: `ALTER TABLE site_settings ADD COLUMN hero_image_url TEXT`,
+  },
 ];
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {

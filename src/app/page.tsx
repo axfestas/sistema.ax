@@ -279,6 +279,7 @@ export default function Home() {
   const [portfolioLimit, setPortfolioLimit] = useState(8)
   const [catalogVisible, setCatalogVisible] = useState(CATALOG_PAGE_SIZE)
   const [showReviewModal, setShowReviewModal] = useState(false)
+  const [heroImageUrl, setHeroImageUrl] = useState<string | null>(null)
   const featuredCarouselRef = useRef<HTMLDivElement>(null)
 
   const closeLightbox = useCallback(() => setLightbox(null), [])
@@ -343,6 +344,17 @@ export default function Home() {
       .catch(() => setTestimonials([]))
   }, [])
 
+  // Load site settings (hero image)
+  useEffect(() => {
+    fetch('/api/settings')
+      .then(r => r.ok ? r.json() : null)
+      .then((data: unknown) => {
+        const s = data as { hero_image_url?: string } | null
+        if (s?.hero_image_url) setHeroImageUrl(s.hero_image_url)
+      })
+      .catch(() => {/* ignore */})
+  }, [])
+
   const filteredCatalog = catalogItems
     .filter(i => catalogTab === 'all' || i.type === catalogTab)
     .filter(i => !catalogSearch || i.name.toLowerCase().includes(catalogSearch.toLowerCase()))
@@ -371,6 +383,12 @@ export default function Home() {
 
       {/* ── Hero ─────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-gradient-to-br from-brand-gray via-[#5a5a5a] to-[#383838] py-24 px-4">
+        {heroImageUrl && (
+          <div className="absolute inset-0">
+            <Image src={heroImageUrl} alt="" fill className="object-cover" priority sizes="100vw" />
+            <div className="absolute inset-0 bg-black/55" />
+          </div>
+        )}
         <div className="absolute -top-20 -left-20 w-96 h-96 rounded-full bg-white/10 pointer-events-none" />
         <div className="absolute -bottom-32 -right-20 w-[500px] h-[500px] rounded-full bg-white/10 pointer-events-none" />
         <div className="relative max-w-5xl mx-auto text-center">
@@ -591,15 +609,15 @@ export default function Home() {
       {/* ── Final CTA ────────────────────────────────────────────────── */}
       <section id="contato" className="py-20 px-4 bg-gradient-to-br from-brand-gray via-[#5a5a5a] to-[#383838]">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-5">
-            Pronto para montar sua festa?
+          <h2 className="text-3xl md:text-4xl font-extrabold mb-5 bg-gradient-to-r from-brand-blue to-brand-purple bg-clip-text text-transparent">
+            ✨ Sua festa dos sonhos começa aqui!
           </h2>
           <p className="text-white/85 text-lg mb-8 max-w-xl mx-auto">
-            Escolha entre nossos kits exclusivos, doces personalizados e temas encantadores
+            Adicione ao carrinho seus kits preferidos, doces irresistíveis e decorações exclusivas. Reserve agora e garanta sua data!
           </p>
           <a href="/#catalogo"
             className="inline-block bg-brand-yellow text-brand-gray font-bold py-4 px-10 rounded-full hover:bg-yellow-400 transition shadow-xl shadow-yellow-700/25 text-base">
-            Ver catálogo
+            🛒 Montar meu carrinho
           </a>
         </div>
       </section>
