@@ -495,7 +495,7 @@ export default function Home() {
                     onClick={() => setCatalogVisible(v => v + CATALOG_PAGE_SIZE)}
                     className="inline-block border-2 border-blue-400 text-blue-500 font-bold py-3 px-8 rounded-full hover:bg-blue-50 transition"
                   >
-                    Ver mais produtos ({filteredCatalog.length - catalogVisible} restantes)
+                    Ver mais produtos
                   </button>
                 </div>
               )}
