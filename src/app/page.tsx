@@ -3,6 +3,8 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useCart } from '@/components/CartContext'
+import { useToast } from '@/hooks/useToast'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -87,72 +89,96 @@ function ProductCard({ item }: { item: CatalogItem }) {
   const showNew = isNewItem(item.created_at)
   const showFeatured = item.is_featured === 1
   const showPromo = item.is_promotion === 1 && item.original_price != null && item.original_price > item.price
+  const { addItem } = useCart()
+  const { showSuccess } = useToast()
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    addItem({
+      id: `${item.type}-${item.id}`,
+      name: item.name,
+      description: item.description || '',
+      price: item.price ?? 0,
+      image: item.image_url,
+    })
+    showSuccess(`${item.name} adicionado ao carrinho!`)
+  }
 
   return (
-    <Link
-      href={`/produto?type=${item.type}&id=${item.id}`}
-      className="block bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-200 group cursor-pointer"
-    >
-      {/* Image */}
-      <div className="relative h-48 bg-gradient-to-br from-yellow-50 to-amber-50">
-        {item.image_url ? (
-          <Image
-            src={item.image_url}
-            alt={item.name}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center text-5xl">
-            {item.type === 'kit' ? '🎁' : item.type === 'sweet' ? '🍰' : item.type === 'theme' ? '🎭' : item.type === 'design' ? '🎨' : '📦'}
-          </div>
-        )}
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-200 group flex flex-col">
+      <Link href={`/produto?type=${item.type}&id=${item.id}`} className="block flex-1">
+        {/* Image */}
+        <div className="relative h-48 bg-gradient-to-br from-yellow-50 to-amber-50">
+          {item.image_url ? (
+            <Image
+              src={item.image_url}
+              alt={item.name}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center text-5xl">
+              {item.type === 'kit' ? '🎁' : item.type === 'sweet' ? '🍰' : item.type === 'theme' ? '🎭' : item.type === 'design' ? '🎨' : '📦'}
+            </div>
+          )}
 
-        {/* Tags */}
-        <div className="absolute top-2 left-2 flex flex-col gap-1">
-          {showFeatured && (
-            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-yellow-400 text-gray-900 shadow-sm">
-              🔥 Em destaque
-            </span>
-          )}
-          {showPromo && (
-            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-brand-yellow text-brand-gray shadow-sm">
-              💸 Promoção
-            </span>
-          )}
-          {showNew && !showFeatured && !showPromo && (
-            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-500 text-white shadow-sm">
-              🆕 Novo
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* Info */}
-      <div className="p-4">
-        <h3 className="font-semibold text-gray-800 text-sm leading-snug line-clamp-2 mb-2">
-          {item.name}
-        </h3>
-        <div>
-          {showPromo && item.original_price != null ? (
-            <div>
-              <span className="text-gray-400 text-xs line-through block">
-                {formatCurrency(item.original_price)}
+          {/* Tags */}
+          <div className="absolute top-2 left-2 flex flex-col gap-1">
+            {showFeatured && (
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-yellow-400 text-gray-900 shadow-sm">
+                🔥 Em destaque
               </span>
+            )}
+            {showPromo && (
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-brand-yellow text-brand-gray shadow-sm">
+                💸 Promoção
+              </span>
+            )}
+            {showNew && !showFeatured && !showPromo && (
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-500 text-white shadow-sm">
+                🆕 Novo
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Info */}
+        <div className="p-4 pb-2">
+          <h3 className="font-semibold text-gray-800 text-sm leading-snug line-clamp-2 mb-2">
+            {item.name}
+          </h3>
+          <div>
+            {showPromo && item.original_price != null ? (
+              <div>
+                <span className="text-gray-400 text-xs line-through block">
+                  {formatCurrency(item.original_price)}
+                </span>
+                <span className="text-brand-gray font-bold text-base">
+                  {formatCurrency(item.price)}
+                </span>
+              </div>
+            ) : item.price > 0 ? (
               <span className="text-brand-gray font-bold text-base">
                 {formatCurrency(item.price)}
               </span>
-            </div>
-          ) : item.price > 0 ? (
-            <span className="text-brand-gray font-bold text-base">
-              {formatCurrency(item.price)}
-            </span>
-          ) : (
-            <span className="text-gray-400 text-sm">Sob consulta</span>
-          )}
+            ) : (
+              <span className="text-gray-400 text-sm">Sob consulta</span>
+            )}
+          </div>
         </div>
+      </Link>
+
+      {/* Add to cart button */}
+      <div className="px-4 pb-4 pt-2">
+        <button
+          onClick={handleAddToCart}
+          className="w-full bg-brand-yellow hover:bg-yellow-400 text-brand-gray font-bold py-2 rounded-full text-sm transition shadow-sm"
+        >
+          🛒 Adicionar no carrinho
+        </button>
       </div>
-    </Link>
+    </div>
   )
 }
 
@@ -400,7 +426,7 @@ export default function Home() {
           </h1>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a href="/#catalogo"
-              className="inline-block bg-brand-yellow text-brand-gray font-bold py-4 px-9 rounded-full hover:bg-yellow-400 transition shadow-lg shadow-yellow-700/20 text-base">
+              className="inline-block bg-brand-blue text-white font-bold py-4 px-9 rounded-full hover:bg-brand-blue-dark transition shadow-lg shadow-brand-blue/30 text-base">
               Ver Catálogo
             </a>
             <a href="#portfolio"
@@ -528,7 +554,7 @@ export default function Home() {
           <div className="text-center mb-12">
             <span className="text-brand-yellow font-semibold text-sm uppercase tracking-widest">Nosso trabalho</span>
             <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mt-2 mb-3">Portfólio</h2>
-            <p className="text-gray-500 max-w-xl mx-auto">Veja fotos reais de festas que realizamos com amor e dedicação</p>
+            <p className="text-gray-500 max-w-xl mx-auto">Veja fotos de festas, doces, designs e decorações que realizamos com amor e dedicação</p>
           </div>
 
           {loadingPortfolio ? (
@@ -572,14 +598,14 @@ export default function Home() {
       <section className="py-20 px-4 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <span className="text-brand-yellow font-semibold text-sm uppercase tracking-widest">❤️ Clientes satisfeitos</span>
+            <span className="text-brand-yellow font-semibold text-sm uppercase tracking-widest">Feedback de clientes</span>
             <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mt-2 mb-3">O que dizem sobre nós</h2>
           </div>
 
           {testimonials.length === 0 ? (
             <div className="text-center py-8 text-gray-400">
               <p className="text-4xl mb-3">💬</p>
-              <p>Seja o primeiro a avaliar!</p>
+              <p>Seja a primeira pessoa a avaliar!</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">

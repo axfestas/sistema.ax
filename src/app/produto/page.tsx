@@ -5,6 +5,8 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Suspense } from 'react'
+import { useCart } from '@/components/CartContext'
+import { useToast } from '@/hooks/useToast'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -30,10 +32,11 @@ interface Product {
   items?: KitItem[]
 }
 
-interface SiteSettings {
-  whatsapp_url?: string
-  phone?: string
-  company_name?: string
+interface RelatedItem {
+  id: number
+  name: string
+  price?: number
+  image_url?: string
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -77,6 +80,17 @@ function buildApiUrl(type: string, id: string): string {
   }
 }
 
+function buildListApiUrl(type: string): string {
+  switch (type) {
+    case 'kit': return `/api/kits?activeOnly=true`
+    case 'sweet': return `/api/sweets?catalog=true`
+    case 'theme': return `/api/themes?catalog=true`
+    case 'item': return `/api/items?catalogOnly=true`
+    case 'design': return `/api/designs?catalog=true`
+    default: return ''
+  }
+}
+
 // ─── Inner component (uses useSearchParams) ───────────────────────────────────
 
 function ProductDetail() {
@@ -86,9 +100,11 @@ function ProductDetail() {
   const id = searchParams?.get('id') ?? ''
 
   const [product, setProduct] = useState<Product | null>(null)
-  const [settings, setSettings] = useState<SiteSettings>({})
+  const [relatedItems, setRelatedItems] = useState<RelatedItem[]>([])
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
+  const { addItem } = useCart()
+  const { showSuccess } = useToast()
 
   const fetchProduct = useCallback(async () => {
     if (!type || !id) { setNotFound(true); setLoading(false); return }
@@ -110,28 +126,54 @@ function ProductDetail() {
 
   useEffect(() => { fetchProduct() }, [fetchProduct])
 
+  // Load related items of the same type
   useEffect(() => {
-    fetch('/api/settings')
-      .then(r => r.ok ? r.json() : {})
-      .then((data: unknown) => setSettings((data as SiteSettings) || {}))
+    if (!type || !id) return
+    const listUrl = buildListApiUrl(type)
+    if (!listUrl) return
+    fetch(listUrl)
+      .then(r => r.ok ? r.json() : [])
+      .then((data: unknown) => {
+        const items = Array.isArray(data) ? (data as RelatedItem[]) : []
+        setRelatedItems(items.filter(i => String(i.id) !== id).slice(0, 6))
+      })
       .catch(() => {})
-  }, [])
+  }, [type, id])
 
-  const buildWhatsAppUrl = () => {
-    if (!product) return '#'
-    const base = settings.whatsapp_url || ''
-    const phone = base.replace(/\D/g, '')
-    const text = encodeURIComponent(
-      `Olá! Gostaria de solicitar um orçamento para: ${product.name}`
-    )
-    if (phone) return `https://wa.me/${phone}?text=${text}`
-    return `https://wa.me/?text=${text}`
+  const handleAddToCart = () => {
+    if (!product) return
+    addItem({
+      id: `${type}-${product.id}`,
+      name: product.name,
+      description: product.description || '',
+      price: product.price ?? 0,
+      image: product.image_url,
+    })
+    showSuccess(`${product.name} adicionado ao carrinho!`)
+  }
+
+  const handleShare = async () => {
+    const url = window.location.href
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: product?.name ?? 'Ax Festas',
+          text: product?.description ?? '',
+          url,
+        })
+      } catch {
+        // user cancelled – no-op
+      }
+    } else {
+      await navigator.clipboard.writeText(url)
+      showSuccess('Link copiado!')
+    }
   }
 
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400" />
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-yellow" />
       </div>
     )
   }
@@ -142,7 +184,7 @@ function ProductDetail() {
         <p className="text-6xl mb-4">🔍</p>
         <h1 className="text-2xl font-bold text-gray-800 mb-2">Produto não encontrado</h1>
         <p className="text-gray-500 mb-6">O produto que você procura não existe ou foi removido.</p>
-        <Link href="/#catalogo" className="bg-blue-500 hover:bg-blue-600 text-white font-bold px-6 py-3 rounded-full transition">
+        <Link href="/#catalogo" className="bg-brand-yellow hover:bg-yellow-400 text-brand-gray font-bold px-6 py-3 rounded-full transition">
           ← Voltar ao catálogo
         </Link>
       </div>
@@ -160,15 +202,26 @@ function ProductDetail() {
     <div className="min-h-screen bg-gray-50">
       {/* Back button */}
       <div className="bg-white border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-4 py-3">
+        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-sm text-gray-500 hover:text-blue-500 transition-colors"
+            className="flex items-center gap-2 text-sm text-gray-500 hover:text-brand-yellow transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             Voltar
+          </button>
+          {/* Share button */}
+          <button
+            onClick={handleShare}
+            className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-brand-yellow transition-colors"
+            title="Compartilhar"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+            </svg>
+            Compartilhar
           </button>
         </div>
       </div>
@@ -178,7 +231,7 @@ function ProductDetail() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
 
             {/* ── Image ────────────────────────────────────────────── */}
-            <div className="relative min-h-72 md:min-h-[480px] bg-gradient-to-br from-blue-50 to-indigo-50">
+            <div className="relative min-h-72 md:min-h-[480px] bg-gradient-to-br from-yellow-50 to-amber-50">
               {product.image_url ? (
                 <Image
                   src={product.image_url}
@@ -197,12 +250,12 @@ function ProductDetail() {
               {/* Tags */}
               <div className="absolute top-3 left-3 flex flex-col gap-1.5">
                 {showFeatured && (
-                  <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-yellow-400 text-gray-900 shadow">
+                  <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-brand-yellow text-brand-gray shadow">
                     🔥 Em destaque
                   </span>
                 )}
                 {showPromo && (
-                  <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-blue-500 text-white shadow">
+                  <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-brand-blue text-white shadow">
                     💸 Promoção
                   </span>
                 )}
@@ -218,7 +271,7 @@ function ProductDetail() {
             <div className="p-6 md:p-8 flex flex-col">
               {/* Category label */}
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-xs font-semibold uppercase tracking-widest text-blue-400">
+                <span className="text-xs font-semibold uppercase tracking-widest text-brand-yellow">
                   {typeLabel}
                 </span>
                 {product.category && (
@@ -230,7 +283,7 @@ function ProductDetail() {
               </div>
 
               {/* Name */}
-              <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 leading-tight mb-4">
+              <h1 className="text-2xl md:text-3xl font-extrabold text-brand-gray leading-tight mb-4">
                 {product.name}
               </h1>
 
@@ -242,12 +295,12 @@ function ProductDetail() {
                       <span className="text-gray-400 text-sm line-through block">
                         {formatCurrency(product.original_price)}
                       </span>
-                      <span className="text-3xl font-extrabold text-blue-600">
+                      <span className="text-3xl font-extrabold text-brand-yellow">
                         {formatCurrency(product.price ?? 0)}
                       </span>
                     </div>
                   ) : (
-                    <span className="text-3xl font-extrabold text-blue-600">
+                    <span className="text-3xl font-extrabold text-brand-yellow">
                       {formatCurrency(product.price ?? 0)}
                     </span>
                   )}
@@ -260,7 +313,7 @@ function ProductDetail() {
               {/* Description */}
               {product.description && (
                 <div className="mb-6">
-                  <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-2">
+                  <h2 className="text-sm font-semibold text-brand-gray uppercase tracking-wide mb-2">
                     Descrição
                   </h2>
                   <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-line">
@@ -271,14 +324,14 @@ function ProductDetail() {
 
               {/* Kit items list */}
               {type === 'kit' && product.items && product.items.length > 0 && (
-                <div className="mb-6 p-4 bg-gray-50 rounded-xl">
-                  <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
+                <div className="mb-6 p-4 bg-yellow-50 rounded-xl border border-yellow-100">
+                  <h2 className="text-sm font-semibold text-brand-gray uppercase tracking-wide mb-3">
                     O que está incluído
                   </h2>
                   <ul className="space-y-1.5">
                     {product.items.map(kitItem => (
                       <li key={kitItem.id} className="flex items-center gap-2 text-sm text-gray-600">
-                        <span className="w-5 h-5 bg-blue-100 text-blue-500 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
+                        <span className="w-5 h-5 bg-brand-yellow/20 text-brand-yellow rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
                           ✓
                         </span>
                         <span className="font-medium">{kitItem.quantity}×</span>
@@ -291,20 +344,15 @@ function ProductDetail() {
 
               {/* CTAs */}
               <div className="mt-auto flex flex-col gap-3">
-                <a
-                  href={buildWhatsAppUrl()}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold py-3.5 px-6 rounded-full transition shadow-lg shadow-green-500/25 text-base"
+                <button
+                  onClick={handleAddToCart}
+                  className="w-full flex items-center justify-center gap-2 bg-brand-yellow hover:bg-yellow-400 text-brand-gray font-bold py-3.5 px-6 rounded-full transition shadow-lg shadow-yellow-500/25 text-base"
                 >
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-                  </svg>
-                  Chamar no WhatsApp
-                </a>
+                  🛒 Adicionar no carrinho
+                </button>
                 <Link
                   href="/cart"
-                  className="w-full flex items-center justify-center gap-2 border-2 border-blue-500 text-blue-500 hover:bg-blue-50 font-bold py-3.5 px-6 rounded-full transition text-base"
+                  className="w-full flex items-center justify-center gap-2 border-2 border-brand-blue text-brand-blue hover:bg-brand-blue/10 font-bold py-3.5 px-6 rounded-full transition text-base"
                 >
                   📋 Solicitar orçamento
                 </Link>
@@ -312,6 +360,45 @@ function ProductDetail() {
             </div>
           </div>
         </div>
+
+        {/* ── Related items ──────────────────────────────────────────── */}
+        {relatedItems.length > 0 && (
+          <div className="mt-10">
+            <h2 className="text-xl font-extrabold text-brand-gray mb-5">
+              Você também pode gostar
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+              {relatedItems.map(item => (
+                <Link
+                  key={item.id}
+                  href={`/produto?type=${type}&id=${item.id}`}
+                  className="block bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-200 group"
+                >
+                  <div className="relative h-32 bg-gradient-to-br from-yellow-50 to-amber-50">
+                    {item.image_url ? (
+                      <Image
+                        src={item.image_url}
+                        alt={item.name}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center text-3xl">
+                        {TYPE_EMOJI[type] || '🎁'}
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-3">
+                    <p className="text-xs font-semibold text-gray-800 line-clamp-2 leading-snug">{item.name}</p>
+                    {item.price != null && item.price > 0 && (
+                      <p className="text-xs font-bold text-brand-yellow mt-1">{formatCurrency(item.price)}</p>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
@@ -323,7 +410,7 @@ export default function ProductoPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400" />
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-yellow" />
       </div>
     }>
       <ProductDetail />
