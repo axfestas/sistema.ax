@@ -112,104 +112,148 @@ function printContract(ct: Contract) {
   let items: ContractItem[] = [];
   try { items = JSON.parse(ct.items_json) as ContractItem[]; } catch { /* ignore */ }
 
+  const paymentLabel = PAYMENT_METHODS.find((p) => p.value === ct.payment_method)?.label ?? ct.payment_method ?? '';
+
   const html = `<!DOCTYPE html><html lang="pt-BR"><head>
 <meta charset="utf-8"/>
 <title>Contrato ${formatContractId(ct.id)}</title>
 <style>
-  body { font-family: Arial, sans-serif; font-size: 13px; margin: 0; padding: 30px; color: #1a1a1a; }
-  h1 { text-align: center; font-size: 18px; margin-bottom: 4px; }
-  .sub { text-align: center; font-size: 12px; color: #555; margin-bottom: 20px; }
-  .id-label { text-align: center; font-weight: bold; font-size: 14px; margin-bottom: 20px; }
-  section { margin-bottom: 16px; }
-  h2 { font-size: 13px; font-weight: bold; border-bottom: 1px solid #ccc; padding-bottom: 3px; margin-bottom: 8px; }
-  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; }
-  .field { font-size: 12px; }
-  .field span { color: #555; }
-  table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  th { background: #f5f5f5; padding: 6px 8px; text-align: left; font-size: 11px; }
-  td { padding: 6px 8px; border-top: 1px solid #eee; }
-  .text-right { text-align: right; }
-  .totals { margin-top: 8px; text-align: right; font-size: 13px; }
-  .totals div { margin-top: 3px; }
-  .total-final { font-weight: bold; font-size: 15px; color: #c026d3; }
-  .signature { margin-top: 50px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
-  .sign-box { border-top: 1px solid #333; padding-top: 6px; text-align: center; font-size: 11px; }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, sans-serif; font-size: 12px; margin: 0; padding: 30px 35px; color: #1a1a1a; }
+  h1 { text-align: center; font-size: 16px; font-weight: bold; text-transform: uppercase; margin: 0 0 6px; letter-spacing: 1px; }
+  .sub { text-align: center; font-size: 11px; color: #555; margin-bottom: 6px; }
+  .contract-id { text-align: center; font-size: 11px; color: #555; margin-bottom: 20px; }
+  .party-block { margin-bottom: 16px; border: 1px solid #ccc; border-radius: 4px; }
+  .party-block .party-title { background: #f0f0f0; font-weight: bold; font-size: 12px; padding: 5px 10px; border-bottom: 1px solid #ccc; text-transform: uppercase; border-radius: 4px 4px 0 0; }
+  .party-grid { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; padding: 8px 10px; font-size: 11.5px; }
+  .party-grid .label { font-weight: bold; color: #333; white-space: nowrap; }
+  .clause { margin-bottom: 14px; }
+  .clause-title { font-weight: bold; font-size: 12px; text-transform: uppercase; margin-bottom: 6px; border-bottom: 1px solid #bbb; padding-bottom: 3px; }
+  .clause p { margin: 4px 0; font-size: 11.5px; line-height: 1.6; }
+  table.items { width: 100%; border-collapse: collapse; font-size: 11.5px; margin-bottom: 6px; }
+  table.items th { background: #f0f0f0; padding: 5px 8px; text-align: left; border: 1px solid #ccc; font-size: 11px; font-weight: bold; }
+  table.items td { padding: 5px 8px; border: 1px solid #ddd; vertical-align: top; }
+  table.items .center { text-align: center; }
+  table.items .right { text-align: right; }
+  .totals-row { display: flex; justify-content: flex-end; gap: 30px; font-size: 12px; margin-top: 6px; }
+  .totals-row .total-final { font-weight: bold; font-size: 13px; }
+  .signature-block { margin-top: 50px; display: grid; grid-template-columns: 1fr 1fr; gap: 50px; }
+  .sign-box { text-align: center; }
+  .sign-box .sign-line { border-top: 1px solid #333; margin-bottom: 5px; }
+  .sign-box .sign-label { font-size: 11px; }
   @media print {
-    body { padding: 15px; }
+    body { padding: 15px 20px; }
     button { display: none !important; }
   }
 </style>
 </head><body>
-<h1>Ax Festas &mdash; Contrato de Locação</h1>
-<div class="sub">www.axfestas.com.br</div>
-<div class="id-label">${formatContractId(ct.id)}</div>
 
-<section>
-  <h2>LOCATÁRIO</h2>
-  <div class="grid2">
-    <div class="field"><span>Nome:</span> ${ct.client_name}</div>
-    <div class="field"><span>Telefone:</span> ${ct.client_phone}</div>
-    ${ct.client_email ? `<div class="field"><span>Email:</span> ${ct.client_email}</div>` : ''}
-    ${ct.client_cpf ? `<div class="field"><span>CPF:</span> ${ct.client_cpf}</div>` : ''}
-    ${ct.client_address ? `<div class="field" style="grid-column:1/-1"><span>Endereço:</span> ${ct.client_address}${ct.client_city ? ', ' + ct.client_city : ''}${ct.client_state ? ' - ' + ct.client_state : ''}</div>` : ''}
+<h1>Contrato de Locação de Pegue e Monte</h1>
+<div class="sub">Ax Festas &mdash; www.axfestas.com.br</div>
+<div class="contract-id">Contrato Nº ${formatContractId(ct.id)}</div>
+
+<div class="party-block">
+  <div class="party-title">Locadore</div>
+  <div class="party-grid">
+    <span class="label">Nome</span><span>ALEX DOS SANTOS FRAGA</span>
+    <span class="label">CNPJ/CPF</span><span>142.612.667-09</span>
+    <span class="label">Endereço</span><span>Rua Jacintha de Paulo Ferreira, nº 12, Bairro André Carloni, Serra/ES, CEP: 29161-820</span>
   </div>
-</section>
+</div>
 
-${ct.event_date || ct.event_location || ct.pickup_date || ct.return_date ? `
-<section>
-  <h2>EVENTO / PERÍODO</h2>
-  <div class="grid2">
-    ${ct.event_date ? `<div class="field"><span>Data do evento:</span> ${fmtDate(ct.event_date)}</div>` : ''}
-    ${ct.event_location ? `<div class="field"><span>Local:</span> ${ct.event_location}</div>` : ''}
-    ${ct.pickup_date ? `<div class="field"><span>Retirada:</span> ${fmtDate(ct.pickup_date)}</div>` : ''}
-    ${ct.return_date ? `<div class="field"><span>Devolução:</span> ${fmtDate(ct.return_date)}</div>` : ''}
+<div class="party-block">
+  <div class="party-title">Locatário</div>
+  <div class="party-grid">
+    <span class="label">Nome</span><span>${ct.client_name}</span>
+    ${ct.client_cpf ? `<span class="label">CNPJ/CPF</span><span>${ct.client_cpf}</span>` : ''}
+    <span class="label">Telefone</span><span>${ct.client_phone}</span>
+    ${ct.client_email ? `<span class="label">E-mail</span><span>${ct.client_email}</span>` : ''}
+    ${ct.client_address ? `<span class="label">Endereço</span><span>${ct.client_address}${ct.client_city ? ', ' + ct.client_city : ''}${ct.client_state ? ' - ' + ct.client_state : ''}</span>` : ''}
+    ${ct.event_location ? `<span class="label">Local</span><span>${ct.event_location}</span>` : ''}
+    ${ct.pickup_date ? `<span class="label">Data Retirada</span><span>${fmtDate(ct.pickup_date)}</span>` : ''}
+    ${ct.return_date ? `<span class="label">Data Entrega</span><span>${fmtDate(ct.return_date)}</span>` : ''}
+    ${paymentLabel ? `<span class="label">Forma de Pagamento</span><span>${paymentLabel}</span>` : ''}
   </div>
-</section>` : ''}
+</div>
 
-<section>
-  <h2>ITENS LOCADOS</h2>
-  <table>
+<div class="clause">
+  <div class="clause-title">01. Do Objeto da Locação</div>
+  <p>A locadora Ax Festas disponibiliza a locação de mobiliário e objetos destinados à realização de festas e eventos em geral. Os itens especificados no pedido abaixo fazem parte deste contrato e foram solicitados no momento da contratação.</p>
+  <table class="items">
     <thead>
       <tr>
-        <th>Descrição</th>
-        <th style="text-align:center">Qtd</th>
-        <th style="text-align:right">Valor Unit.</th>
-        <th style="text-align:right">Total</th>
+        <th class="center" style="width:60px">Quant.</th>
+        <th style="width:80px">Cód.</th>
+        <th>Detalhes</th>
+        <th class="right" style="width:100px">Valor</th>
       </tr>
     </thead>
     <tbody>
-      ${items.map((it) => `
+      ${items.map((it, idx) => `
       <tr>
+        <td class="center">${it.quantity}</td>
+        <td>${String(idx + 1).padStart(3, '0')}</td>
         <td>${it.description}</td>
-        <td style="text-align:center">${it.quantity}</td>
-        <td style="text-align:right">${BRL(it.unit_price)}</td>
-        <td style="text-align:right">${BRL(it.total)}</td>
+        <td class="right">${BRL(it.total)}</td>
       </tr>`).join('')}
     </tbody>
   </table>
-  <div class="totals">
-    <div>Subtotal: ${BRL(items.reduce((s, i) => s + i.total, 0))}</div>
-    ${ct.discount > 0 ? `<div>Desconto: - ${BRL(ct.discount)}</div>` : ''}
-    <div class="total-final">Total: ${BRL(ct.total)}</div>
+  <div class="totals-row">
+    ${ct.discount > 0 ? `<span>Desconto: <strong>- ${BRL(ct.discount)}</strong></span>` : ''}
+    <span class="total-final">Total: ${BRL(ct.total)}</span>
   </div>
-</section>
+</div>
 
-${ct.payment_method ? `
-<section>
-  <h2>FORMA DE PAGAMENTO</h2>
-  <div class="field">${PAYMENT_METHODS.find((p) => p.value === ct.payment_method)?.label ?? ct.payment_method}</div>
-</section>` : ''}
+${ct.notes ? `<div class="clause"><div class="clause-title">Observações</div><p>${ct.notes}</p></div>` : ''}
 
-${ct.notes ? `<section><h2>OBSERVAÇÕES</h2><p style="font-size:12px">${ct.notes}</p></section>` : ''}
+<div class="clause">
+  <div class="clause-title">02. Das Retiradas e Devoluções</div>
+  <p>2.1. As retiradas e devoluções dos itens locados deverão ser realizadas com 24 (vinte e quatro) horas de antecedência ou na data do evento, no endereço Rua Jacintha de Paulo Ferreira, nº 12, Bairro André Carloni, Serra/ES, CEP: 29161-820.</p>
+  <p>2.2. Todo o material locado deve ser devolvido no mesmo local em que foram retirados.</p>
+  <p>2.3. Os itens locados serão entregues limpos e sem avarias, devidamente embalados.</p>
+  <p>2.4. No ato da recepção e devolução, os bens locados deverão ser conferidos pelo locatário e locador.</p>
+  <p>2.5. Em caso de necessidade de reposição ou danos nos itens locados, será de responsabilidade do Locatário.</p>
+</div>
 
-<p style="font-size:11px;color:#555;margin-top:16px">
-  Este contrato está sujeito às cláusulas gerais de locação da Ax Festas.
-  Em caso de dúvidas, entre em contato pelo WhatsApp.
-</p>
+<div class="clause">
+  <div class="clause-title">03. Do Preço e Pagamento</div>
+  <p>3.1. O Locatário pagará pelo valor descrito no pedido acima.</p>
+  <p>3.2. Para garantir a reserva dos itens locados, aceitamos o parcelamento do valor da locação da seguinte forma: Pagamento de 50% (cinquenta por cento) do valor como sinal, realizado por meio de Pix, cartão de crédito ou cartão de débito e os outros 50% (cinquenta por cento) deverá ser quitado no momento da retirada dos itens locados. Caso o cliente prefira, poderá optar pelo pagamento integral (100%) no ato da reserva.</p>
+  <p>3.3. Os pagamentos feitos via cartão estão sujeitos a taxa conforme o banco PagBank. Cartão de crédito com taxa de 3,14% e cartão de débito com taxa de 0,88%.</p>
+  <p>3.4. A locação para a data contratada só será garantida mediante o pagamento de 100% do valor do pedido.</p>
+  <p>3.5. Em caso de cancelamento, será restituído o equivalente a 80% (oitenta por cento) do valor total da locação, a título de reembolso.</p>
+  <p>3.6. Não serão aceitos pagamentos após o evento ou na devolução de itens locados.</p>
+</div>
 
-<div class="signature">
-  <div class="sign-box">Locador: Ax Festas</div>
-  <div class="sign-box">Locatário: ${ct.client_name}</div>
+<div class="clause">
+  <div class="clause-title">04. Das Avarias de Itens Locados</div>
+  <p>4.1. A Locadora se compromete a entregar o produto em bom estado de conservação (salvo desgaste natural da utilização), e o Locatário, no ato da retirada, confirma e presume o bom estado de conservação.</p>
+  <p>4.2. No ato da devolução dos bens locados, estes deverão estar no mesmo estado da retirada (sem furos, traços de colagem, cola ou adesivos, marcas de grampeador ou grampos, trincos, arranhões, manchas, quebrados ou peças faltantes), tais como foram recebidos, respondendo o Locatário pelos danos causados.</p>
+  <p>4.3. Após emissão do contrato, a solicitação da troca e/ou exclusão de itens poderá ocorrer no máximo dois dias antes da data do aluguel.</p>
+</div>
+
+<div class="clause">
+  <div class="clause-title">05. Das Multas Contratuais</div>
+  <p>5.1. No caso de peças com avarias, será cobrado o valor de reposição; em caso de indisponibilidade, será cobrado o valor de mercado.</p>
+  <p>5.2. No caso de não devolução de peças individuais ou partes, serão cobrados o valor de reposição; em caso de indisponibilidade, será cobrado o valor de mercado.</p>
+  <p>5.3. No caso de não devolução de itens locados dentro do prazo contratado, será cobrado 1% (um por cento) do valor do contrato por dia de atraso.</p>
+  <p>5.4. A reforma em itens avariados e/ou compra para reposição de itens advindos dos casos acima citados é exclusiva da Ax Festas, cabendo ao locatário efetuar os devidos pagamentos ora descritos.</p>
+</div>
+
+<div class="clause">
+  <div class="clause-title">06. Disposições Gerais</div>
+  <p>06.1. As partes declaram estar de acordo com todas as cláusulas deste contrato, comprometendo-se a cumpri-las integralmente.</p>
+</div>
+
+<div class="signature-block">
+  <div class="sign-box">
+    <div class="sign-line"></div>
+    <div class="sign-label">Locador(e): Alex dos Santos Fraga &mdash; Ax Festas</div>
+  </div>
+  <div class="sign-box">
+    <div class="sign-line"></div>
+    <div class="sign-label">Locatário(a): ${ct.client_name}</div>
+  </div>
 </div>
 
 <script>window.onload=function(){window.print();}</script>
