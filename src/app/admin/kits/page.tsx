@@ -60,6 +60,8 @@ export default function KitsPage() {
     item_id: '',
     quantity: '1',
   })
+  const [itemSearch, setItemSearch] = useState('')
+  const [itemDropdown, setItemDropdown] = useState(false)
 
   const filteredKits = kits.filter((kit) => {
     if (!search.trim()) return true
@@ -169,6 +171,7 @@ export default function KitsPage() {
     }
     
     setNewFormItem({ item_id: '', quantity: '1' })
+    setItemSearch('')
   }
 
   const handleRemoveFormItem = (itemId: number) => {
@@ -341,6 +344,8 @@ export default function KitsPage() {
             setEditingKit(null)
             setFormData({ name: '', description: '', price: '', image_url: '', is_active: 1, is_featured: 0, is_promotion: 0, original_price: '' })
             setFormKitItems([])
+            setItemSearch('')
+            setNewFormItem({ item_id: '', quantity: '1' })
           }}
           className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded"
         >
@@ -412,18 +417,46 @@ export default function KitsPage() {
                 <div className="grid grid-cols-2 gap-3 mb-3">
                   <div>
                     <label className="block text-sm font-medium mb-1">Selecione um Item</label>
-                    <select
-                      value={newFormItem.item_id}
-                      onChange={(e) => setNewFormItem({ ...newFormItem, item_id: e.target.value })}
-                      className="w-full px-3 py-2 border rounded"
-                    >
-                      <option value="">Selecione um item</option>
-                      {items.filter(item => item.quantity > 0).map((item) => (
-                        <option key={item.id} value={item.id}>
-                          {item.name} (Estoque: {item.quantity})
-                        </option>
-                      ))}
-                    </select>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder="Buscar item do estoque..."
+                        value={itemSearch}
+                        onFocus={() => setItemDropdown(true)}
+                        onChange={(e) => {
+                          setItemSearch(e.target.value)
+                          setNewFormItem({ ...newFormItem, item_id: '' })
+                          setItemDropdown(true)
+                        }}
+                        onBlur={() => setTimeout(() => setItemDropdown(false), 150)}
+                        className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-1 focus:ring-brand-yellow"
+                      />
+                      {itemDropdown && (
+                        <div className="absolute z-20 left-0 right-0 top-full mt-0.5 bg-white border rounded shadow-lg max-h-40 overflow-y-auto">
+                          {items
+                            .filter(item => item.quantity > 0 && item.name.toLowerCase().includes(itemSearch.toLowerCase()))
+                            .slice(0, 8)
+                            .map(item => (
+                              <button
+                                key={item.id}
+                                type="button"
+                                className="w-full text-left px-3 py-1.5 text-sm hover:bg-yellow-50 flex justify-between"
+                                onMouseDown={() => {
+                                  setNewFormItem({ ...newFormItem, item_id: String(item.id) })
+                                  setItemSearch(item.name)
+                                  setItemDropdown(false)
+                                }}
+                              >
+                                <span>{item.name}</span>
+                                <span className="text-gray-400 text-xs">Estoque: {item.quantity}</span>
+                              </button>
+                            ))}
+                          {items.filter(item => item.quantity > 0 && item.name.toLowerCase().includes(itemSearch.toLowerCase())).length === 0 && (
+                            <div className="px-3 py-2 text-gray-400 text-sm">Nenhum item encontrado</div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">Quantidade</label>
@@ -537,6 +570,8 @@ export default function KitsPage() {
                   setShowForm(false)
                   setEditingKit(null)
                   setFormKitItems([])
+                  setItemSearch('')
+                  setNewFormItem({ item_id: '', quantity: '1' })
                 }}
                 className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
               >

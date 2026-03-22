@@ -625,7 +625,7 @@ export default function QuotesPage() {
               Cancelar
             </button>
             <button type="submit" disabled={saving}
-              className="px-5 py-2 bg-brand-yellow text-brand-gray rounded-lg hover:bg-yellow-400 transition-colors disabled:opacity-50">
+              className="px-5 py-2 bg-brand-blue hover:bg-brand-blue-dark text-white font-bold rounded-lg transition-colors disabled:opacity-50">
               {saving ? 'Salvando...' : editingQuote ? 'Salvar Alterações' : 'Criar Orçamento'}
             </button>
           </div>
@@ -656,7 +656,7 @@ export default function QuotesPage() {
               📱 WhatsApp
             </button>
             <button onClick={() => handleConvertToContract(detailQuote)}
-              className="px-3 py-1.5 text-sm bg-brand-yellow text-brand-gray rounded-lg hover:bg-yellow-400">
+              className="px-3 py-1.5 text-sm bg-brand-blue hover:bg-brand-blue-dark text-white font-bold rounded-lg">
               📄 Converter em Contrato
             </button>
           </div>
@@ -749,7 +749,7 @@ export default function QuotesPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Orçamentos</h1>
         <button onClick={openNew}
-          className="bg-brand-yellow text-brand-gray px-4 py-2 rounded-lg hover:bg-yellow-400 transition-colors">
+          className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold px-4 py-2 rounded-lg transition-colors">
           + Novo Orçamento
         </button>
       </div>
@@ -819,17 +819,17 @@ export default function QuotesPage() {
                       </span>
                     </td>
                     <td className="p-3">
-                      <div className="flex gap-2 flex-wrap">
+                      <div className="flex gap-1 flex-wrap">
                         <button onClick={() => openDetail(q)}
-                          className="text-xs text-brand-yellow hover:underline">👁️ Ver</button>
+                          className="text-xs bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-1 px-2 rounded">👁️ Ver</button>
                         <button onClick={() => openEdit(q)}
-                          className="text-xs text-gray-600 hover:underline">✏️ Editar</button>
+                          className="text-xs bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-1 px-2 rounded">✏️ Editar</button>
                         <button onClick={() => handleWhatsApp(q)}
-                          className="text-xs text-green-600 hover:underline">📱 WA</button>
+                          className="text-xs bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-2 rounded">📱 WA</button>
                         <button onClick={() => handleConvertToContract(q)}
-                          className="text-xs text-indigo-600 hover:underline">📄 Contrato</button>
+                          className="text-xs bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-1 px-2 rounded">📄 Contrato</button>
                         <button onClick={() => handleDelete(q.id)}
-                          className="text-xs text-red-500 hover:underline">🗑️</button>
+                          className="text-xs bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">🗑️</button>
                       </div>
                     </td>
                   </tr>
