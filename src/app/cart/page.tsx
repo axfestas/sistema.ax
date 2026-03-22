@@ -16,6 +16,7 @@ export default function CartPage() {
   const { items, removeItem, updateQuantity, clearCart, total } = useCart()
   const { showSuccess, showError } = useToast()
   const { appliedCombos, totalDiscount } = useComboCalculator(items)
+  const finalTotal = Math.max(0, total - totalDiscount)
   const [showQuoteForm, setShowQuoteForm] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState({
@@ -43,7 +44,7 @@ export default function CartPage() {
           eventDate: formData.eventDate,
           message: formData.message,
           items: items,
-          total: Math.max(0, total - totalDiscount),
+          total: finalTotal,
           combos_applied: appliedCombos.map(ac => ({
             name: ac.combo.name,
             discount: ac.discountAmount,
@@ -191,7 +192,7 @@ export default function CartPage() {
                 <div className="flex justify-between items-center">
                   <span className="text-xl font-bold text-brand-gray">Total Estimado:</span>
                   <span className="text-3xl font-bold text-brand-yellow">
-                    R$ {Math.max(0, total - totalDiscount).toFixed(2)}
+                    R$ {finalTotal.toFixed(2)}
                   </span>
                 </div>
                 {totalDiscount > 0 && (

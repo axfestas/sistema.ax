@@ -244,7 +244,7 @@ export default function CombosPage() {
       product_type: product.type,
       product_id: product.id,
       product_name: product.name,
-      required_quantity: parseInt(newItemQty) || 1,
+      required_quantity: parseInt(newItemQty, 10) || 1,
     }])
   }
 
@@ -298,8 +298,8 @@ export default function CombosPage() {
         type: formData.type,
         discount_type: formData.discount_type,
         discount_value: parseFloat(formData.discount_value),
-        min_quantity: parseInt(formData.min_quantity) || 1,
-        priority: parseInt(formData.priority) || 0,
+        min_quantity: parseInt(formData.min_quantity, 10) || 1,
+        priority: parseInt(formData.priority, 10) || 0,
         is_active: formData.is_active,
         items: formItems,
         categories: formCategories,
@@ -625,7 +625,7 @@ export default function CombosPage() {
                             type="number"
                             min="1"
                             value={item.required_quantity}
-                            onChange={e => updateProductQty(idx, parseInt(e.target.value) || 1)}
+                            onChange={e => updateProductQty(idx, parseInt(e.target.value, 10) || 1)}
                             className="w-16 border border-gray-200 rounded-lg px-2 py-1 text-sm text-center"
                             title="Quantidade necessária"
                           />

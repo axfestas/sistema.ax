@@ -108,7 +108,7 @@ export function calculateCombos(
     if (!combo.is_active) continue
 
     // Collect candidate items for this combo
-    const productMatches: { id: string; qty: number; unitPrice: number; needed: number }[] = []
+    const productMatches: { id: string; qty: number; unitPrice: number }[] = []
     const categoryMatches: { id: string; qty: number; unitPrice: number }[] = []
 
     // ── Product matching ───────────────────────────────────────────────────
@@ -141,7 +141,7 @@ export function calculateCombos(
           const avail = remaining.get(ci.id) ?? 0
           if (avail <= 0) continue
           const take = Math.min(avail, needed)
-          productMatches.push({ id: ci.id, qty: take, unitPrice: ci.price, needed: requiredItem.required_quantity })
+          productMatches.push({ id: ci.id, qty: take, unitPrice: ci.price })
           needed -= take
           if (needed <= 0) break
         }
@@ -246,7 +246,7 @@ export function useComboCalculator(cartItems: CartItem[]) {
 
   useEffect(() => {
     fetch('/api/combos?active=true')
-      .then(r => r.ok ? r.json() as Promise<ComboDef[]> : [])
+      .then(r => r.ok ? r.json() as Promise<ComboDef[]> : Promise.resolve([] as ComboDef[]))
       .then(data => { setCombos(data); setLoading(false) })
       .catch(() => setLoading(false))
   }, [])
