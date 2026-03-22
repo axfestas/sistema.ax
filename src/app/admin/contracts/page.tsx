@@ -147,7 +147,19 @@ function fmtDate(iso?: string) {
 
 // ─── Print contract in a new window ───────────────────────────────────────────
 
-function printContract(ct: Contract, clauses: ContractClause[] = DEFAULT_CLAUSES) {
+interface LocadorSettings {
+  locador_name: string;
+  locador_cpf: string;
+  locador_address: string;
+}
+
+const DEFAULT_LOCADOR: LocadorSettings = {
+  locador_name: 'ALEX DOS SANTOS FRAGA',
+  locador_cpf: '142.612.667-09',
+  locador_address: 'Rua Jacintha de Paulo Ferreira, nº 12, Bairro André Carloni, Serra/ES, CEP: 29161-820',
+};
+
+function printContract(ct: Contract, clauses: ContractClause[] = DEFAULT_CLAUSES, locador: LocadorSettings = DEFAULT_LOCADOR) {
   let items: ContractItem[] = [];
   try { items = JSON.parse(ct.items_json) as ContractItem[]; } catch { /* ignore */ }
 
@@ -204,9 +216,9 @@ function printContract(ct: Contract, clauses: ContractClause[] = DEFAULT_CLAUSES
 <div class="party-block">
   <div class="party-title">Locador(a/e)</div>
   <div class="party-grid">
-    <span class="label">Nome</span><span>ALEX DOS SANTOS FRAGA</span>
-    <span class="label">CNPJ/CPF</span><span>142.612.667-09</span>
-    <span class="label">Endereço</span><span>Rua Jacintha de Paulo Ferreira, nº 12, Bairro André Carloni, Serra/ES, CEP: 29161-820</span>
+    <span class="label">Nome</span><span>${locador.locador_name}</span>
+    <span class="label">CNPJ/CPF</span><span>${locador.locador_cpf}</span>
+    <span class="label">Endereço</span><span>${locador.locador_address}</span>
   </div>
 </div>
 
@@ -264,7 +276,7 @@ ${otherClauses.map(c => `
 <div class="signature-block">
   <div class="sign-box">
     <div class="sign-line"></div>
-    <div class="sign-label">Locador(a/e): Alex dos Santos Fraga &mdash; Ax Festas</div>
+    <div class="sign-label">Locador(a/e): ${locador.locador_name}</div>
   </div>
   <div class="sign-box">
     <div class="sign-line"></div>
@@ -315,6 +327,7 @@ export default function ContractsPage() {
   const [editClauses, setEditClauses] = useState<ContractClause[]>(DEFAULT_CLAUSES.map(c => ({ ...c })));
   const [showClausesEditor, setShowClausesEditor] = useState(false);
   const [baseClauses, setBaseClauses] = useState<ContractClause[]>(DEFAULT_CLAUSES.map(c => ({ ...c })));
+  const [locadorSettings, setLocadorSettings] = useState<LocadorSettings>({ ...DEFAULT_LOCADOR });
 
   // ── Load data ──────────────────────────────────────────────────────────────
 
@@ -356,11 +369,28 @@ export default function ContractsPage() {
     }
   }, []);
 
+  const loadLocadorSettings = useCallback(async () => {
+    try {
+      const res = await fetch('/api/settings');
+      if (res.ok) {
+        const data = await res.json() as Partial<LocadorSettings>;
+        setLocadorSettings({
+          locador_name: data.locador_name || DEFAULT_LOCADOR.locador_name,
+          locador_cpf: data.locador_cpf || DEFAULT_LOCADOR.locador_cpf,
+          locador_address: data.locador_address || DEFAULT_LOCADOR.locador_address,
+        });
+      }
+    } catch {
+      /* use defaults */
+    }
+  }, []);
+
   useEffect(() => {
     loadContracts();
     loadClients();
     loadClauses();
-  }, [loadContracts, loadClients, loadClauses]);
+    loadLocadorSettings();
+  }, [loadContracts, loadClients, loadClauses, loadLocadorSettings]);
 
   useEffect(() => {
     if (view !== 'form') return;
@@ -919,7 +949,7 @@ export default function ContractsPage() {
               className="px-3 py-1.5 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600">
               📱 WhatsApp
             </button>
-            <button onClick={() => printContract(detailContract, editClauses)}
+            <button onClick={() => printContract(detailContract, editClauses, locadorSettings)}
               className="px-3 py-1.5 text-sm bg-brand-blue hover:bg-brand-blue-dark text-white font-bold rounded-lg">
               🖨️ Imprimir / PDF
             </button>
@@ -1116,7 +1146,7 @@ export default function ContractsPage() {
                       <div className="flex gap-1 flex-wrap">
                         <button onClick={() => openDetail(c)} className="text-xs bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-1 px-2 rounded">👁️ Ver</button>
                         <button onClick={() => openEdit(c)} className="text-xs bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-1 px-2 rounded">✏️ Editar</button>
-                        <button onClick={() => printContract(c)} className="text-xs bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-1 px-2 rounded">🖨️ PDF</button>
+                        <button onClick={() => printContract(c, DEFAULT_CLAUSES, locadorSettings)} className="text-xs bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-1 px-2 rounded">🖨️ PDF</button>
                         <button onClick={() => handleWhatsApp(c)} className="text-xs bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-2 rounded">📱 WA</button>
                         <button onClick={() => handleDelete(c.id)} className="text-xs bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">🗑️</button>
                       </div>

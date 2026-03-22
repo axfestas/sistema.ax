@@ -16,11 +16,23 @@ interface ContractClause {
   updated_at: string;
 }
 
+interface LocadorData {
+  locador_name: string;
+  locador_cpf: string;
+  locador_address: string;
+}
+
 const EMPTY_FORM = {
   order_num: 1,
   title: '',
   content: '',
   is_active: 1,
+};
+
+const DEFAULT_LOCADOR: LocadorData = {
+  locador_name: 'ALEX DOS SANTOS FRAGA',
+  locador_cpf: '142.612.667-09',
+  locador_address: 'Rua Jacintha de Paulo Ferreira, nº 12, Bairro André Carloni, Serra/ES, CEP: 29161-820',
 };
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -36,6 +48,11 @@ export default function ContractClausesPage() {
   // Which clause is being edited (null = none / 0 = new)
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState({ ...EMPTY_FORM });
+
+  // Locador data
+  const [locador, setLocador] = useState<LocadorData>({ ...DEFAULT_LOCADOR });
+  const [savingLocador, setSavingLocador] = useState(false);
+  const [showLocadorEditor, setShowLocadorEditor] = useState(false);
 
   // ── Auth check ─────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -56,7 +73,11 @@ export default function ContractClausesPage() {
     setLoading(true);
     try {
       const res = await fetch('/api/contract-clauses?all=true');
-      if (res.ok) setClauses(await res.json() as ContractClause[]);
+      if (res.ok) {
+        setClauses(await res.json() as ContractClause[]);
+      } else {
+        showError('Erro ao carregar cláusulas. Verifique se as migrações foram aplicadas.');
+      }
     } catch {
       showError('Erro ao carregar cláusulas.');
     } finally {
@@ -65,7 +86,49 @@ export default function ContractClausesPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => { loadClauses(); }, [loadClauses]);
+  // ── Load locador settings ──────────────────────────────────────────────────
+  const loadLocador = useCallback(async () => {
+    try {
+      const res = await fetch('/api/settings');
+      if (res.ok) {
+        const data = await res.json() as Partial<LocadorData>;
+        setLocador({
+          locador_name: data.locador_name || DEFAULT_LOCADOR.locador_name,
+          locador_cpf: data.locador_cpf || DEFAULT_LOCADOR.locador_cpf,
+          locador_address: data.locador_address || DEFAULT_LOCADOR.locador_address,
+        });
+      }
+    } catch {
+      /* use defaults */
+    }
+  }, []);
+
+  useEffect(() => {
+    loadClauses();
+    loadLocador();
+  }, [loadClauses, loadLocador]);
+
+  // ── Save locador data ──────────────────────────────────────────────────────
+  const handleSaveLocador = async () => {
+    setSavingLocador(true);
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(locador),
+      });
+      if (res.ok) {
+        showSuccess('Dados do locador atualizados com sucesso!');
+        setShowLocadorEditor(false);
+      } else {
+        showError('Erro ao salvar dados do locador.');
+      }
+    } catch {
+      showError('Erro de conexão.');
+    } finally {
+      setSavingLocador(false);
+    }
+  };
 
   // ── Open form for new clause ───────────────────────────────────────────────
   const openNew = () => {
@@ -171,9 +234,9 @@ export default function ContractClausesPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Cláusulas do Contrato</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Dados do Contrato</h1>
           <p className="text-gray-500 text-sm mt-1">
-            Gerencie as cláusulas padrão usadas nos contratos de locação
+            Gerencie os dados do locador e as cláusulas usadas nos contratos de locação
           </p>
         </div>
         {editingId === null && (
@@ -184,6 +247,101 @@ export default function ContractClausesPage() {
             <span className="text-lg">+</span> Nova Cláusula
           </button>
         )}
+      </div>
+
+      {/* Locador Data Section */}
+      <div className="bg-white rounded-2xl border shadow-sm mb-6">
+        <div className="p-5">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <h2 className="font-bold text-gray-800 text-base">🏢 Dados do Locador</h2>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Informações do locador exibidas no contrato impresso
+              </p>
+            </div>
+            <button
+              onClick={() => setShowLocadorEditor(!showLocadorEditor)}
+              className="text-sm text-brand-yellow hover:text-yellow-600 font-medium"
+            >
+              {showLocadorEditor ? '▲ Ocultar' : '✏️ Editar'}
+            </button>
+          </div>
+
+          {!showLocadorEditor && (
+            <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+              <div>
+                <span className="text-xs font-semibold text-gray-500 uppercase">Nome</span>
+                <p className="text-gray-800 mt-0.5">{locador.locador_name}</p>
+              </div>
+              <div>
+                <span className="text-xs font-semibold text-gray-500 uppercase">CPF/CNPJ</span>
+                <p className="text-gray-800 mt-0.5">{locador.locador_cpf}</p>
+              </div>
+              <div>
+                <span className="text-xs font-semibold text-gray-500 uppercase">Endereço</span>
+                <p className="text-gray-800 mt-0.5">{locador.locador_address}</p>
+              </div>
+            </div>
+          )}
+
+          {showLocadorEditor && (
+            <div className="mt-4 space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">
+                    Nome do Locador <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={locador.locador_name}
+                    onChange={e => setLocador(l => ({ ...l, locador_name: e.target.value }))}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow"
+                    placeholder="ALEX DOS SANTOS FRAGA"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">
+                    CPF / CNPJ <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={locador.locador_cpf}
+                    onChange={e => setLocador(l => ({ ...l, locador_cpf: e.target.value }))}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow"
+                    placeholder="000.000.000-00"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">
+                  Endereço Completo <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={locador.locador_address}
+                  onChange={e => setLocador(l => ({ ...l, locador_address: e.target.value }))}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow"
+                  placeholder="Rua Exemplo, nº 00, Bairro, Cidade/UF, CEP: 00000-000"
+                />
+              </div>
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => setShowLocadorEditor(false)}
+                  className="px-5 py-2 rounded-xl border border-gray-300 text-gray-600 text-sm font-semibold hover:bg-gray-50 transition"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleSaveLocador}
+                  disabled={savingLocador}
+                  className="px-5 py-2 rounded-xl bg-brand-yellow hover:bg-yellow-400 disabled:bg-gray-300 text-brand-gray text-sm font-semibold transition"
+                >
+                  {savingLocador ? 'Salvando…' : 'Salvar Dados do Locador'}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Inline form (new or edit) */}
@@ -261,6 +419,11 @@ export default function ContractClausesPage() {
         </div>
       )}
 
+      {/* Clauses section header */}
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="font-bold text-gray-700">📋 Cláusulas do Contrato</h2>
+      </div>
+
       {/* Clause list */}
       {loading ? (
         <div className="flex items-center justify-center min-h-48">
@@ -270,7 +433,7 @@ export default function ContractClausesPage() {
         <div className="text-center py-16 text-gray-400">
           <p className="text-5xl mb-4">📋</p>
           <p className="font-medium">Nenhuma cláusula cadastrada.</p>
-          <p className="text-sm mt-1">Clique em &quot;Nova Cláusula&quot; para começar.</p>
+          <p className="text-sm mt-1">Clique em &quot;Nova Cláusula&quot; para começar, ou execute as migrações nas <a href="/admin/settings" className="text-brand-yellow underline">Configurações</a> para carregar as cláusulas padrão.</p>
         </div>
       ) : (
         <div className="space-y-4">

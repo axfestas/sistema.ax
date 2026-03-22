@@ -428,6 +428,58 @@ const MIGRATIONS: { desc: string; sql: string }[] = [
     desc: '033: idx_contract_clauses_active',
     sql: `CREATE INDEX IF NOT EXISTS idx_contract_clauses_active ON contract_clauses(is_active)`,
   },
+  // 033-seed – default contract clauses (INSERT OR IGNORE to avoid duplicates)
+  {
+    desc: '033-seed: cláusula 1 - Do Objeto da Locação',
+    sql: `INSERT OR IGNORE INTO contract_clauses (id, order_num, title, content) VALUES (1, 1, '01. Do Objeto da Locação', 'A locadora Ax Festas disponibiliza a locação de mobiliário e objetos destinados à realização de festas e eventos em geral. Os itens especificados no pedido abaixo fazem parte deste contrato e foram solicitados no momento da contratação.')`,
+  },
+  {
+    desc: '033-seed: cláusula 2 - Das Retiradas e Devoluções',
+    sql: `INSERT OR IGNORE INTO contract_clauses (id, order_num, title, content) VALUES (2, 2, '02. Das Retiradas e Devoluções', '2.1. As retiradas e devoluções dos itens locados deverão ser realizadas com 24 (vinte e quatro) horas de antecedência ou na data do evento, no endereço Rua Jacintha de Paulo Ferreira, nº 12, Bairro André Carloni, Serra/ES, CEP: 29161-820.
+2.2. Todo o material locado deve ser devolvido no mesmo local em que foram retirados.
+2.3. Os itens locados serão entregues limpos e sem avarias, devidamente embalados.
+2.4. No ato da recepção e devolução, os bens locados deverão ser conferidos pelo Locatário(a/e) e Locador(a/e).
+2.5. Em caso de necessidade de reposição ou danos nos itens locados, será de responsabilidade do Locatário(a/e).')`,
+  },
+  {
+    desc: '033-seed: cláusula 3 - Do Preço e Pagamento',
+    sql: `INSERT OR IGNORE INTO contract_clauses (id, order_num, title, content) VALUES (3, 3, '03. Do Preço e Pagamento', '3.1. O Locatário(a/e) pagará pelo valor descrito no pedido acima.
+3.2. Para garantir a reserva dos itens locados, aceitamos o parcelamento do valor da locação da seguinte forma: Pagamento de 50% (cinquenta por cento) do valor como sinal, realizado por meio de Pix, cartão de crédito ou cartão de débito e os outros 50% (cinquenta por cento) deverá ser quitado no momento da retirada dos itens locados. Caso o cliente prefira, poderá optar pelo pagamento integral (100%) no ato da reserva.
+3.3. Os pagamentos feitos via cartão estão sujeitos a taxa conforme o banco PagBank. Cartão de crédito com taxa de 3,14% e cartão de débito com taxa de 0,88%.
+3.4. A locação para a data contratada só será garantida mediante o pagamento de 100% do valor do pedido.
+3.5. Em caso de cancelamento, será restituído o equivalente a 80% (oitenta por cento) do valor total da locação, a título de reembolso.
+3.6. Não serão aceitos pagamentos após o evento ou na devolução de itens locados.')`,
+  },
+  {
+    desc: '033-seed: cláusula 4 - Das Avarias de Itens Locados',
+    sql: `INSERT OR IGNORE INTO contract_clauses (id, order_num, title, content) VALUES (4, 4, '04. Das Avarias de Itens Locados', '4.1. O Locador(a/e) se compromete a entregar o produto em bom estado de conservação (salvo desgaste natural da utilização), e o Locatário(a/e), no ato da retirada, confirma e presume o bom estado de conservação.
+4.2. No ato da devolução dos bens locados, estes deverão estar no mesmo estado da retirada (sem furos, traços de colagem, cola ou adesivos, marcas de grampeador ou grampos, trincos, arranhões, manchas, quebrados ou peças faltantes), tais como foram recebidos, respondendo o Locatário(a/e) pelos danos causados.
+4.3. Após emissão do contrato, a solicitação da troca e/ou exclusão de itens poderá ocorrer no máximo dois dias antes da data do aluguel.')`,
+  },
+  {
+    desc: '033-seed: cláusula 5 - Das Multas Contratuais',
+    sql: `INSERT OR IGNORE INTO contract_clauses (id, order_num, title, content) VALUES (5, 5, '05. Das Multas Contratuais', '5.1. No caso de peças com avarias, será cobrado o valor de reposição; em caso de indisponibilidade, será cobrado o valor de mercado.
+5.2. No caso de não devolução de peças individuais ou partes, serão cobrados o valor de reposição; em caso de indisponibilidade, será cobrado o valor de mercado.
+5.3. No caso de não devolução de itens locados dentro do prazo contratado, será cobrado 1% (um por cento) do valor do contrato por dia de atraso.
+5.4. A reforma em itens avariados e/ou compra para reposição de itens advindos dos casos acima citados é exclusiva da Ax Festas, cabendo ao Locatário(a/e) efetuar os devidos pagamentos ora descritos.')`,
+  },
+  {
+    desc: '033-seed: cláusula 6 - Disposições Gerais',
+    sql: `INSERT OR IGNORE INTO contract_clauses (id, order_num, title, content) VALUES (6, 6, '06. Disposições Gerais', '06.1. As partes declaram estar de acordo com todas as cláusulas deste contrato, comprometendo-se a cumpri-las integralmente.')`,
+  },
+  // 034 – locador fields on site_settings
+  {
+    desc: '034: site_settings.locador_name',
+    sql: `ALTER TABLE site_settings ADD COLUMN locador_name TEXT DEFAULT 'ALEX DOS SANTOS FRAGA'`,
+  },
+  {
+    desc: '034: site_settings.locador_cpf',
+    sql: `ALTER TABLE site_settings ADD COLUMN locador_cpf TEXT DEFAULT '142.612.667-09'`,
+  },
+  {
+    desc: '034: site_settings.locador_address',
+    sql: `ALTER TABLE site_settings ADD COLUMN locador_address TEXT DEFAULT 'Rua Jacintha de Paulo Ferreira, nº 12, Bairro André Carloni, Serra/ES, CEP: 29161-820'`,
+  },
 ];
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {

@@ -57,7 +57,7 @@ const navGroups: NavGroup[] = [
       { href: '/admin/combos', label: 'Combos', icon: '🎉' },
       { href: '/admin/quotes', label: 'Orçamentos', icon: '📝' },
       { href: '/admin/contracts', label: 'Contratos', icon: '📄' },
-      { href: '/admin/contract-clauses', label: 'Cláusulas do Contrato', icon: '📋' },
+      { href: '/admin/contract-clauses', label: 'Dados do Contrato', icon: '📋' },
     ],
   },
   {
