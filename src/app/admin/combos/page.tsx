@@ -411,7 +411,7 @@ export default function CombosPage() {
         <div className="text-center py-16 text-gray-400">
           <p className="text-5xl mb-4">🎁</p>
           <p className="font-medium">Nenhum combo encontrado.</p>
-          <p className="text-sm mt-1">Clique em "Novo Combo" para criar o primeiro.</p>
+          <p className="text-sm mt-1">Clique em &quot;Novo Combo&quot; para criar o primeiro.</p>
         </div>
       ) : (
         <div className="space-y-4">
