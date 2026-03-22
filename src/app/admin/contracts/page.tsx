@@ -26,6 +26,12 @@ interface ContractItem {
   total: number;
 }
 
+interface ContractClause {
+  id: string;
+  title: string;
+  content: string;
+}
+
 interface Contract {
   id: number;
   client_id: number;
@@ -91,6 +97,39 @@ const PAYMENT_METHODS = [
 
 const EMPTY_ITEM: ContractItem = { description: '', quantity: 1, unit_price: 0, total: 0 };
 
+const DEFAULT_CLAUSES: ContractClause[] = [
+  {
+    id: '01',
+    title: '01. Do Objeto da Locação',
+    content: 'A locadora Ax Festas disponibiliza a locação de mobiliário e objetos destinados à realização de festas e eventos em geral. Os itens especificados no pedido abaixo fazem parte deste contrato e foram solicitados no momento da contratação.',
+  },
+  {
+    id: '02',
+    title: '02. Das Retiradas e Devoluções',
+    content: '2.1. As retiradas e devoluções dos itens locados deverão ser realizadas com 24 (vinte e quatro) horas de antecedência ou na data do evento, no endereço Rua Jacintha de Paulo Ferreira, nº 12, Bairro André Carloni, Serra/ES, CEP: 29161-820.\n2.2. Todo o material locado deve ser devolvido no mesmo local em que foram retirados.\n2.3. Os itens locados serão entregues limpos e sem avarias, devidamente embalados.\n2.4. No ato da recepção e devolução, os bens locados deverão ser conferidos pelo Locatário(a/e) e Locador(a/e).\n2.5. Em caso de necessidade de reposição ou danos nos itens locados, será de responsabilidade do Locatário(a/e).',
+  },
+  {
+    id: '03',
+    title: '03. Do Preço e Pagamento',
+    content: '3.1. O Locatário(a/e) pagará pelo valor descrito no pedido acima.\n3.2. Para garantir a reserva dos itens locados, aceitamos o parcelamento do valor da locação da seguinte forma: Pagamento de 50% (cinquenta por cento) do valor como sinal, realizado por meio de Pix, cartão de crédito ou cartão de débito e os outros 50% (cinquenta por cento) deverá ser quitado no momento da retirada dos itens locados. Caso o cliente prefira, poderá optar pelo pagamento integral (100%) no ato da reserva.\n3.3. Os pagamentos feitos via cartão estão sujeitos a taxa conforme o banco PagBank. Cartão de crédito com taxa de 3,14% e cartão de débito com taxa de 0,88%.\n3.4. A locação para a data contratada só será garantida mediante o pagamento de 100% do valor do pedido.\n3.5. Em caso de cancelamento, será restituído o equivalente a 80% (oitenta por cento) do valor total da locação, a título de reembolso.\n3.6. Não serão aceitos pagamentos após o evento ou na devolução de itens locados.',
+  },
+  {
+    id: '04',
+    title: '04. Das Avarias de Itens Locados',
+    content: '4.1. O Locador(a/e) se compromete a entregar o produto em bom estado de conservação (salvo desgaste natural da utilização), e o Locatário(a/e), no ato da retirada, confirma e presume o bom estado de conservação.\n4.2. No ato da devolução dos bens locados, estes deverão estar no mesmo estado da retirada (sem furos, traços de colagem, cola ou adesivos, marcas de grampeador ou grampos, trincos, arranhões, manchas, quebrados ou peças faltantes), tais como foram recebidos, respondendo o Locatário(a/e) pelos danos causados.\n4.3. Após emissão do contrato, a solicitação da troca e/ou exclusão de itens poderá ocorrer no máximo dois dias antes da data do aluguel.',
+  },
+  {
+    id: '05',
+    title: '05. Das Multas Contratuais',
+    content: '5.1. No caso de peças com avarias, será cobrado o valor de reposição; em caso de indisponibilidade, será cobrado o valor de mercado.\n5.2. No caso de não devolução de peças individuais ou partes, serão cobrados o valor de reposição; em caso de indisponibilidade, será cobrado o valor de mercado.\n5.3. No caso de não devolução de itens locados dentro do prazo contratado, será cobrado 1% (um por cento) do valor do contrato por dia de atraso.\n5.4. A reforma em itens avariados e/ou compra para reposição de itens advindos dos casos acima citados é exclusiva da Ax Festas, cabendo ao Locatário(a/e) efetuar os devidos pagamentos ora descritos.',
+  },
+  {
+    id: '06',
+    title: '06. Disposições Gerais',
+    content: '06.1. As partes declaram estar de acordo com todas as cláusulas deste contrato, comprometendo-se a cumpri-las integralmente.',
+  },
+];
+
 interface CatalogProduct {
   id: string;
   name: string;
@@ -108,11 +147,18 @@ function fmtDate(iso?: string) {
 
 // ─── Print contract in a new window ───────────────────────────────────────────
 
-function printContract(ct: Contract) {
+function printContract(ct: Contract, clauses: ContractClause[] = DEFAULT_CLAUSES) {
   let items: ContractItem[] = [];
   try { items = JSON.parse(ct.items_json) as ContractItem[]; } catch { /* ignore */ }
 
   const paymentLabel = PAYMENT_METHODS.find((p) => p.value === ct.payment_method)?.label ?? ct.payment_method ?? '';
+  const logoUrl = `${window.location.origin}/1.png`;
+
+  const clauseParagraphs = (content: string) =>
+    content.split('\n').map(p => p.trim()).filter(Boolean).map(p => `<p>${p}</p>`).join('');
+
+  const clause01 = clauses.find(c => c.id === '01') ?? DEFAULT_CLAUSES[0];
+  const otherClauses = clauses.filter(c => c.id !== '01');
 
   const html = `<!DOCTYPE html><html lang="pt-BR"><head>
 <meta charset="utf-8"/>
@@ -120,8 +166,9 @@ function printContract(ct: Contract) {
 <style>
   * { box-sizing: border-box; }
   body { font-family: Arial, sans-serif; font-size: 12px; margin: 0; padding: 30px 35px; color: #1a1a1a; }
+  .logo-block { text-align: center; margin-bottom: 8px; }
+  .logo-block img { height: 60px; width: auto; }
   h1 { text-align: center; font-size: 16px; font-weight: bold; text-transform: uppercase; margin: 0 0 6px; letter-spacing: 1px; }
-  .sub { text-align: center; font-size: 11px; color: #555; margin-bottom: 6px; }
   .contract-id { text-align: center; font-size: 11px; color: #555; margin-bottom: 20px; }
   .party-block { margin-bottom: 16px; border: 1px solid #ccc; border-radius: 4px; }
   .party-block .party-title { background: #f0f0f0; font-weight: bold; font-size: 12px; padding: 5px 10px; border-bottom: 1px solid #ccc; text-transform: uppercase; border-radius: 4px 4px 0 0; }
@@ -148,12 +195,14 @@ function printContract(ct: Contract) {
 </style>
 </head><body>
 
-<h1>Contrato de Locação de Pegue e Monte</h1>
-<div class="sub">Ax Festas &mdash; www.axfestas.com.br</div>
+<div class="logo-block">
+  <img src="${logoUrl}" onerror="this.style.display='none'" alt="Ax Festas" />
+</div>
+<h1>Contrato de Locação</h1>
 <div class="contract-id">Contrato Nº ${formatContractId(ct.id)}</div>
 
 <div class="party-block">
-  <div class="party-title">Locadore</div>
+  <div class="party-title">Locador(a/e)</div>
   <div class="party-grid">
     <span class="label">Nome</span><span>ALEX DOS SANTOS FRAGA</span>
     <span class="label">CNPJ/CPF</span><span>142.612.667-09</span>
@@ -162,7 +211,7 @@ function printContract(ct: Contract) {
 </div>
 
 <div class="party-block">
-  <div class="party-title">Locatário</div>
+  <div class="party-title">Locatário(a/e)</div>
   <div class="party-grid">
     <span class="label">Nome</span><span>${ct.client_name}</span>
     ${ct.client_cpf ? `<span class="label">CNPJ/CPF</span><span>${ct.client_cpf}</span>` : ''}
@@ -177,8 +226,8 @@ function printContract(ct: Contract) {
 </div>
 
 <div class="clause">
-  <div class="clause-title">01. Do Objeto da Locação</div>
-  <p>A locadora Ax Festas disponibiliza a locação de mobiliário e objetos destinados à realização de festas e eventos em geral. Os itens especificados no pedido abaixo fazem parte deste contrato e foram solicitados no momento da contratação.</p>
+  <div class="clause-title">${clause01.title}</div>
+  ${clauseParagraphs(clause01.content)}
   <table class="items">
     <thead>
       <tr>
@@ -206,53 +255,20 @@ function printContract(ct: Contract) {
 
 ${ct.notes ? `<div class="clause"><div class="clause-title">Observações</div><p>${ct.notes}</p></div>` : ''}
 
+${otherClauses.map(c => `
 <div class="clause">
-  <div class="clause-title">02. Das Retiradas e Devoluções</div>
-  <p>2.1. As retiradas e devoluções dos itens locados deverão ser realizadas com 24 (vinte e quatro) horas de antecedência ou na data do evento, no endereço Rua Jacintha de Paulo Ferreira, nº 12, Bairro André Carloni, Serra/ES, CEP: 29161-820.</p>
-  <p>2.2. Todo o material locado deve ser devolvido no mesmo local em que foram retirados.</p>
-  <p>2.3. Os itens locados serão entregues limpos e sem avarias, devidamente embalados.</p>
-  <p>2.4. No ato da recepção e devolução, os bens locados deverão ser conferidos pelo locatário e locador.</p>
-  <p>2.5. Em caso de necessidade de reposição ou danos nos itens locados, será de responsabilidade do Locatário.</p>
-</div>
-
-<div class="clause">
-  <div class="clause-title">03. Do Preço e Pagamento</div>
-  <p>3.1. O Locatário pagará pelo valor descrito no pedido acima.</p>
-  <p>3.2. Para garantir a reserva dos itens locados, aceitamos o parcelamento do valor da locação da seguinte forma: Pagamento de 50% (cinquenta por cento) do valor como sinal, realizado por meio de Pix, cartão de crédito ou cartão de débito e os outros 50% (cinquenta por cento) deverá ser quitado no momento da retirada dos itens locados. Caso o cliente prefira, poderá optar pelo pagamento integral (100%) no ato da reserva.</p>
-  <p>3.3. Os pagamentos feitos via cartão estão sujeitos a taxa conforme o banco PagBank. Cartão de crédito com taxa de 3,14% e cartão de débito com taxa de 0,88%.</p>
-  <p>3.4. A locação para a data contratada só será garantida mediante o pagamento de 100% do valor do pedido.</p>
-  <p>3.5. Em caso de cancelamento, será restituído o equivalente a 80% (oitenta por cento) do valor total da locação, a título de reembolso.</p>
-  <p>3.6. Não serão aceitos pagamentos após o evento ou na devolução de itens locados.</p>
-</div>
-
-<div class="clause">
-  <div class="clause-title">04. Das Avarias de Itens Locados</div>
-  <p>4.1. A Locadora se compromete a entregar o produto em bom estado de conservação (salvo desgaste natural da utilização), e o Locatário, no ato da retirada, confirma e presume o bom estado de conservação.</p>
-  <p>4.2. No ato da devolução dos bens locados, estes deverão estar no mesmo estado da retirada (sem furos, traços de colagem, cola ou adesivos, marcas de grampeador ou grampos, trincos, arranhões, manchas, quebrados ou peças faltantes), tais como foram recebidos, respondendo o Locatário pelos danos causados.</p>
-  <p>4.3. Após emissão do contrato, a solicitação da troca e/ou exclusão de itens poderá ocorrer no máximo dois dias antes da data do aluguel.</p>
-</div>
-
-<div class="clause">
-  <div class="clause-title">05. Das Multas Contratuais</div>
-  <p>5.1. No caso de peças com avarias, será cobrado o valor de reposição; em caso de indisponibilidade, será cobrado o valor de mercado.</p>
-  <p>5.2. No caso de não devolução de peças individuais ou partes, serão cobrados o valor de reposição; em caso de indisponibilidade, será cobrado o valor de mercado.</p>
-  <p>5.3. No caso de não devolução de itens locados dentro do prazo contratado, será cobrado 1% (um por cento) do valor do contrato por dia de atraso.</p>
-  <p>5.4. A reforma em itens avariados e/ou compra para reposição de itens advindos dos casos acima citados é exclusiva da Ax Festas, cabendo ao locatário efetuar os devidos pagamentos ora descritos.</p>
-</div>
-
-<div class="clause">
-  <div class="clause-title">06. Disposições Gerais</div>
-  <p>06.1. As partes declaram estar de acordo com todas as cláusulas deste contrato, comprometendo-se a cumpri-las integralmente.</p>
-</div>
+  <div class="clause-title">${c.title}</div>
+  ${clauseParagraphs(c.content)}
+</div>`).join('')}
 
 <div class="signature-block">
   <div class="sign-box">
     <div class="sign-line"></div>
-    <div class="sign-label">Locador(e): Alex dos Santos Fraga &mdash; Ax Festas</div>
+    <div class="sign-label">Locador(a/e): Alex dos Santos Fraga &mdash; Ax Festas</div>
   </div>
   <div class="sign-box">
     <div class="sign-line"></div>
-    <div class="sign-label">Locatário(a): ${ct.client_name}</div>
+    <div class="sign-label">Locatário(a/e): ${ct.client_name}</div>
   </div>
 </div>
 
@@ -296,6 +312,8 @@ export default function ContractsPage() {
   const [catalogProducts, setCatalogProducts] = useState<CatalogProduct[]>([]);
   const [productSearches, setProductSearches] = useState<string[]>([]);
   const [productDropdowns, setProductDropdowns] = useState<boolean[]>([]);
+  const [editClauses, setEditClauses] = useState<ContractClause[]>(DEFAULT_CLAUSES.map(c => ({ ...c })));
+  const [showClausesEditor, setShowClausesEditor] = useState(false);
 
   // ── Load data ──────────────────────────────────────────────────────────────
 
@@ -408,6 +426,8 @@ export default function ContractsPage() {
     setEditingContract(null);
     setProductSearches([]);
     setProductDropdowns([]);
+    setEditClauses(DEFAULT_CLAUSES.map(c => ({ ...c })));
+    setShowClausesEditor(false);
   }
 
   function openNew() {
@@ -438,6 +458,8 @@ export default function ContractsPage() {
 
   function openDetail(c: Contract) {
     setDetailContract(c);
+    setEditClauses(DEFAULT_CLAUSES.map(cl => ({ ...cl })));
+    setShowClausesEditor(false);
     setView('detail');
   }
 
@@ -447,6 +469,10 @@ export default function ContractsPage() {
     setSelectedClientId(String(client.id));
     setSelectedClient(client);
     setClientSearch(client.name);
+  }
+
+  function updateClause(idx: number, value: string) {
+    setEditClauses(prev => prev.map((c, i) => i === idx ? { ...c, content: value } : c));
   }
 
   // ── Item management ────────────────────────────────────────────────────────
@@ -808,6 +834,37 @@ export default function ContractsPage() {
             </div>
           </div>
 
+          {/* Contract Clauses */}
+          <div className="bg-white rounded-lg shadow p-5">
+            <div className="flex justify-between items-center">
+              <h3 className="font-semibold text-gray-700">Cláusulas do Contrato</h3>
+              <button type="button" onClick={() => setShowClausesEditor(!showClausesEditor)}
+                className="text-sm text-brand-yellow hover:text-yellow-600 font-medium">
+                {showClausesEditor ? '▲ Ocultar' : '▼ Visualizar / Editar'}
+              </button>
+            </div>
+            {showClausesEditor && (
+              <div className="mt-4 space-y-5">
+                <p className="text-xs text-gray-400">As cláusulas abaixo serão usadas ao imprimir o contrato. Edite conforme necessário.</p>
+                {editClauses.map((clause, idx) => (
+                  <div key={clause.id}>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">{clause.title}</label>
+                    <textarea
+                      value={clause.content}
+                      onChange={(e) => updateClause(idx, e.target.value)}
+                      rows={clause.id === '01' ? 3 : 6}
+                      className="w-full border rounded-lg px-3 py-2 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-yellow font-mono"
+                    />
+                  </div>
+                ))}
+                <button type="button" onClick={() => setEditClauses(DEFAULT_CLAUSES.map(c => ({ ...c })))}
+                  className="text-xs text-red-400 hover:text-red-600">
+                  ↺ Restaurar cláusulas padrão
+                </button>
+              </div>
+            )}
+          </div>
+
           <div className="flex gap-3 justify-end">
             <button type="button" onClick={() => { resetForm(); setView('list'); }}
               className="px-5 py-2 border rounded-lg hover:bg-gray-50 transition-colors">Cancelar</button>
@@ -842,7 +899,7 @@ export default function ContractsPage() {
               className="px-3 py-1.5 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600">
               📱 WhatsApp
             </button>
-            <button onClick={() => printContract(detailContract)}
+            <button onClick={() => printContract(detailContract, editClauses)}
               className="px-3 py-1.5 text-sm bg-brand-blue hover:bg-brand-blue-dark text-white font-bold rounded-lg">
               🖨️ Imprimir / PDF
             </button>
@@ -926,6 +983,37 @@ export default function ContractsPage() {
             <div>
               <h3 className="text-sm font-semibold text-gray-500 uppercase mb-2">Observações</h3>
               <p className="text-sm text-gray-700">{detailContract.notes}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Clauses editor */}
+        <div className="mt-4 bg-white rounded-xl shadow p-6">
+          <div className="flex justify-between items-center">
+            <h3 className="text-sm font-semibold text-gray-500 uppercase">Cláusulas do Contrato</h3>
+            <button onClick={() => setShowClausesEditor(!showClausesEditor)}
+              className="text-sm text-brand-yellow hover:text-yellow-600 font-medium">
+              {showClausesEditor ? '▲ Ocultar' : '▼ Revisar / Editar Cláusulas'}
+            </button>
+          </div>
+          {showClausesEditor && (
+            <div className="mt-4 space-y-5">
+              <p className="text-xs text-gray-400">Edite as cláusulas abaixo se necessário. As alterações serão usadas no PDF ao clicar em &quot;Imprimir / PDF&quot;.</p>
+              {editClauses.map((clause, idx) => (
+                <div key={clause.id}>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">{clause.title}</label>
+                  <textarea
+                    value={clause.content}
+                    onChange={(e) => updateClause(idx, e.target.value)}
+                    rows={clause.id === '01' ? 3 : 6}
+                    className="w-full border rounded-lg px-3 py-2 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-yellow font-mono"
+                  />
+                </div>
+              ))}
+              <button onClick={() => setEditClauses(DEFAULT_CLAUSES.map(c => ({ ...c })))}
+                className="text-xs text-red-400 hover:text-red-600">
+                ↺ Restaurar cláusulas padrão
+              </button>
             </div>
           )}
         </div>

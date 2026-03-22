@@ -106,7 +106,7 @@ function ProductCard({ item }: { item: CatalogItem }) {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-200 group flex flex-col">
+    <div className="relative bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-200 group flex flex-col">
       <Link href={`/produto?type=${item.type}&id=${item.id}`} className="block flex-1">
         {/* Image */}
         <div className="relative h-48 bg-gradient-to-br from-yellow-50 to-amber-50">
@@ -144,7 +144,7 @@ function ProductCard({ item }: { item: CatalogItem }) {
         </div>
 
         {/* Info */}
-        <div className="p-4 pb-2">
+        <div className="p-4 pb-6">
           <h3 className="font-semibold text-gray-800 text-sm leading-snug line-clamp-2 mb-2">
             {item.name}
           </h3>
@@ -169,19 +169,17 @@ function ProductCard({ item }: { item: CatalogItem }) {
         </div>
       </Link>
 
-      {/* Add to cart button */}
-      <div className="px-4 pb-4 pt-2 flex justify-center">
-        <button
-          onClick={handleAddToCart}
-          className="bg-brand-yellow hover:bg-yellow-400 text-brand-gray p-2.5 rounded-full transition shadow-sm"
-          title="Adicionar no carrinho"
-          aria-label="Adicionar no carrinho"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-          </svg>
-        </button>
-      </div>
+      {/* Add to cart button — bottom-right corner of the card */}
+      <button
+        onClick={handleAddToCart}
+        className="absolute bottom-3 right-3 bg-brand-yellow hover:bg-yellow-400 text-white p-2.5 rounded-full transition shadow-md"
+        title="Adicionar no carrinho"
+        aria-label="Adicionar no carrinho"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+      </button>
     </div>
   )
 }
@@ -387,7 +385,6 @@ function ReviewModal({ onClose }: { onClose: () => void }) {
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function Home() {
-  const { itemCount } = useCart()
   const [portfolioImages, setPortfolioImages] = useState<PortfolioImage[]>([])
   const [catalogItems, setCatalogItems] = useState<CatalogItem[]>([])
   const [testimonials, setTestimonials] = useState<Testimonial[]>([])
@@ -751,21 +748,6 @@ export default function Home() {
       {showReviewModal && <ReviewModal onClose={() => setShowReviewModal(false)} />}
       {showSuggestionModal && <SuggestionModal onClose={() => setShowSuggestionModal(false)} />}
 
-      {/* ── Floating Cart Button ──────────────────────────────────────── */}
-      <Link
-        href="/cart"
-        className="fixed bottom-6 right-6 z-40 bg-brand-yellow hover:bg-yellow-400 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 hover:scale-105"
-        aria-label="Ver carrinho"
-      >
-        {itemCount > 0 && (
-          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-            {itemCount}
-          </span>
-        )}
-        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-        </svg>
-      </Link>
     </div>
   )
 }
