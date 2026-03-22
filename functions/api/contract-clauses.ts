@@ -62,7 +62,7 @@ export async function onRequestPost(context: { request: Request; env: Env }) {
       'INSERT INTO contract_clauses (order_num, title, content, is_active) VALUES (?, ?, ?, ?) RETURNING *'
     )
       .bind(
-        body.order_num ?? 0,
+        body.order_num ?? 1,
         body.title.trim(),
         body.content.trim(),
         body.is_active ?? 1,
@@ -116,7 +116,7 @@ export async function onRequestPut(context: { request: Request; env: Env }) {
        WHERE id = ? RETURNING *`
     )
       .bind(
-        body.order_num ?? 0,
+        body.order_num ?? 1,
         body.title.trim(),
         body.content.trim(),
         body.is_active ?? 1,
