@@ -170,12 +170,16 @@ function ProductCard({ item }: { item: CatalogItem }) {
       </Link>
 
       {/* Add to cart button */}
-      <div className="px-4 pb-4 pt-2">
+      <div className="px-4 pb-4 pt-2 flex justify-center">
         <button
           onClick={handleAddToCart}
-          className="w-full bg-brand-yellow hover:bg-yellow-400 text-brand-gray font-bold py-2 rounded-full text-sm transition shadow-sm"
+          className="bg-brand-yellow hover:bg-yellow-400 text-brand-gray p-2.5 rounded-full transition shadow-sm"
+          title="Adicionar no carrinho"
+          aria-label="Adicionar no carrinho"
         >
-          🛒 Adicionar no carrinho
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
         </button>
       </div>
     </div>
@@ -498,7 +502,10 @@ export default function Home() {
     <div className="min-h-screen bg-white">
 
       {/* ── Hero ─────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-brand-gray via-[#5a5a5a] to-[#383838] py-24 px-4">
+      <section className={`relative overflow-hidden py-24 px-4 ${heroImageUrl
+        ? 'bg-gradient-to-br from-brand-gray via-[#5a5a5a] to-[#383838]'
+        : 'bg-gradient-to-br from-brand-blue via-brand-blue-dark to-[#5a7a97]'
+      }`}>
         {heroImageUrl && (
           <div className="absolute inset-0">
             <Image src={heroImageUrl} alt="" fill className="object-cover" priority sizes="100vw" />
