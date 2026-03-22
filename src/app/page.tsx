@@ -170,12 +170,16 @@ function ProductCard({ item }: { item: CatalogItem }) {
       </Link>
 
       {/* Add to cart button */}
-      <div className="px-4 pb-4 pt-2">
+      <div className="px-4 pb-4 pt-2 flex justify-center">
         <button
           onClick={handleAddToCart}
-          className="w-full bg-brand-yellow hover:bg-yellow-400 text-brand-gray font-bold py-2 rounded-full text-sm transition shadow-sm"
+          className="bg-brand-yellow hover:bg-yellow-400 text-brand-gray p-2.5 rounded-full transition shadow-sm"
+          title="Adicionar no carrinho"
+          aria-label="Adicionar no carrinho"
         >
-          🛒 Adicionar no carrinho
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
         </button>
       </div>
     </div>
@@ -498,7 +502,10 @@ export default function Home() {
     <div className="min-h-screen bg-white">
 
       {/* ── Hero ─────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-brand-gray via-[#5a5a5a] to-[#383838] py-24 px-4">
+      <section className={`relative overflow-hidden py-24 px-4 ${heroImageUrl
+        ? 'bg-gradient-to-br from-brand-gray via-[#5a5a5a] to-[#383838]'
+        : 'bg-gradient-to-br from-brand-blue via-brand-blue-dark to-[#5a7a97]'
+      }`}>
         {heroImageUrl && (
           <div className="absolute inset-0">
             <Image src={heroImageUrl} alt="" fill className="object-cover" priority sizes="100vw" />
@@ -511,19 +518,9 @@ export default function Home() {
           <span className="inline-block bg-white/20 backdrop-blur text-white text-sm font-semibold px-4 py-1 rounded-full mb-6">
             🎉 Kits personalizados para toda ocasião
           </span>
-          <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-10 drop-shadow-sm leading-tight">
+          <h1 className="text-4xl md:text-6xl text-white mb-10 drop-shadow-sm leading-tight">
             Aqui seu sonho<br className="hidden md:block" /> vira realidade
           </h1>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="/#catalogo"
-              className="inline-block bg-brand-blue text-white font-bold py-4 px-9 rounded-full hover:bg-brand-blue-dark transition shadow-lg shadow-brand-blue/30 text-base">
-              Ver Catálogo
-            </a>
-            <a href="#portfolio"
-              className="inline-block border-2 border-white text-white font-bold py-4 px-9 rounded-full hover:bg-white/10 transition text-base">
-              Ver Portfólio
-            </a>
-          </div>
         </div>
       </section>
 
@@ -685,7 +682,7 @@ export default function Home() {
       </section>
 
       {/* ── Testimonials ─────────────────────────────────────────────── */}
-      <section className="py-20 px-4 bg-white">
+      <section id="contato" className="py-20 px-4 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <span className="text-brand-yellow font-semibold text-sm uppercase tracking-widest">Feedback de clientes</span>
@@ -714,33 +711,17 @@ export default function Home() {
           <div className="text-center mt-8">
             <button
               onClick={() => setShowReviewModal(true)}
-              className="inline-block bg-brand-yellow hover:bg-yellow-400 text-brand-gray font-bold py-3.5 px-8 rounded-full transition shadow-lg shadow-yellow-500/25"
+              className="inline-block bg-brand-gray hover:bg-[#3a3a3a] text-white font-bold py-3.5 px-8 rounded-full transition shadow-lg shadow-gray-500/25"
             >
               💬 Deixar avaliação
             </button>
             <button
               onClick={() => setShowSuggestionModal(true)}
-              className="inline-block border-2 border-brand-yellow text-brand-yellow font-bold py-3.5 px-8 rounded-full transition hover:bg-brand-yellow/10 ml-3"
+              className="inline-block border-2 border-brand-gray text-brand-gray font-bold py-3.5 px-8 rounded-full transition hover:bg-brand-gray/10 ml-3"
             >
               💡 Envie sua sugestão
             </button>
           </div>
-        </div>
-      </section>
-
-      {/* ── Final CTA ────────────────────────────────────────────────── */}
-      <section id="contato" className="py-20 px-4 bg-gradient-to-br from-brand-gray via-[#5a5a5a] to-[#383838]">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-extrabold mb-5 bg-gradient-to-r from-brand-blue to-brand-purple bg-clip-text text-transparent">
-            ✨ Sua festa dos sonhos começa aqui!
-          </h2>
-          <p className="text-white/85 text-lg mb-8 max-w-xl mx-auto">
-            Adicione ao carrinho seus kits preferidos, doces irresistíveis e decorações exclusivas. Reserve agora e garanta sua data!
-          </p>
-          <a href="/#catalogo"
-            className="inline-block bg-brand-yellow text-brand-gray font-bold py-4 px-10 rounded-full hover:bg-yellow-400 transition shadow-xl shadow-yellow-700/25 text-base">
-            🛒 Montar meu carrinho
-          </a>
         </div>
       </section>
 
