@@ -412,7 +412,7 @@ const MIGRATIONS: { desc: string; sql: string }[] = [
     desc: '033: contract_clauses table',
     sql: `CREATE TABLE IF NOT EXISTS contract_clauses (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      order_num INTEGER NOT NULL DEFAULT 0,
+      order_num INTEGER NOT NULL DEFAULT 1,
       title TEXT NOT NULL,
       content TEXT NOT NULL,
       is_active INTEGER NOT NULL DEFAULT 1,

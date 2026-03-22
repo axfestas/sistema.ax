@@ -17,7 +17,7 @@ interface ContractClause {
 }
 
 const EMPTY_FORM = {
-  order_num: 0,
+  order_num: 1,
   title: '',
   content: '',
   is_active: 1,
@@ -198,7 +198,7 @@ export default function ContractClausesPage() {
               <label className="block text-xs font-semibold text-gray-600 mb-1">Ordem</label>
               <input
                 type="number"
-                min={0}
+                min={1}
                 value={form.order_num}
                 onChange={e => setForm(f => ({ ...f, order_num: Number(e.target.value) }))}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow"
