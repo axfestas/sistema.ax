@@ -239,7 +239,7 @@ function SuggestionModal({ onClose }: { onClose: () => void }) {
           <div className="text-center py-6">
             <p className="text-4xl mb-3">💡</p>
             <h3 className="text-xl font-bold text-gray-900 mb-2">Sugestão enviada!</h3>
-            <p className="text-gray-500 text-sm mb-4">Obrigado pela sua sugestão. Ela foi registrada e será analisada pela nossa equipe.</p>
+            <p className="text-gray-500 text-sm mb-4">Agradecemos sua sugestão. Ela foi registrada e será analisada pela nossa equipe.</p>
             <button onClick={onClose} className="bg-brand-yellow hover:bg-yellow-400 text-brand-gray font-bold px-6 py-2 rounded-full transition">Fechar</button>
           </div>
         ) : (
@@ -329,7 +329,7 @@ function ReviewModal({ onClose }: { onClose: () => void }) {
         {submitted ? (
           <div className="text-center py-6">
             <p className="text-4xl mb-3">🎉</p>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Obrigado pela avaliação!</h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Agradecemos sua avaliação!</h3>
             <p className="text-gray-500 text-sm mb-5">Sua avaliação será analisada e publicada em breve.</p>
             <button onClick={onClose} className="bg-brand-yellow hover:bg-yellow-400 text-brand-gray font-bold px-6 py-2.5 rounded-full transition">Fechar</button>
           </div>
