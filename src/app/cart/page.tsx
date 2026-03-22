@@ -2,6 +2,7 @@
 
 import { useCart } from '@/components/CartContext'
 import { useToast } from '@/hooks/useToast'
+import { useComboCalculator } from '@/hooks/useComboCalculator'
 import { useState } from 'react'
 
 interface ReservationRequestResponse {
@@ -14,6 +15,7 @@ interface ReservationRequestResponse {
 export default function CartPage() {
   const { items, removeItem, updateQuantity, clearCart, total } = useCart()
   const { showSuccess, showError } = useToast()
+  const { appliedCombos, totalDiscount } = useComboCalculator(items)
   const [showQuoteForm, setShowQuoteForm] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState({
@@ -41,7 +43,11 @@ export default function CartPage() {
           eventDate: formData.eventDate,
           message: formData.message,
           items: items,
-          total: total
+          total: Math.max(0, total - totalDiscount),
+          combos_applied: appliedCombos.map(ac => ({
+            name: ac.combo.name,
+            discount: ac.discountAmount,
+          })),
         })
       })
       
@@ -148,11 +154,51 @@ export default function CartPage() {
 
             {/* Total and Actions */}
             <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex justify-between items-center mb-6">
-                <span className="text-xl font-bold text-brand-gray">Total Estimado:</span>
-                <span className="text-3xl font-bold text-brand-yellow">
-                  R$ {total.toFixed(2)}
-                </span>
+              {/* Applied combos */}
+              {appliedCombos.length > 0 && (
+                <div className="mb-5 space-y-2">
+                  {appliedCombos.map((ac, idx) => (
+                    <div key={idx} className="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl px-4 py-3">
+                      <div>
+                        <p className="text-sm font-bold text-green-800">🎉 Combo aplicado: {ac.combo.name}</p>
+                        <p className="text-xs text-green-600 mt-0.5">
+                          Você economizou{' '}
+                          <span className="font-bold">
+                            R$ {ac.discountAmount.toFixed(2)}
+                          </span>
+                        </p>
+                      </div>
+                      <span className="text-green-700 font-bold text-sm">- R$ {ac.discountAmount.toFixed(2)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="space-y-2 mb-6">
+                {totalDiscount > 0 && (
+                  <>
+                    <div className="flex justify-between items-center text-gray-500">
+                      <span className="text-sm">Subtotal:</span>
+                      <span className="text-sm">R$ {total.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-green-700">
+                      <span className="text-sm font-medium">Descontos (combos):</span>
+                      <span className="text-sm font-bold">- R$ {totalDiscount.toFixed(2)}</span>
+                    </div>
+                    <hr className="border-gray-200" />
+                  </>
+                )}
+                <div className="flex justify-between items-center">
+                  <span className="text-xl font-bold text-brand-gray">Total Estimado:</span>
+                  <span className="text-3xl font-bold text-brand-yellow">
+                    R$ {Math.max(0, total - totalDiscount).toFixed(2)}
+                  </span>
+                </div>
+                {totalDiscount > 0 && (
+                  <p className="text-right text-xs text-green-600 font-medium">
+                    💰 Você economizou R$ {totalDiscount.toFixed(2)} com combos!
+                  </p>
+                )}
               </div>
               
               <div className="flex flex-col sm:flex-row gap-4">
