@@ -314,6 +314,7 @@ export default function ContractsPage() {
   const [productDropdowns, setProductDropdowns] = useState<boolean[]>([]);
   const [editClauses, setEditClauses] = useState<ContractClause[]>(DEFAULT_CLAUSES.map(c => ({ ...c })));
   const [showClausesEditor, setShowClausesEditor] = useState(false);
+  const [baseClauses, setBaseClauses] = useState<ContractClause[]>(DEFAULT_CLAUSES.map(c => ({ ...c })));
 
   // ── Load data ──────────────────────────────────────────────────────────────
 
@@ -337,10 +338,29 @@ export default function ContractsPage() {
     }
   }, []);
 
+  const loadClauses = useCallback(async () => {
+    try {
+      const res = await fetch('/api/contract-clauses');
+      if (!res.ok) return;
+      const data = await res.json() as Array<{ id: number; order_num: number; title: string; content: string }>;
+      if (!data.length) return;
+      const mapped: ContractClause[] = data.map(c => ({
+        id: String(c.order_num).padStart(2, '0'),
+        title: c.title,
+        content: c.content,
+      }));
+      setBaseClauses(mapped);
+      setEditClauses(mapped.map(c => ({ ...c })));
+    } catch {
+      /* use DEFAULT_CLAUSES */
+    }
+  }, []);
+
   useEffect(() => {
     loadContracts();
     loadClients();
-  }, [loadContracts, loadClients]);
+    loadClauses();
+  }, [loadContracts, loadClients, loadClauses]);
 
   useEffect(() => {
     if (view !== 'form') return;
@@ -426,7 +446,7 @@ export default function ContractsPage() {
     setEditingContract(null);
     setProductSearches([]);
     setProductDropdowns([]);
-    setEditClauses(DEFAULT_CLAUSES.map(c => ({ ...c })));
+    setEditClauses(baseClauses.map(c => ({ ...c })));
     setShowClausesEditor(false);
   }
 
@@ -458,7 +478,7 @@ export default function ContractsPage() {
 
   function openDetail(c: Contract) {
     setDetailContract(c);
-    setEditClauses(DEFAULT_CLAUSES.map(cl => ({ ...cl })));
+    setEditClauses(baseClauses.map(cl => ({ ...cl })));
     setShowClausesEditor(false);
     setView('detail');
   }
@@ -857,7 +877,7 @@ export default function ContractsPage() {
                     />
                   </div>
                 ))}
-                <button type="button" onClick={() => setEditClauses(DEFAULT_CLAUSES.map(c => ({ ...c })))}
+                <button type="button" onClick={() => setEditClauses(baseClauses.map(c => ({ ...c })))}
                   className="text-xs text-red-400 hover:text-red-600">
                   ↺ Restaurar cláusulas padrão
                 </button>
@@ -1010,7 +1030,7 @@ export default function ContractsPage() {
                   />
                 </div>
               ))}
-              <button onClick={() => setEditClauses(DEFAULT_CLAUSES.map(c => ({ ...c })))}
+              <button onClick={() => setEditClauses(baseClauses.map(c => ({ ...c })))}
                 className="text-xs text-red-400 hover:text-red-600">
                 ↺ Restaurar cláusulas padrão
               </button>
