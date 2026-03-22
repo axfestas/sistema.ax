@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import LogoutButton from '@/components/LogoutButton';
+import Link from 'next/link';
 
 export default function AdminPage() {
   const [user, setUser] = useState<any>(null);
@@ -44,7 +44,12 @@ export default function AdminPage() {
     <>
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Painel Administrativo</h1>
-        <LogoutButton />
+        <Link
+          href="/"
+          className="px-4 py-2 bg-brand-blue hover:bg-brand-blue-dark text-white rounded font-semibold transition-colors"
+        >
+          🏠 Início
+        </Link>
       </div>
 
       <div className="bg-white p-6 rounded-lg shadow mb-8">
