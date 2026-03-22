@@ -387,6 +387,7 @@ function ReviewModal({ onClose }: { onClose: () => void }) {
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function Home() {
+  const { itemCount } = useCart()
   const [portfolioImages, setPortfolioImages] = useState<PortfolioImage[]>([])
   const [catalogItems, setCatalogItems] = useState<CatalogItem[]>([])
   const [testimonials, setTestimonials] = useState<Testimonial[]>([])
@@ -624,7 +625,7 @@ export default function Home() {
                 <div className="text-center mt-10">
                   <button
                     onClick={() => setCatalogVisible(v => v + CATALOG_PAGE_SIZE)}
-                    className="inline-block border-2 border-brand-yellow text-brand-yellow font-bold py-3 px-8 rounded-full hover:bg-yellow-50 transition"
+                    className="inline-block bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-3 px-8 rounded-full transition shadow-md"
                   >
                     Ver mais produtos
                   </button>
@@ -711,13 +712,13 @@ export default function Home() {
           <div className="text-center mt-8">
             <button
               onClick={() => setShowReviewModal(true)}
-              className="inline-block bg-brand-gray hover:bg-[#3a3a3a] text-white font-bold py-3.5 px-8 rounded-full transition shadow-lg shadow-gray-500/25"
+              className="inline-block bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-3.5 px-8 rounded-full transition shadow-lg shadow-blue-300/25"
             >
               💬 Deixar avaliação
             </button>
             <button
               onClick={() => setShowSuggestionModal(true)}
-              className="inline-block border-2 border-brand-gray text-brand-gray font-bold py-3.5 px-8 rounded-full transition hover:bg-brand-gray/10 ml-3"
+              className="inline-block bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-3.5 px-8 rounded-full transition shadow-lg shadow-blue-300/25 ml-3"
             >
               💡 Envie sua sugestão
             </button>
@@ -749,6 +750,22 @@ export default function Home() {
       {/* ── Review modal ──────────────────────────────────────────────── */}
       {showReviewModal && <ReviewModal onClose={() => setShowReviewModal(false)} />}
       {showSuggestionModal && <SuggestionModal onClose={() => setShowSuggestionModal(false)} />}
+
+      {/* ── Floating Cart Button ──────────────────────────────────────── */}
+      <Link
+        href="/cart"
+        className="fixed bottom-6 right-6 z-40 bg-brand-yellow hover:bg-yellow-400 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 hover:scale-105"
+        aria-label="Ver carrinho"
+      >
+        {itemCount > 0 && (
+          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+            {itemCount}
+          </span>
+        )}
+        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+      </Link>
     </div>
   )
 }

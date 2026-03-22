@@ -354,20 +354,26 @@ export default function FinancePage() {
   const [filterType, setFilterType] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
+  const [dynamicCategories, setDynamicCategories] = useState<string[]>([]);
 
   const { showSuccess, showError } = useToast();
 
   const loadAll = useCallback(async () => {
     try {
       setLoading(true);
-      const [recRes, sumRes] = await Promise.all([
+      const [recRes, sumRes, catRes] = await Promise.all([
         fetch('/api/finance'),
         fetch('/api/finance/summary'),
+        fetch('/api/categories?section=finance'),
       ]);
       if (!recRes.ok || !sumRes.ok) throw new Error('Erro ao carregar dados');
       const [records, sum] = await Promise.all([recRes.json(), sumRes.json()]);
       setAllRecords(records as FinancialRecord[]);
       setSummary(sum as FinancialSummary);
+      if (catRes.ok) {
+        const cats = await catRes.json() as { id: number; name: string; section: string }[];
+        setDynamicCategories(cats.map((c) => c.name));
+      }
     } catch {
       showError('Erro ao carregar registros financeiros');
     } finally {
@@ -530,7 +536,7 @@ export default function FinancePage() {
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => { setShowForm(!showForm); setEditingRecord(null); setFormData(defaultForm()); }}
-            className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors"
+            className="inline-flex items-center gap-1.5 bg-brand-blue hover:bg-brand-blue-dark text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors"
           >
             <span className="text-base leading-none">＋</span> Novo Registro
           </button>
@@ -630,7 +636,7 @@ export default function FinancePage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                 >
                   <option value="">Selecione…</option>
-                  {CATEGORIES[formData.type].map((c) => <option key={c} value={c}>{c}</option>)}
+                  {(dynamicCategories.length > 0 ? dynamicCategories : CATEGORIES[formData.type]).map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
               <div>
@@ -674,7 +680,7 @@ export default function FinancePage() {
             </div>
             <div className="flex gap-2 mt-6">
               <button type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-5 rounded-lg text-sm transition-colors">
+                className="bg-brand-blue hover:bg-brand-blue-dark text-white font-semibold py-2 px-5 rounded-lg text-sm transition-colors">
                 {editingRecord ? 'Atualizar' : 'Salvar'}
               </button>
               <button type="button" onClick={() => { setShowForm(false); setEditingRecord(null); }}
@@ -740,7 +746,7 @@ export default function FinancePage() {
         {(['list', 'charts'] as const).map((tab) => (
           <button key={tab} onClick={() => setActiveTab(tab)}
             className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
-              activeTab === tab ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+              activeTab === tab ? 'bg-brand-blue text-white' : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
             }`}>
             {tab === 'list' ? '📋 Registros' : '📊 Gráficos'}
           </button>
@@ -826,11 +832,11 @@ export default function FinancePage() {
                       <td className="px-4 py-3 text-right">
                         <div className="flex justify-end gap-1">
                           <button onClick={() => handleEdit(r)}
-                            className="text-xs px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 hover:bg-blue-100 font-medium transition-colors">
+                            className="text-xs px-2.5 py-1 rounded-md bg-brand-blue hover:bg-brand-blue-dark text-white font-medium transition-colors">
                             Editar
                           </button>
                           <button onClick={() => handleDelete(r.id)}
-                            className="text-xs px-2.5 py-1 rounded-md bg-red-50 text-red-700 hover:bg-red-100 font-medium transition-colors">
+                            className="text-xs px-2.5 py-1 rounded-md bg-red-500 hover:bg-red-700 text-white font-medium transition-colors">
                             Excluir
                           </button>
                         </div>
