@@ -91,6 +91,13 @@ const PAYMENT_METHODS = [
 
 const EMPTY_ITEM: ContractItem = { description: '', quantity: 1, unit_price: 0, total: 0 };
 
+interface CatalogProduct {
+  id: string;
+  name: string;
+  price: number;
+  type: string;
+}
+
 const BRL = (v: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
 
@@ -242,6 +249,9 @@ export default function ContractsPage() {
   const [formStatus, setFormStatus] = useState<ContractStatus>('pending');
   const [formNotes, setFormNotes] = useState('');
   const [saving, setSaving] = useState(false);
+  const [catalogProducts, setCatalogProducts] = useState<CatalogProduct[]>([]);
+  const [productSearches, setProductSearches] = useState<string[]>([]);
+  const [productDropdowns, setProductDropdowns] = useState<boolean[]>([]);
 
   // ── Load data ──────────────────────────────────────────────────────────────
 
@@ -269,6 +279,26 @@ export default function ContractsPage() {
     loadContracts();
     loadClients();
   }, [loadContracts, loadClients]);
+
+  useEffect(() => {
+    if (view !== 'form') return;
+    Promise.all([
+      fetch('/api/items?catalogOnly=true').then(r => r.ok ? r.json() : []),
+      fetch('/api/kits').then(r => r.ok ? r.json() : []),
+      fetch('/api/sweets?catalog=true').then(r => r.ok ? r.json() : []),
+      fetch('/api/designs?catalog=true').then(r => r.ok ? r.json() : []),
+      fetch('/api/themes?catalog=true').then(r => r.ok ? r.json() : []),
+    ]).then(([items, kits, sweets, designs, themes]) => {
+      const all: CatalogProduct[] = [
+        ...(Array.isArray(items) ? items : []).map((i: {id:number,name:string,price?:number}) => ({ id: `item-${i.id}`, name: i.name, price: i.price ?? 0, type: 'Item' })),
+        ...(Array.isArray(kits) ? kits : []).map((i: {id:number,name:string,price?:number}) => ({ id: `kit-${i.id}`, name: i.name, price: i.price ?? 0, type: 'Kit' })),
+        ...(Array.isArray(sweets) ? sweets : []).map((i: {id:number,name:string,price?:number}) => ({ id: `sweet-${i.id}`, name: i.name, price: i.price ?? 0, type: 'Doce' })),
+        ...(Array.isArray(designs) ? designs : []).map((i: {id:number,name:string,price?:number}) => ({ id: `design-${i.id}`, name: i.name, price: i.price ?? 0, type: 'Design' })),
+        ...(Array.isArray(themes) ? themes : []).map((i: {id:number,name:string,price?:number}) => ({ id: `theme-${i.id}`, name: i.name, price: i.price ?? 0, type: 'Tema' })),
+      ];
+      setCatalogProducts(all);
+    }).catch(() => {});
+  }, [view]);
 
   // Pre-fill from quote when navigated from quotes page
   useEffect(() => {
@@ -332,6 +362,8 @@ export default function ContractsPage() {
     setFormStatus('pending');
     setFormNotes('');
     setEditingContract(null);
+    setProductSearches([]);
+    setProductDropdowns([]);
   }
 
   function openNew() {
@@ -355,6 +387,8 @@ export default function ContractsPage() {
     setFormPaymentMethod(c.payment_method || '');
     setFormStatus(c.status);
     setFormNotes(c.notes || '');
+    setProductSearches([]);
+    setProductDropdowns([]);
     setView('form');
   }
 
@@ -395,10 +429,14 @@ export default function ContractsPage() {
 
   function addItem() {
     setFormItems((prev) => [...prev, { ...EMPTY_ITEM }]);
+    setProductSearches(prev => [...prev, '']);
+    setProductDropdowns(prev => [...prev, false]);
   }
 
   function removeItem(idx: number) {
     setFormItems((prev) => prev.filter((_, i) => i !== idx));
+    setProductSearches(prev => prev.filter((_, i) => i !== idx));
+    setProductDropdowns(prev => prev.filter((_, i) => i !== idx));
   }
 
   // ── Save ───────────────────────────────────────────────────────────────────
@@ -525,7 +563,7 @@ export default function ContractsPage() {
                   setClientSearch(e.target.value);
                   if (!e.target.value) { setSelectedClientId(''); setSelectedClient(null); }
                 }}
-                className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-yellow"
               />
               {clientSearch && !selectedClientId && (
                 <div className="absolute z-10 w-full bg-white border rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto">
@@ -533,7 +571,7 @@ export default function ContractsPage() {
                     <div className="p-3 text-gray-400 text-sm">Nenhum cliente encontrado</div>
                   ) : filteredClients.slice(0, 8).map((c) => (
                     <button key={c.id} type="button" onClick={() => handleClientSelect(c)}
-                      className="w-full text-left px-4 py-2 hover:bg-indigo-50 text-sm">
+                      className="w-full text-left px-4 py-2 hover:bg-yellow-50 text-sm">
                       <span className="font-medium">{c.name}</span>
                       <span className="text-gray-400 ml-2">{c.phone}</span>
                     </button>
@@ -542,7 +580,7 @@ export default function ContractsPage() {
               )}
             </div>
             {selectedClient && (
-              <div className="bg-indigo-50 rounded-lg p-4 grid grid-cols-2 gap-3 text-sm">
+              <div className="bg-yellow-50 rounded-lg p-4 grid grid-cols-2 gap-3 text-sm">
                 <div><span className="text-gray-500">Nome:</span> <strong>{selectedClient.name}</strong></div>
                 <div><span className="text-gray-500">Telefone:</span> {selectedClient.phone}</div>
                 {selectedClient.email && <div><span className="text-gray-500">Email:</span> {selectedClient.email}</div>}
@@ -565,23 +603,23 @@ export default function ContractsPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">Data do Evento</label>
                 <input type="date" value={formEventDate} onChange={(e) => setFormEventDate(e.target.value)}
-                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400" />
+                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-yellow" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">Local do Evento</label>
                 <input type="text" value={formEventLocation} onChange={(e) => setFormEventLocation(e.target.value)}
                   placeholder="Salão, endereço..."
-                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400" />
+                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-yellow" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">Data de Retirada</label>
                 <input type="date" value={formPickupDate} onChange={(e) => setFormPickupDate(e.target.value)}
-                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400" />
+                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-yellow" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">Data de Devolução</label>
                 <input type="date" value={formReturnDate} onChange={(e) => setFormReturnDate(e.target.value)}
-                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400" />
+                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-yellow" />
               </div>
             </div>
           </div>
@@ -591,7 +629,7 @@ export default function ContractsPage() {
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-semibold text-gray-700">Itens Locados</h3>
               <button type="button" onClick={addItem}
-                className="text-sm text-indigo-600 hover:text-indigo-800 font-medium">
+                className="text-sm text-brand-yellow hover:text-yellow-600 font-medium">
                 + Adicionar item
               </button>
             </div>
@@ -606,13 +644,71 @@ export default function ContractsPage() {
               </div>
               {formItems.map((item, idx) => (
                 <div key={idx} className="grid grid-cols-12 gap-2 items-center">
-                  <input className="col-span-5 border rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-400"
-                    placeholder="Descrição" value={item.description}
-                    onChange={(e) => updateItem(idx, 'description', e.target.value)} />
-                  <input className="col-span-2 border rounded px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-1 focus:ring-indigo-400"
+                  <div className="col-span-5 relative">
+                    <input
+                      className="w-full border rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-brand-yellow"
+                      placeholder="Buscar ou digitar produto..."
+                      value={productSearches[idx] !== undefined ? productSearches[idx] : item.description}
+                      onFocus={() => {
+                        const s = [...productSearches];
+                        s[idx] = item.description;
+                        setProductSearches(s);
+                        const d = [...productDropdowns];
+                        d[idx] = true;
+                        setProductDropdowns(d);
+                      }}
+                      onChange={(e) => {
+                        updateItem(idx, 'description', e.target.value);
+                        const s = [...productSearches];
+                        s[idx] = e.target.value;
+                        setProductSearches(s);
+                        const d = [...productDropdowns];
+                        d[idx] = true;
+                        setProductDropdowns(d);
+                      }}
+                      onBlur={() => {
+                        setTimeout(() => {
+                          const d = [...productDropdowns];
+                          d[idx] = false;
+                          setProductDropdowns(d);
+                        }, 150);
+                      }}
+                    />
+                    {productDropdowns[idx] && productSearches[idx] && (
+                      <div className="absolute z-20 left-0 right-0 top-full mt-0.5 bg-white border rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                        {catalogProducts
+                          .filter(p => p.name.toLowerCase().includes((productSearches[idx] || '').toLowerCase()))
+                          .slice(0, 8)
+                          .map(p => (
+                            <button
+                              key={p.id}
+                              type="button"
+                              className="w-full text-left px-3 py-1.5 text-sm hover:bg-yellow-50 flex justify-between"
+                              onMouseDown={() => {
+                                updateItem(idx, 'description', p.name);
+                                updateItem(idx, 'unit_price', p.price);
+                                const s = [...productSearches];
+                                s[idx] = '';
+                                setProductSearches(s);
+                                const d = [...productDropdowns];
+                                d[idx] = false;
+                                setProductDropdowns(d);
+                              }}
+                            >
+                              <span>{p.name} <span className="text-gray-400 text-xs">({p.type})</span></span>
+                              {p.price > 0 && <span className="text-brand-yellow font-medium text-xs">{new Intl.NumberFormat('pt-BR', {style:'currency',currency:'BRL'}).format(p.price)}</span>}
+                            </button>
+                          ))}
+                        {catalogProducts.filter(p => p.name.toLowerCase().includes((productSearches[idx] || '').toLowerCase())).length === 0 && (
+                          <div className="px-3 py-2 text-gray-400 text-sm">Nenhum produto encontrado</div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <input className="col-span-2 border rounded px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-1 focus:ring-brand-yellow"
                     type="number" min="1" value={item.quantity}
                     onChange={(e) => updateItem(idx, 'quantity', e.target.value)} />
-                  <input className="col-span-2 border rounded px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-1 focus:ring-indigo-400"
+                  <input className="col-span-2 border rounded px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-1 focus:ring-brand-yellow"
                     type="number" min="0" step="0.01" value={item.unit_price}
                     onChange={(e) => updateItem(idx, 'unit_price', e.target.value)} />
                   <div className="col-span-2 text-sm text-center font-medium text-gray-700">{BRL(item.total)}</div>
@@ -630,10 +726,10 @@ export default function ContractsPage() {
                 <span>Desconto:</span>
                 <input type="number" min="0" step="0.01" value={formDiscount}
                   onChange={(e) => setFormDiscount(Number(e.target.value) || 0)}
-                  className="border rounded px-2 py-1 w-32 text-right text-sm focus:outline-none focus:ring-1 focus:ring-indigo-400" />
+                  className="border rounded px-2 py-1 w-32 text-right text-sm focus:outline-none focus:ring-1 focus:ring-brand-yellow" />
               </div>
               <div className="flex justify-between font-bold text-base text-gray-900">
-                <span>Total:</span><span className="text-indigo-600">{BRL(formTotal)}</span>
+                <span>Total:</span><span className="text-brand-yellow">{BRL(formTotal)}</span>
               </div>
             </div>
           </div>
@@ -644,7 +740,7 @@ export default function ContractsPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">Forma de Pagamento</label>
                 <select value={formPaymentMethod} onChange={(e) => setFormPaymentMethod(e.target.value)}
-                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-yellow">
                   {PAYMENT_METHODS.map((p) => (
                     <option key={p.value} value={p.value}>{p.label}</option>
                   ))}
@@ -653,7 +749,7 @@ export default function ContractsPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">Status</label>
                 <select value={formStatus} onChange={(e) => setFormStatus(e.target.value as ContractStatus)}
-                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-yellow">
                   {Object.entries(STATUS_LABELS).map(([v, l]) => (
                     <option key={v} value={v}>{l}</option>
                   ))}
@@ -663,7 +759,7 @@ export default function ContractsPage() {
                 <label className="block text-sm font-medium text-gray-600 mb-1">Observações</label>
                 <textarea value={formNotes} onChange={(e) => setFormNotes(e.target.value)}
                   rows={3}
-                  className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400" />
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow" />
               </div>
             </div>
           </div>
@@ -672,7 +768,7 @@ export default function ContractsPage() {
             <button type="button" onClick={() => { resetForm(); setView('list'); }}
               className="px-5 py-2 border rounded-lg hover:bg-gray-50 transition-colors">Cancelar</button>
             <button type="submit" disabled={saving}
-              className="px-5 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50">
+              className="px-5 py-2 bg-brand-yellow text-brand-gray rounded-lg hover:bg-yellow-400 transition-colors disabled:opacity-50">
               {saving ? 'Salvando...' : editingContract ? 'Salvar Alterações' : 'Criar Contrato'}
             </button>
           </div>
@@ -703,7 +799,7 @@ export default function ContractsPage() {
               📱 WhatsApp
             </button>
             <button onClick={() => printContract(detailContract)}
-              className="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+              className="px-3 py-1.5 text-sm bg-brand-yellow text-brand-gray rounded-lg hover:bg-yellow-400">
               🖨️ Imprimir / PDF
             </button>
           </div>
@@ -764,7 +860,7 @@ export default function ContractsPage() {
                 </div>
               )}
               <div className="flex justify-between font-bold text-base">
-                <span>Total</span><span className="text-indigo-600">{BRL(detailContract.total)}</span>
+                <span>Total</span><span className="text-brand-yellow">{BRL(detailContract.total)}</span>
               </div>
             </div>
           </div>
@@ -805,7 +901,7 @@ export default function ContractsPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Contratos</h1>
         <button onClick={openNew}
-          className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
+          className="bg-brand-yellow text-brand-gray px-4 py-2 rounded-lg hover:bg-yellow-400 transition-colors">
           + Novo Contrato
         </button>
       </div>
@@ -813,9 +909,9 @@ export default function ContractsPage() {
       <div className="flex gap-3 mb-5">
         <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
           placeholder="Buscar por cliente ou ID..."
-          className="border rounded-lg px-3 py-2 flex-1 focus:outline-none focus:ring-2 focus:ring-indigo-400" />
+          className="border rounded-lg px-3 py-2 flex-1 focus:outline-none focus:ring-2 focus:ring-brand-yellow" />
         <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}
-          className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+          className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-yellow">
           <option value="">Todos os status</option>
           {Object.entries(STATUS_LABELS).map(([v, l]) => (
             <option key={v} value={v}>{l}</option>
@@ -825,7 +921,7 @@ export default function ContractsPage() {
 
       {loading ? (
         <div className="text-center py-12">
-          <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-500" />
+          <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-brand-yellow" />
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -858,7 +954,7 @@ export default function ContractsPage() {
                     </td>
                     <td className="p-3 text-sm text-gray-600">{c.pickup_date ? fmtDate(c.pickup_date) : <span className="text-gray-300">-</span>}</td>
                     <td className="p-3 text-sm text-gray-600">{c.return_date ? fmtDate(c.return_date) : <span className="text-gray-300">-</span>}</td>
-                    <td className="p-3 font-semibold text-sm text-indigo-600">{BRL(c.total)}</td>
+                    <td className="p-3 font-semibold text-sm text-brand-yellow">{BRL(c.total)}</td>
                     <td className="p-3">
                       <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${STATUS_COLORS[c.status]}`}>
                         {STATUS_LABELS[c.status]}
@@ -868,7 +964,7 @@ export default function ContractsPage() {
                       <div className="flex gap-2 flex-wrap">
                         <button onClick={() => openDetail(c)} className="text-xs text-blue-600 hover:underline">👁️ Ver</button>
                         <button onClick={() => openEdit(c)} className="text-xs text-gray-600 hover:underline">✏️ Editar</button>
-                        <button onClick={() => printContract(c)} className="text-xs text-indigo-600 hover:underline">🖨️ PDF</button>
+                        <button onClick={() => printContract(c)} className="text-xs text-brand-yellow hover:underline">🖨️ PDF</button>
                         <button onClick={() => handleWhatsApp(c)} className="text-xs text-green-600 hover:underline">📱 WA</button>
                         <button onClick={() => handleDelete(c.id)} className="text-xs text-red-500 hover:underline">🗑️</button>
                       </div>

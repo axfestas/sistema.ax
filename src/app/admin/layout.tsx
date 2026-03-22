@@ -48,6 +48,7 @@ const navGroups: NavGroup[] = [
       { href: '/admin/artes', label: 'Artes Criadas', icon: '✏️' },
       { href: '/admin/publicacoes', label: 'Controle de Publicações', icon: '📢' },
       { href: '/admin/testimonials', label: 'Avaliações', icon: '⭐' },
+      { href: '/admin/suggestions', label: 'Sugestões', icon: '💡' },
     ],
   },
   {

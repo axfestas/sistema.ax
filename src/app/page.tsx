@@ -3,6 +3,8 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useCart } from '@/components/CartContext'
+import { useToast } from '@/hooks/useToast'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -87,72 +89,96 @@ function ProductCard({ item }: { item: CatalogItem }) {
   const showNew = isNewItem(item.created_at)
   const showFeatured = item.is_featured === 1
   const showPromo = item.is_promotion === 1 && item.original_price != null && item.original_price > item.price
+  const { addItem } = useCart()
+  const { showSuccess } = useToast()
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    addItem({
+      id: `${item.type}-${item.id}`,
+      name: item.name,
+      description: item.description || '',
+      price: item.price ?? 0,
+      image: item.image_url,
+    })
+    showSuccess(`${item.name} adicionado ao carrinho!`)
+  }
 
   return (
-    <Link
-      href={`/produto?type=${item.type}&id=${item.id}`}
-      className="block bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-200 group cursor-pointer"
-    >
-      {/* Image */}
-      <div className="relative h-48 bg-gradient-to-br from-yellow-50 to-amber-50">
-        {item.image_url ? (
-          <Image
-            src={item.image_url}
-            alt={item.name}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center text-5xl">
-            {item.type === 'kit' ? '🎁' : item.type === 'sweet' ? '🍰' : item.type === 'theme' ? '🎭' : item.type === 'design' ? '🎨' : '📦'}
-          </div>
-        )}
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-200 group flex flex-col">
+      <Link href={`/produto?type=${item.type}&id=${item.id}`} className="block flex-1">
+        {/* Image */}
+        <div className="relative h-48 bg-gradient-to-br from-yellow-50 to-amber-50">
+          {item.image_url ? (
+            <Image
+              src={item.image_url}
+              alt={item.name}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center text-5xl">
+              {item.type === 'kit' ? '🎁' : item.type === 'sweet' ? '🍰' : item.type === 'theme' ? '🎭' : item.type === 'design' ? '🎨' : '📦'}
+            </div>
+          )}
 
-        {/* Tags */}
-        <div className="absolute top-2 left-2 flex flex-col gap-1">
-          {showFeatured && (
-            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-yellow-400 text-gray-900 shadow-sm">
-              🔥 Em destaque
-            </span>
-          )}
-          {showPromo && (
-            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-brand-yellow text-brand-gray shadow-sm">
-              💸 Promoção
-            </span>
-          )}
-          {showNew && !showFeatured && !showPromo && (
-            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-500 text-white shadow-sm">
-              🆕 Novo
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* Info */}
-      <div className="p-4">
-        <h3 className="font-semibold text-gray-800 text-sm leading-snug line-clamp-2 mb-2">
-          {item.name}
-        </h3>
-        <div>
-          {showPromo && item.original_price != null ? (
-            <div>
-              <span className="text-gray-400 text-xs line-through block">
-                {formatCurrency(item.original_price)}
+          {/* Tags */}
+          <div className="absolute top-2 left-2 flex flex-col gap-1">
+            {showFeatured && (
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-yellow-400 text-gray-900 shadow-sm">
+                🔥 Em destaque
               </span>
+            )}
+            {showPromo && (
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-brand-yellow text-brand-gray shadow-sm">
+                💸 Promoção
+              </span>
+            )}
+            {showNew && !showFeatured && !showPromo && (
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-500 text-white shadow-sm">
+                🆕 Novo
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Info */}
+        <div className="p-4 pb-2">
+          <h3 className="font-semibold text-gray-800 text-sm leading-snug line-clamp-2 mb-2">
+            {item.name}
+          </h3>
+          <div>
+            {showPromo && item.original_price != null ? (
+              <div>
+                <span className="text-gray-400 text-xs line-through block">
+                  {formatCurrency(item.original_price)}
+                </span>
+                <span className="text-brand-gray font-bold text-base">
+                  {formatCurrency(item.price)}
+                </span>
+              </div>
+            ) : item.price > 0 ? (
               <span className="text-brand-gray font-bold text-base">
                 {formatCurrency(item.price)}
               </span>
-            </div>
-          ) : item.price > 0 ? (
-            <span className="text-brand-gray font-bold text-base">
-              {formatCurrency(item.price)}
-            </span>
-          ) : (
-            <span className="text-gray-400 text-sm">Sob consulta</span>
-          )}
+            ) : (
+              <span className="text-gray-400 text-sm">Sob consulta</span>
+            )}
+          </div>
         </div>
+      </Link>
+
+      {/* Add to cart button */}
+      <div className="px-4 pb-4 pt-2">
+        <button
+          onClick={handleAddToCart}
+          className="w-full bg-brand-yellow hover:bg-yellow-400 text-brand-gray font-bold py-2 rounded-full text-sm transition shadow-sm"
+        >
+          🛒 Adicionar no carrinho
+        </button>
       </div>
-    </Link>
+    </div>
   )
 }
 
@@ -167,6 +193,95 @@ interface ApiItem {
   is_promotion?: number
   original_price?: number
   created_at?: string
+}
+
+// ─── Suggestion form modal ────────────────────────────────────────────────────
+
+function SuggestionModal({ onClose }: { onClose: () => void }) {
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [message, setMessage] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    if (!name.trim()) { setError('Informe seu nome.'); return }
+    if (!message.trim()) { setError('Escreva sua sugestão.'); return }
+    setSubmitting(true)
+    try {
+      const res = await fetch('/api/suggestions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name.trim(), email: email.trim() || undefined, message: message.trim() }),
+      })
+      if (res.ok) {
+        setSubmitted(true)
+      } else {
+        const data = await res.json() as { error?: string }
+        setError(data.error || 'Erro ao enviar sugestão.')
+      }
+    } catch {
+      setError('Erro de conexão. Tente novamente.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
+        {submitted ? (
+          <div className="text-center py-6">
+            <p className="text-4xl mb-3">💡</p>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Sugestão enviada!</h3>
+            <p className="text-gray-500 text-sm mb-4">Obrigado pela sua sugestão. Ela foi registrada e será analisada pela nossa equipe.</p>
+            <button onClick={onClose} className="bg-brand-yellow hover:bg-yellow-400 text-brand-gray font-bold px-6 py-2 rounded-full transition">Fechar</button>
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-gray-900">💡 Envie sua sugestão</h3>
+              <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">✕</button>
+            </div>
+            <p className="text-gray-500 text-sm mb-4">Tem alguma ideia ou sugestão para melhorarmos nossos serviços? Adoramos ouvir você!</p>
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <input
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow"
+                placeholder="Seu nome *"
+                value={name}
+                onChange={e => setName(e.target.value)}
+              />
+              <input
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow"
+                placeholder="Seu email (opcional)"
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+              />
+              <textarea
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow resize-none"
+                placeholder="Sua sugestão *"
+                rows={4}
+                value={message}
+                onChange={e => setMessage(e.target.value)}
+              />
+              {error && <p className="text-red-500 text-xs">{error}</p>}
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full bg-brand-yellow hover:bg-yellow-400 text-brand-gray font-bold py-3 rounded-full transition disabled:opacity-60"
+              >
+                {submitting ? 'Enviando...' : '💡 Enviar sugestão'}
+              </button>
+            </form>
+          </>
+        )}
+      </div>
+    </div>
+  )
 }
 
 // ─── Review form modal ────────────────────────────────────────────────────────
@@ -279,6 +394,8 @@ export default function Home() {
   const [portfolioLimit, setPortfolioLimit] = useState(8)
   const [catalogVisible, setCatalogVisible] = useState(CATALOG_PAGE_SIZE)
   const [showReviewModal, setShowReviewModal] = useState(false)
+  const [showSuggestionModal, setShowSuggestionModal] = useState(false)
+  const [heroImageUrl, setHeroImageUrl] = useState<string | null>(null)
   const featuredCarouselRef = useRef<HTMLDivElement>(null)
 
   const closeLightbox = useCallback(() => setLightbox(null), [])
@@ -343,6 +460,17 @@ export default function Home() {
       .catch(() => setTestimonials([]))
   }, [])
 
+  // Load site settings (hero image)
+  useEffect(() => {
+    fetch('/api/settings')
+      .then(r => r.ok ? r.json() : null)
+      .then((data: unknown) => {
+        const s = data as { hero_image_url?: string } | null
+        if (s?.hero_image_url) setHeroImageUrl(s.hero_image_url)
+      })
+      .catch(() => {/* ignore */})
+  }, [])
+
   const filteredCatalog = catalogItems
     .filter(i => catalogTab === 'all' || i.type === catalogTab)
     .filter(i => !catalogSearch || i.name.toLowerCase().includes(catalogSearch.toLowerCase()))
@@ -371,6 +499,12 @@ export default function Home() {
 
       {/* ── Hero ─────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-gradient-to-br from-brand-gray via-[#5a5a5a] to-[#383838] py-24 px-4">
+        {heroImageUrl && (
+          <div className="absolute inset-0">
+            <Image src={heroImageUrl} alt="" fill className="object-cover" priority sizes="100vw" />
+            <div className="absolute inset-0 bg-black/55" />
+          </div>
+        )}
         <div className="absolute -top-20 -left-20 w-96 h-96 rounded-full bg-white/10 pointer-events-none" />
         <div className="absolute -bottom-32 -right-20 w-[500px] h-[500px] rounded-full bg-white/10 pointer-events-none" />
         <div className="relative max-w-5xl mx-auto text-center">
@@ -382,7 +516,7 @@ export default function Home() {
           </h1>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a href="/#catalogo"
-              className="inline-block bg-brand-yellow text-brand-gray font-bold py-4 px-9 rounded-full hover:bg-yellow-400 transition shadow-lg shadow-yellow-700/20 text-base">
+              className="inline-block bg-brand-blue text-white font-bold py-4 px-9 rounded-full hover:bg-brand-blue-dark transition shadow-lg shadow-brand-blue/30 text-base">
               Ver Catálogo
             </a>
             <a href="#portfolio"
@@ -510,7 +644,7 @@ export default function Home() {
           <div className="text-center mb-12">
             <span className="text-brand-yellow font-semibold text-sm uppercase tracking-widest">Nosso trabalho</span>
             <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mt-2 mb-3">Portfólio</h2>
-            <p className="text-gray-500 max-w-xl mx-auto">Veja fotos reais de festas que realizamos com amor e dedicação</p>
+            <p className="text-gray-500 max-w-xl mx-auto">Veja fotos de festas, doces, designs e decorações que realizamos com amor e dedicação</p>
           </div>
 
           {loadingPortfolio ? (
@@ -554,14 +688,14 @@ export default function Home() {
       <section className="py-20 px-4 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <span className="text-brand-yellow font-semibold text-sm uppercase tracking-widest">❤️ Clientes satisfeitos</span>
+            <span className="text-brand-yellow font-semibold text-sm uppercase tracking-widest">Feedback de clientes</span>
             <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mt-2 mb-3">O que dizem sobre nós</h2>
           </div>
 
           {testimonials.length === 0 ? (
             <div className="text-center py-8 text-gray-400">
               <p className="text-4xl mb-3">💬</p>
-              <p>Seja o primeiro a avaliar!</p>
+              <p>Seja a primeira pessoa a avaliar!</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
@@ -584,6 +718,12 @@ export default function Home() {
             >
               💬 Deixar avaliação
             </button>
+            <button
+              onClick={() => setShowSuggestionModal(true)}
+              className="inline-block border-2 border-brand-yellow text-brand-yellow font-bold py-3.5 px-8 rounded-full transition hover:bg-brand-yellow/10 ml-3"
+            >
+              💡 Envie sua sugestão
+            </button>
           </div>
         </div>
       </section>
@@ -591,15 +731,15 @@ export default function Home() {
       {/* ── Final CTA ────────────────────────────────────────────────── */}
       <section id="contato" className="py-20 px-4 bg-gradient-to-br from-brand-gray via-[#5a5a5a] to-[#383838]">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-5">
-            Pronto para montar sua festa?
+          <h2 className="text-3xl md:text-4xl font-extrabold mb-5 bg-gradient-to-r from-brand-blue to-brand-purple bg-clip-text text-transparent">
+            ✨ Sua festa dos sonhos começa aqui!
           </h2>
           <p className="text-white/85 text-lg mb-8 max-w-xl mx-auto">
-            Escolha entre nossos kits exclusivos, doces personalizados e temas encantadores
+            Adicione ao carrinho seus kits preferidos, doces irresistíveis e decorações exclusivas. Reserve agora e garanta sua data!
           </p>
           <a href="/#catalogo"
             className="inline-block bg-brand-yellow text-brand-gray font-bold py-4 px-10 rounded-full hover:bg-yellow-400 transition shadow-xl shadow-yellow-700/25 text-base">
-            Ver catálogo
+            🛒 Montar meu carrinho
           </a>
         </div>
       </section>
@@ -627,6 +767,7 @@ export default function Home() {
 
       {/* ── Review modal ──────────────────────────────────────────────── */}
       {showReviewModal && <ReviewModal onClose={() => setShowReviewModal(false)} />}
+      {showSuggestionModal && <SuggestionModal onClose={() => setShowSuggestionModal(false)} />}
     </div>
   )
 }
