@@ -433,27 +433,27 @@ export default function KitsPage() {
                       />
                       {itemDropdown && (
                         <div className="absolute z-20 left-0 right-0 top-full mt-0.5 bg-white border rounded shadow-lg max-h-40 overflow-y-auto">
-                          {items
-                            .filter(item => item.quantity > 0 && item.name.toLowerCase().includes(itemSearch.toLowerCase()))
-                            .slice(0, 8)
-                            .map(item => (
-                              <button
-                                key={item.id}
-                                type="button"
-                                className="w-full text-left px-3 py-1.5 text-sm hover:bg-yellow-50 flex justify-between"
-                                onMouseDown={() => {
-                                  setNewFormItem({ ...newFormItem, item_id: String(item.id) })
-                                  setItemSearch(item.name)
-                                  setItemDropdown(false)
-                                }}
-                              >
-                                <span>{item.name}</span>
-                                <span className="text-gray-400 text-xs">Estoque: {item.quantity}</span>
-                              </button>
-                            ))}
-                          {items.filter(item => item.quantity > 0 && item.name.toLowerCase().includes(itemSearch.toLowerCase())).length === 0 && (
-                            <div className="px-3 py-2 text-gray-400 text-sm">Nenhum item encontrado</div>
-                          )}
+                          {(() => {
+                            const q = itemSearch.toLowerCase()
+                            const filtered = items.filter(item => item.quantity > 0 && item.name.toLowerCase().includes(q))
+                            return filtered.length === 0
+                              ? <div className="px-3 py-2 text-gray-400 text-sm">Nenhum item encontrado</div>
+                              : filtered.slice(0, 8).map(item => (
+                                <button
+                                  key={item.id}
+                                  type="button"
+                                  className="w-full text-left px-3 py-1.5 text-sm hover:bg-yellow-50 flex justify-between"
+                                  onMouseDown={() => {
+                                    setNewFormItem({ ...newFormItem, item_id: String(item.id) })
+                                    setItemSearch(item.name)
+                                    setItemDropdown(false)
+                                  }}
+                                >
+                                  <span>{item.name}</span>
+                                  <span className="text-gray-400 text-xs">Estoque: {item.quantity}</span>
+                                </button>
+                              ))
+                          })()}
                         </div>
                       )}
                     </div>
