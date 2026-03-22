@@ -354,20 +354,26 @@ export default function FinancePage() {
   const [filterType, setFilterType] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
+  const [dynamicCategories, setDynamicCategories] = useState<string[]>([]);
 
   const { showSuccess, showError } = useToast();
 
   const loadAll = useCallback(async () => {
     try {
       setLoading(true);
-      const [recRes, sumRes] = await Promise.all([
+      const [recRes, sumRes, catRes] = await Promise.all([
         fetch('/api/finance'),
         fetch('/api/finance/summary'),
+        fetch('/api/categories?section=finance'),
       ]);
       if (!recRes.ok || !sumRes.ok) throw new Error('Erro ao carregar dados');
       const [records, sum] = await Promise.all([recRes.json(), sumRes.json()]);
       setAllRecords(records as FinancialRecord[]);
       setSummary(sum as FinancialSummary);
+      if (catRes.ok) {
+        const cats = await catRes.json() as { id: number; name: string; section: string }[];
+        setDynamicCategories(cats.map((c) => c.name));
+      }
     } catch {
       showError('Erro ao carregar registros financeiros');
     } finally {
@@ -630,7 +636,7 @@ export default function FinancePage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                 >
                   <option value="">Selecione…</option>
-                  {CATEGORIES[formData.type].map((c) => <option key={c} value={c}>{c}</option>)}
+                  {(dynamicCategories.length > 0 ? dynamicCategories : CATEGORIES[formData.type]).map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
               <div>

@@ -14,6 +14,7 @@ const SECTIONS = [
   { key: 'sweets', label: 'Doces' },
   { key: 'designs', label: 'Design' },
   { key: 'themes', label: 'Temas' },
+  { key: 'finance', label: 'Financeiro' },
 ];
 
 export default function CategoriesPage() {

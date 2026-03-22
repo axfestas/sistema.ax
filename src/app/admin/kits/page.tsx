@@ -136,12 +136,26 @@ export default function KitsPage() {
     const item = items.find(i => i.id === itemId)
     
     if (!item) return
+
+    // Validate stock availability
+    if (quantity <= 0) {
+      showError('A quantidade deve ser maior que zero.')
+      return
+    }
+    if (quantity > item.quantity) {
+      showError(`Quantidade insuficiente em estoque. Disponível: ${item.quantity}`)
+      return
+    }
     
     // Check if item already exists in the list
     const existingIndex = formKitItems.findIndex(i => i.item_id === itemId)
     
     if (existingIndex >= 0) {
-      // Update quantity
+      // Update quantity - also validate stock
+      if (quantity > item.quantity) {
+        showError(`Quantidade insuficiente em estoque. Disponível: ${item.quantity}`)
+        return
+      }
       const updated = [...formKitItems]
       updated[existingIndex].quantity = quantity
       setFormKitItems(updated)
@@ -404,7 +418,7 @@ export default function KitsPage() {
                       className="w-full px-3 py-2 border rounded"
                     >
                       <option value="">Selecione um item</option>
-                      {items.map((item) => (
+                      {items.filter(item => item.quantity > 0).map((item) => (
                         <option key={item.id} value={item.id}>
                           {item.name} (Estoque: {item.quantity})
                         </option>
@@ -416,10 +430,15 @@ export default function KitsPage() {
                     <input
                       type="number"
                       min="1"
+                      max={newFormItem.item_id ? (items.find(i => i.id === parseInt(newFormItem.item_id))?.quantity ?? undefined) : undefined}
                       value={newFormItem.quantity}
                       onChange={(e) => setNewFormItem({ ...newFormItem, quantity: e.target.value })}
                       className="w-full px-3 py-2 border rounded"
                     />
+                    {newFormItem.item_id && (() => {
+                      const sel = items.find(i => i.id === parseInt(newFormItem.item_id))
+                      return sel ? <p className="text-xs text-gray-500 mt-1">Disponível em estoque: {sel.quantity}</p> : null
+                    })()}
                   </div>
                 </div>
                 <button
