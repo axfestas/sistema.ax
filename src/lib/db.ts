@@ -1302,6 +1302,9 @@ export interface SiteSettings {
   instagram_url?: string;
   whatsapp_url?: string;
   hero_image_url?: string;
+  locador_name?: string;
+  locador_cpf?: string;
+  locador_address?: string;
   updated_at?: string;
 }
 
@@ -1315,6 +1318,9 @@ export interface SiteSettingsInput {
   instagram_url?: string;
   whatsapp_url?: string;
   hero_image_url?: string;
+  locador_name?: string;
+  locador_cpf?: string;
+  locador_address?: string;
 }
 
 /**
@@ -1374,6 +1380,18 @@ export async function updateSiteSettings(
   if (updates.hero_image_url !== undefined) {
     fields.push('hero_image_url = ?');
     values.push(updates.hero_image_url || null);
+  }
+  if (updates.locador_name !== undefined) {
+    fields.push('locador_name = ?');
+    values.push(updates.locador_name || null);
+  }
+  if (updates.locador_cpf !== undefined) {
+    fields.push('locador_cpf = ?');
+    values.push(updates.locador_cpf || null);
+  }
+  if (updates.locador_address !== undefined) {
+    fields.push('locador_address = ?');
+    values.push(updates.locador_address || null);
   }
   
   if (fields.length === 0) {
