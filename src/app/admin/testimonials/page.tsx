@@ -135,7 +135,7 @@ export default function AdminTestimonialsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-yellow" />
       </div>
     )
   }
@@ -154,7 +154,7 @@ export default function AdminTestimonialsPage() {
             key={f}
             onClick={() => setFilter(f)}
             className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
-              filter === f ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              filter === f ? 'bg-brand-yellow text-brand-gray' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
             {f === 'all' ? 'Todas' : STATUS_LABEL[f]}

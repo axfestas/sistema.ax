@@ -195,6 +195,95 @@ interface ApiItem {
   created_at?: string
 }
 
+// ─── Suggestion form modal ────────────────────────────────────────────────────
+
+function SuggestionModal({ onClose }: { onClose: () => void }) {
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [message, setMessage] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    if (!name.trim()) { setError('Informe seu nome.'); return }
+    if (!message.trim()) { setError('Escreva sua sugestão.'); return }
+    setSubmitting(true)
+    try {
+      const res = await fetch('/api/suggestions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name.trim(), email: email.trim() || undefined, message: message.trim() }),
+      })
+      if (res.ok) {
+        setSubmitted(true)
+      } else {
+        const data = await res.json() as { error?: string }
+        setError(data.error || 'Erro ao enviar sugestão.')
+      }
+    } catch {
+      setError('Erro de conexão. Tente novamente.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
+        {submitted ? (
+          <div className="text-center py-6">
+            <p className="text-4xl mb-3">💡</p>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Sugestão enviada!</h3>
+            <p className="text-gray-500 text-sm mb-4">Obrigado pela sua sugestão. Ela foi registrada e será analisada pela nossa equipe.</p>
+            <button onClick={onClose} className="bg-brand-yellow hover:bg-yellow-400 text-brand-gray font-bold px-6 py-2 rounded-full transition">Fechar</button>
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-gray-900">💡 Envie sua sugestão</h3>
+              <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">✕</button>
+            </div>
+            <p className="text-gray-500 text-sm mb-4">Tem alguma ideia ou sugestão para melhorarmos nossos serviços? Adoramos ouvir você!</p>
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <input
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow"
+                placeholder="Seu nome *"
+                value={name}
+                onChange={e => setName(e.target.value)}
+              />
+              <input
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow"
+                placeholder="Seu email (opcional)"
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+              />
+              <textarea
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow resize-none"
+                placeholder="Sua sugestão *"
+                rows={4}
+                value={message}
+                onChange={e => setMessage(e.target.value)}
+              />
+              {error && <p className="text-red-500 text-xs">{error}</p>}
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full bg-brand-yellow hover:bg-yellow-400 text-brand-gray font-bold py-3 rounded-full transition disabled:opacity-60"
+              >
+                {submitting ? 'Enviando...' : '💡 Enviar sugestão'}
+              </button>
+            </form>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ─── Review form modal ────────────────────────────────────────────────────────
 
 function ReviewModal({ onClose }: { onClose: () => void }) {
@@ -305,6 +394,7 @@ export default function Home() {
   const [portfolioLimit, setPortfolioLimit] = useState(8)
   const [catalogVisible, setCatalogVisible] = useState(CATALOG_PAGE_SIZE)
   const [showReviewModal, setShowReviewModal] = useState(false)
+  const [showSuggestionModal, setShowSuggestionModal] = useState(false)
   const [heroImageUrl, setHeroImageUrl] = useState<string | null>(null)
   const featuredCarouselRef = useRef<HTMLDivElement>(null)
 
@@ -628,6 +718,12 @@ export default function Home() {
             >
               💬 Deixar avaliação
             </button>
+            <button
+              onClick={() => setShowSuggestionModal(true)}
+              className="inline-block border-2 border-brand-yellow text-brand-yellow font-bold py-3.5 px-8 rounded-full transition hover:bg-brand-yellow/10 ml-3"
+            >
+              💡 Envie sua sugestão
+            </button>
           </div>
         </div>
       </section>
@@ -671,6 +767,7 @@ export default function Home() {
 
       {/* ── Review modal ──────────────────────────────────────────────── */}
       {showReviewModal && <ReviewModal onClose={() => setShowReviewModal(false)} />}
+      {showSuggestionModal && <SuggestionModal onClose={() => setShowSuggestionModal(false)} />}
     </div>
   )
 }

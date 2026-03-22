@@ -375,3 +375,15 @@ VALUES (1, 'Ax Festas', 'Aluguel de itens para festas e eventos. Qualidade e exc
 --
 INSERT OR IGNORE INTO users (email, password_hash, name, role) 
 VALUES ('alex.fraga@axfestas.com.br', 'b20c87122e7397ae12d9af93c6dacac9:125aa6d9b3ef0df48800ba7a0103c550b476afc38fa01ab012d6a6823bf06e82', 'Alex Fraga', 'admin');
+
+-- Tabela de Sugestões
+CREATE TABLE IF NOT EXISTS suggestions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  email TEXT,
+  message TEXT NOT NULL,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'read', 'archived')),
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_suggestions_status ON suggestions(status);
