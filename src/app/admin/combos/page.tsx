@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { useToast } from '@/components/ToastProvider'
+import { useToast } from '@/hooks/useToast'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -315,7 +315,7 @@ export default function CombosPage() {
       })
 
       if (res.ok) {
-        showSuccess(editingCombo ? 'Combo atualizado!' : 'Combo criado!')
+        showSuccess(editingCombo ? 'Combo atualizado com sucesso!' : 'Combo criado com sucesso!')
         closeForm()
         loadCombos()
       } else {
@@ -332,14 +332,14 @@ export default function CombosPage() {
   // ─── Delete ────────────────────────────────────────────────────────────────
 
   const handleDelete = async (combo: Combo) => {
-    if (!confirm(`Excluir o combo "${combo.name}"?`)) return
+    if (!confirm(`Tem certeza que deseja deletar o combo "${combo.name}"?`)) return
     try {
       const res = await fetch(`/api/combos?id=${combo.id}`, { method: 'DELETE' })
       if (res.ok) {
-        showSuccess('Combo excluído.')
+        showSuccess('Combo deletado com sucesso!')
         loadCombos()
       } else {
-        showError('Erro ao excluir.')
+        showError('Erro ao deletar combo.')
       }
     } catch {
       showError('Erro de conexão.')
@@ -374,308 +374,228 @@ export default function CombosPage() {
     return `${BRL(combo.discount_value)} de desconto`
   }
 
+  if (loading) {
+    return <div className="p-4">Carregando...</div>
+  }
+
   // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <div className="mb-6 flex items-center justify-between gap-4 flex-wrap">
+    <div>
+      <div className="flex justify-between items-center mb-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Combos Promocionais</h1>
-          <p className="text-gray-500 text-sm mt-1">Crie combos para aplicar descontos automáticos no carrinho</p>
+          <h2 className="text-2xl font-bold">Combos Promocionais</h2>
+          <p className="text-gray-600 text-sm mt-1">
+            Crie combos para aplicar descontos automáticos no carrinho
+          </p>
         </div>
         <button
           onClick={openCreate}
-          className="px-5 py-2.5 bg-brand-yellow hover:bg-yellow-400 text-brand-gray font-bold rounded-xl transition"
+          className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded"
         >
           + Novo Combo
         </button>
       </div>
 
-      {/* Search */}
-      <div className="mb-5">
-        <input
-          type="text"
-          placeholder="Buscar combo..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="w-full max-w-sm border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow"
-        />
-      </div>
-
-      {/* List */}
-      {loading ? (
-        <div className="flex items-center justify-center min-h-48">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-yellow" />
-        </div>
-      ) : filteredCombos.length === 0 ? (
-        <div className="text-center py-16 text-gray-400">
-          <p className="text-5xl mb-4">🎁</p>
-          <p className="font-medium">Nenhum combo encontrado.</p>
-          <p className="text-sm mt-1">Clique em &quot;Novo Combo&quot; para criar o primeiro.</p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {filteredCombos.map(combo => (
-            <div key={combo.id} className={`bg-white rounded-2xl border shadow-sm p-5 ${combo.is_active ? 'border-gray-100' : 'border-gray-200 opacity-70'}`}>
-              <div className="flex items-start justify-between gap-4 flex-wrap">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="font-bold text-gray-900 text-lg">{combo.name}</span>
-                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${combo.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                      {combo.is_active ? 'Ativo' : 'Inativo'}
-                    </span>
-                    <span className="text-xs px-2 py-0.5 bg-brand-yellow/20 text-yellow-800 rounded-full font-medium">
-                      {TYPE_LABELS[combo.type]}
-                    </span>
-                    <span className="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full font-medium">
-                      {discountLabel(combo)}
-                    </span>
-                    {combo.priority > 0 && (
-                      <span className="text-xs px-2 py-0.5 bg-purple-50 text-purple-700 rounded-full font-medium">
-                        Prioridade {combo.priority}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Products */}
-                  {combo.items.length > 0 && (
-                    <div className="mt-2">
-                      <p className="text-xs text-gray-500 font-medium mb-1">Produtos:</p>
-                      <div className="flex flex-wrap gap-1">
-                        {combo.items.map((item, idx) => (
-                          <span key={idx} className="text-xs bg-gray-50 border border-gray-200 px-2 py-0.5 rounded-lg text-gray-600">
-                            {item.product_name} ({PRODUCT_TYPE_LABELS[item.product_type]}) × {item.required_quantity}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Categories */}
-                  {combo.categories.length > 0 && (
-                    <div className="mt-2">
-                      <p className="text-xs text-gray-500 font-medium mb-1">
-                        Categorias (mín. {combo.min_quantity} {combo.min_quantity === 1 ? 'item' : 'itens'}):
-                      </p>
-                      <div className="flex flex-wrap gap-1">
-                        {combo.categories.map((cat, idx) => (
-                          <span key={idx} className="text-xs bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-lg text-blue-600">
-                            {cat.category_name} ({SECTION_LABELS[cat.product_section]})
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex gap-2 flex-shrink-0 flex-wrap">
-                  <button
-                    onClick={() => toggleActive(combo)}
-                    className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition ${
-                      combo.is_active
-                        ? 'bg-gray-100 hover:bg-gray-200 text-gray-600'
-                        : 'bg-green-50 hover:bg-green-100 text-green-700'
-                    }`}
-                  >
-                    {combo.is_active ? '⏸ Desativar' : '▶ Ativar'}
-                  </button>
-                  <button
-                    onClick={() => openEdit(combo)}
-                    className="px-3 py-1.5 bg-brand-yellow/80 hover:bg-brand-yellow text-brand-gray text-xs font-semibold rounded-lg transition"
-                  >
-                    ✏️ Editar
-                  </button>
-                  <button
-                    onClick={() => handleDelete(combo)}
-                    className="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-semibold rounded-lg transition"
-                  >
-                    🗑 Excluir
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
+      {!showForm && (
+        <div className="flex gap-2 mb-4">
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Buscar por nome..."
+            className="px-3 py-2 border rounded flex-1"
+          />
         </div>
       )}
 
-      {/* ─── Form Modal ─────────────────────────────────────────────────────── */}
+      {/* ─── Inline Form ──────────────────────────────────────────────────── */}
       {showForm && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-start justify-center overflow-y-auto p-4" onClick={closeForm}>
-          <div
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl my-8"
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between p-6 border-b">
-              <h2 className="text-xl font-bold text-gray-900">
-                {editingCombo ? 'Editar Combo' : 'Novo Combo'}
-              </h2>
-              <button onClick={closeForm} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">✕</button>
+        <div className="bg-white p-6 rounded-lg shadow mb-6">
+          <h3 className="text-xl font-bold mb-4">
+            {editingCombo ? 'Editar Combo' : 'Novo Combo'}
+          </h3>
+          <form onSubmit={handleSave} className="space-y-4">
+            {/* Name */}
+            <div>
+              <label className="block text-sm font-medium mb-1">Nome do combo *</label>
+              <input
+                type="text"
+                required
+                value={formData.name}
+                onChange={e => setFormData(p => ({ ...p, name: e.target.value }))}
+                placeholder="Ex: 5 suportes em promoção"
+                className="w-full px-3 py-2 border rounded"
+              />
             </div>
 
-            <form onSubmit={handleSave} className="p-6 space-y-5">
-              {/* Name */}
+            {/* Type + Discount side by side */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Nome do combo *</label>
+                <label className="block text-sm font-medium mb-1">Tipo de combo *</label>
+                <select
+                  value={formData.type}
+                  onChange={e => setFormData(p => ({ ...p, type: e.target.value as typeof formData.type }))}
+                  className="w-full px-3 py-2 border rounded"
+                >
+                  <option value="products">Produtos específicos</option>
+                  <option value="category">Por categoria</option>
+                  <option value="mixed">Misto (produtos + categorias)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Tipo de desconto *</label>
+                <select
+                  value={formData.discount_type}
+                  onChange={e => setFormData(p => ({ ...p, discount_type: e.target.value as typeof formData.discount_type }))}
+                  className="w-full px-3 py-2 border rounded"
+                >
+                  <option value="fixed_price">Preço fixo total</option>
+                  <option value="percentage">Desconto percentual (%)</option>
+                  <option value="fixed_amount">Desconto em valor (R$)</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Discount value + min qty + priority */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  {formData.discount_type === 'fixed_price' ? 'Preço fixo (R$) *' :
+                   formData.discount_type === 'percentage' ? 'Percentual (%) *' :
+                   'Valor do desconto (R$) *'}
+                </label>
                 <input
-                  type="text"
+                  type="number"
                   required
-                  value={formData.name}
-                  onChange={e => setFormData(p => ({ ...p, name: e.target.value }))}
-                  placeholder="Ex: 5 suportes em promoção"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow"
+                  min="0"
+                  step="0.01"
+                  value={formData.discount_value}
+                  onChange={e => setFormData(p => ({ ...p, discount_value: e.target.value }))}
+                  className="w-full px-3 py-2 border rounded"
                 />
               </div>
-
-              {/* Type + Discount side by side */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">Tipo de combo *</label>
-                  <select
-                    value={formData.type}
-                    onChange={e => setFormData(p => ({ ...p, type: e.target.value as typeof formData.type }))}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow"
-                  >
-                    <option value="products">Produtos específicos</option>
-                    <option value="category">Por categoria</option>
-                    <option value="mixed">Misto (produtos + categorias)</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">Tipo de desconto *</label>
-                  <select
-                    value={formData.discount_type}
-                    onChange={e => setFormData(p => ({ ...p, discount_type: e.target.value as typeof formData.discount_type }))}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow"
-                  >
-                    <option value="fixed_price">Preço fixo total</option>
-                    <option value="percentage">Desconto percentual (%)</option>
-                    <option value="fixed_amount">Desconto em valor (R$)</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Discount value + min qty + priority */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">
-                    {formData.discount_type === 'fixed_price' ? 'Preço fixo (R$) *' :
-                     formData.discount_type === 'percentage' ? 'Percentual (%) *' :
-                     'Valor desconto (R$) *'}
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    min="0"
-                    step="0.01"
-                    value={formData.discount_value}
-                    onChange={e => setFormData(p => ({ ...p, discount_value: e.target.value }))}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">Qtd. mínima</label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={formData.min_quantity}
-                    onChange={e => setFormData(p => ({ ...p, min_quantity: e.target.value }))}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">Prioridade</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={formData.priority}
-                    onChange={e => setFormData(p => ({ ...p, priority: e.target.value }))}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow"
-                  />
-                </div>
-              </div>
-
-              {/* Active */}
-              <div className="flex items-center gap-3">
+              <div>
+                <label className="block text-sm font-medium mb-1">Qtd. mínima</label>
                 <input
-                  type="checkbox"
-                  id="is_active"
-                  checked={formData.is_active === 1}
-                  onChange={e => setFormData(p => ({ ...p, is_active: e.target.checked ? 1 : 0 }))}
-                  className="w-4 h-4 accent-brand-yellow"
+                  type="number"
+                  min="1"
+                  value={formData.min_quantity}
+                  onChange={e => setFormData(p => ({ ...p, min_quantity: e.target.value }))}
+                  className="w-full px-3 py-2 border rounded"
                 />
-                <label htmlFor="is_active" className="text-sm font-medium text-gray-700">Combo ativo</label>
               </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Prioridade</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={formData.priority}
+                  onChange={e => setFormData(p => ({ ...p, priority: e.target.value }))}
+                  className="w-full px-3 py-2 border rounded"
+                />
+              </div>
+            </div>
 
-              {/* ── Products section ────────────────────────────── */}
-              {(formData.type === 'products' || formData.type === 'mixed') && (
-                <div className="border border-gray-200 rounded-xl p-4">
-                  <h3 className="text-sm font-bold text-gray-800 mb-3">Produtos do combo</h3>
+            {/* Active */}
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="combo_is_active"
+                checked={formData.is_active === 1}
+                onChange={e => setFormData(p => ({ ...p, is_active: e.target.checked ? 1 : 0 }))}
+                className="mr-2"
+              />
+              <label htmlFor="combo_is_active" className="text-sm font-medium">Combo ativo</label>
+            </div>
 
-                  {/* Added products */}
-                  {formItems.length > 0 && (
-                    <div className="space-y-2 mb-4">
-                      {formItems.map((item, idx) => (
-                        <div key={idx} className="flex items-center gap-2 bg-gray-50 rounded-lg p-2">
-                          <span className="flex-1 text-sm text-gray-700">
-                            <span className="font-medium">{item.product_name}</span>
-                            <span className="text-xs text-gray-400 ml-1">({PRODUCT_TYPE_LABELS[item.product_type]})</span>
-                          </span>
+            {/* ── Products section ─────────────────────────────────────────── */}
+            {(formData.type === 'products' || formData.type === 'mixed') && (
+              <div className="border-t pt-4 mt-4">
+                <h4 className="font-semibold mb-3">Produtos do combo</h4>
+
+                {/* Added products */}
+                {formItems.length > 0 && (
+                  <ul className="space-y-2 mb-4">
+                    {formItems.map((item, idx) => (
+                      <li key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                        <div>
+                          <span className="font-medium">{item.product_name}</span>
+                          <span className="text-xs text-gray-500 ml-2">({PRODUCT_TYPE_LABELS[item.product_type]})</span>
+                        </div>
+                        <div className="flex items-center gap-2">
                           <input
                             type="number"
                             min="1"
                             value={item.required_quantity}
                             onChange={e => updateProductQty(idx, parseInt(e.target.value, 10) || 1)}
-                            className="w-16 border border-gray-200 rounded-lg px-2 py-1 text-sm text-center"
+                            className="w-16 px-2 py-1 border rounded text-sm text-center"
                             title="Quantidade necessária"
                           />
-                          <button type="button" onClick={() => removeProduct(idx)} className="text-red-400 hover:text-red-600 text-sm">✕</button>
+                          <button
+                            type="button"
+                            onClick={() => removeProduct(idx)}
+                            className="text-red-500 hover:text-red-700 text-sm"
+                          >
+                            🗑️ Remover
+                          </button>
                         </div>
-                      ))}
-                    </div>
-                  )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
 
-                  {/* Product picker */}
-                  <div className="flex gap-2 mb-2 flex-wrap">
-                    <input
-                      type="text"
-                      placeholder="Buscar produto..."
-                      value={productSearch}
-                      onChange={e => setProductSearch(e.target.value)}
-                      className="flex-1 min-w-[140px] border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow"
-                    />
-                    <select
-                      value={productTypeFilter}
-                      onChange={e => setProductTypeFilter(e.target.value)}
-                      className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow"
-                    >
-                      <option value="all">Todos</option>
-                      <option value="item">Estoque</option>
-                      <option value="kit">Kits</option>
-                      <option value="sweet">Doces</option>
-                      <option value="design">Designs</option>
-                    </select>
+                {/* Product picker */}
+                <div className="p-4 bg-gray-50 rounded">
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Buscar produto</label>
+                      <input
+                        type="text"
+                        placeholder="Digite o nome do produto..."
+                        value={productSearch}
+                        onChange={e => setProductSearch(e.target.value)}
+                        className="w-full px-3 py-2 border rounded"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Tipo</label>
+                      <select
+                        value={productTypeFilter}
+                        onChange={e => setProductTypeFilter(e.target.value)}
+                        className="w-full px-3 py-2 border rounded"
+                      >
+                        <option value="all">Todos</option>
+                        <option value="item">Estoque</option>
+                        <option value="kit">Kits</option>
+                        <option value="sweet">Doces</option>
+                        <option value="design">Designs</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 mb-3">
+                    <label className="text-sm font-medium">Quantidade:</label>
                     <input
                       type="number"
                       min="1"
                       value={newItemQty}
                       onChange={e => setNewItemQty(e.target.value)}
-                      className="w-16 border border-gray-200 rounded-lg px-2 py-2 text-sm text-center"
-                      title="Quantidade"
+                      className="w-20 px-2 py-1 border rounded text-sm"
                     />
                   </div>
 
                   {productSearch.trim() && (
-                    <div className="border border-gray-200 rounded-lg max-h-40 overflow-y-auto">
+                    <div className="border rounded bg-white max-h-40 overflow-y-auto">
                       {filteredProducts.length === 0 ? (
-                        <p className="text-xs text-gray-400 p-3">Nenhum produto encontrado.</p>
+                        <p className="text-sm text-gray-400 p-3">Nenhum produto encontrado.</p>
                       ) : (
                         filteredProducts.slice(0, 20).map(p => (
                           <button
                             key={`${p.type}-${p.id}`}
                             type="button"
                             onClick={() => addProduct(p)}
-                            className="w-full text-left px-3 py-2 text-sm hover:bg-brand-yellow/10 transition flex items-center gap-2"
+                            className="w-full text-left px-3 py-2 text-sm hover:bg-yellow-50 flex items-center gap-2"
                           >
                             <span className="text-xs bg-gray-100 px-1.5 py-0.5 rounded text-gray-500">{PRODUCT_TYPE_LABELS[p.type]}</span>
                             {p.name}
@@ -685,68 +605,172 @@ export default function CombosPage() {
                     </div>
                   )}
                 </div>
-              )}
-
-              {/* ── Categories section ───────────────────────────── */}
-              {(formData.type === 'category' || formData.type === 'mixed') && (
-                <div className="border border-gray-200 rounded-xl p-4">
-                  <h3 className="text-sm font-bold text-gray-800 mb-3">Categorias do combo</h3>
-
-                  {/* Added categories */}
-                  {formCategories.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      {formCategories.map((cat, idx) => (
-                        <span key={idx} className="flex items-center gap-1.5 text-sm bg-blue-50 border border-blue-100 px-3 py-1 rounded-full text-blue-700">
-                          {cat.category_name}
-                          <span className="text-xs text-blue-400">({SECTION_LABELS[cat.product_section]})</span>
-                          <button type="button" onClick={() => removeCategory(idx)} className="text-blue-400 hover:text-blue-600">✕</button>
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Category picker */}
-                  <div className="border border-gray-200 rounded-lg max-h-40 overflow-y-auto">
-                    {categories.length === 0 ? (
-                      <p className="text-xs text-gray-400 p-3">Nenhuma categoria cadastrada.</p>
-                    ) : (
-                      categories.map((cat, idx) => (
-                        <button
-                          key={idx}
-                          type="button"
-                          onClick={() => addCategory(cat)}
-                          className="w-full text-left px-3 py-2 text-sm hover:bg-brand-yellow/10 transition flex items-center gap-2"
-                        >
-                          <span className="text-xs bg-gray-100 px-1.5 py-0.5 rounded text-gray-500">{SECTION_LABELS[cat.section]}</span>
-                          {cat.name}
-                        </button>
-                      ))
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Actions */}
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={closeForm}
-                  className="flex-1 border border-gray-200 text-gray-600 hover:bg-gray-50 font-semibold py-2.5 rounded-xl transition"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="flex-1 bg-brand-yellow hover:bg-yellow-400 text-brand-gray font-bold py-2.5 rounded-xl transition disabled:opacity-50"
-                >
-                  {saving ? 'Salvando...' : editingCombo ? 'Salvar alterações' : 'Criar combo'}
-                </button>
               </div>
-            </form>
-          </div>
+            )}
+
+            {/* ── Categories section ────────────────────────────────────────── */}
+            {(formData.type === 'category' || formData.type === 'mixed') && (
+              <div className="border-t pt-4 mt-4">
+                <h4 className="font-semibold mb-3">Categorias do combo</h4>
+
+                {/* Added categories */}
+                {formCategories.length > 0 && (
+                  <ul className="space-y-2 mb-4">
+                    {formCategories.map((cat, idx) => (
+                      <li key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                        <div>
+                          <span className="font-medium">{cat.category_name}</span>
+                          <span className="text-xs text-gray-500 ml-2">({SECTION_LABELS[cat.product_section]})</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeCategory(idx)}
+                          className="text-red-500 hover:text-red-700 text-sm"
+                        >
+                          🗑️ Remover
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                {/* Category picker */}
+                <div className="border rounded bg-white max-h-40 overflow-y-auto">
+                  {categories.length === 0 ? (
+                    <p className="text-sm text-gray-400 p-3">Nenhuma categoria cadastrada.</p>
+                  ) : (
+                    categories.map((cat, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => addCategory(cat)}
+                        className="w-full text-left px-3 py-2 text-sm hover:bg-yellow-50 flex items-center gap-2"
+                      >
+                        <span className="text-xs bg-gray-100 px-1.5 py-0.5 rounded text-gray-500">{SECTION_LABELS[cat.section]}</span>
+                        {cat.name}
+                      </button>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="flex gap-2 pt-2">
+              <button
+                type="submit"
+                disabled={saving}
+                className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded disabled:opacity-50"
+              >
+                {saving ? 'Salvando...' : editingCombo ? 'Salvar alterações' : 'Criar combo'}
+              </button>
+              <button
+                type="button"
+                onClick={closeForm}
+                className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
+              >
+                Cancelar
+              </button>
+            </div>
+          </form>
         </div>
       )}
+
+      {/* ─── Combo List ───────────────────────────────────────────────────── */}
+      <div className="bg-white shadow overflow-hidden sm:rounded-md">
+        {filteredCombos.length === 0 ? (
+          <div className="px-6 py-8 text-center">
+            <p className="text-gray-500">
+              {combos.length === 0 ? 'Nenhum combo cadastrado' : 'Nenhum combo encontrado para a busca.'}
+            </p>
+          </div>
+        ) : (
+          <ul role="list" className="divide-y divide-gray-200">
+            {filteredCombos.map(combo => (
+              <li key={combo.id} className="px-6 py-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <h3 className="text-lg font-semibold">{combo.name}</h3>
+                      <span className={`text-xs px-2 py-1 rounded font-semibold ${combo.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-700'}`}>
+                        {combo.is_active ? 'Ativo' : 'Inativo'}
+                      </span>
+                      <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded font-semibold">
+                        {TYPE_LABELS[combo.type]}
+                      </span>
+                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded font-semibold">
+                        {DISCOUNT_TYPE_LABELS[combo.discount_type]}
+                      </span>
+                    </div>
+
+                    <div className="text-sm text-gray-600 mt-1">
+                      <span className="font-medium text-green-600">{discountLabel(combo)}</span>
+                      {combo.priority > 0 && (
+                        <span className="ml-3 text-xs text-gray-500">Prioridade: {combo.priority}</span>
+                      )}
+                    </div>
+
+                    {/* Products */}
+                    {combo.items.length > 0 && (
+                      <div className="mt-2">
+                        <p className="text-xs text-gray-500 font-medium mb-1">Produtos:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {combo.items.map((item, idx) => (
+                            <span key={idx} className="text-xs bg-gray-100 border border-gray-200 px-2 py-0.5 rounded text-gray-600">
+                              {item.product_name} ({PRODUCT_TYPE_LABELS[item.product_type]}) × {item.required_quantity}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Categories */}
+                    {combo.categories.length > 0 && (
+                      <div className="mt-2">
+                        <p className="text-xs text-gray-500 font-medium mb-1">
+                          Categorias (mín. {combo.min_quantity} {combo.min_quantity === 1 ? 'item' : 'itens'}):
+                        </p>
+                        <div className="flex flex-wrap gap-1">
+                          {combo.categories.map((cat, idx) => (
+                            <span key={idx} className="text-xs bg-blue-50 border border-blue-100 px-2 py-0.5 rounded text-blue-700">
+                              {cat.category_name} ({SECTION_LABELS[cat.product_section]})
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 flex-shrink-0">
+                    <button
+                      onClick={() => toggleActive(combo)}
+                      className={`font-bold py-1 px-3 rounded text-sm ${
+                        combo.is_active
+                          ? 'bg-gray-300 hover:bg-gray-400 text-gray-800'
+                          : 'bg-green-500 hover:bg-green-600 text-white'
+                      }`}
+                    >
+                      {combo.is_active ? 'Desativar' : 'Ativar'}
+                    </button>
+                    <button
+                      onClick={() => openEdit(combo)}
+                      className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-1 px-3 rounded text-sm"
+                    >
+                      ✏️ Editar
+                    </button>
+                    <button
+                      onClick={() => handleDelete(combo)}
+                      className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm"
+                    >
+                      🗑️ Deletar
+                    </button>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   )
 }

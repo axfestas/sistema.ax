@@ -53,6 +53,7 @@ wrangler d1 execute DB --local --command "PRAGMA table_info(users);"
 - `013_add_approved_rejected_statuses.sql` - Adds approved and rejected statuses
 - `014_add_active_column_to_users.sql` - **[CRITICAL]** Adds active column to users table
 - `021_add_quantity_to_designs.sql` - Adds quantity (stock) field to designs table
+- `028_add_combos_tables.sql` - **[CRITICAL]** Adds combos, combo_items, and combo_categories tables for the promotional combos system
 
 ## Migration 014: Add active column
 
@@ -92,4 +93,45 @@ wrangler d1 execute DB --command "PRAGMA table_info(users);"
 
 # Verificar dados (deve mostrar coluna active)
 wrangler d1 execute DB --command "SELECT id, email, name, active FROM users LIMIT 5;"
+```
+
+## Migration 028: Add combos tables
+
+**Status**: Pendente aplicação em produção  
+**Data**: 2026-03-22  
+**Motivo**: Adicionar suporte ao sistema de Combos Promocionais  
+**Prioridade**: 🔴 **CRÍTICA** - Bloqueando criação/edição de combos na seção `/admin/combos`
+
+### O que faz:
+- Cria tabela `combos` (combos promocionais com tipo e desconto)
+- Cria tabela `combo_items` (produtos específicos vinculados a um combo)
+- Cria tabela `combo_categories` (categorias vinculadas a um combo)
+- Cria índices para performance nas novas tabelas
+
+### Como verificar se precisa ser aplicada:
+
+```bash
+wrangler d1 execute DB --command "SELECT name FROM sqlite_master WHERE type='table' AND name='combos';"
+```
+
+Se a saída estiver vazia, a migration precisa ser aplicada.
+
+### Como aplicar:
+
+```bash
+# Produção
+wrangler d1 execute DB --file=./migrations/028_add_combos_tables.sql
+
+# Local
+wrangler d1 execute DB --local --file=./migrations/028_add_combos_tables.sql
+```
+
+### Validação após aplicação:
+
+```bash
+# Verificar tabelas criadas
+wrangler d1 execute DB --command "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('combos','combo_items','combo_categories');"
+
+# Verificar estrutura da tabela combos
+wrangler d1 execute DB --command "PRAGMA table_info(combos);"
 ```
