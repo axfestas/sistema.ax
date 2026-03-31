@@ -337,6 +337,104 @@ function KpiCard({ label, value, color, icon }: { label: string; value: number; 
   );
 }
 
+// --- Monthly Breakdown ---
+
+interface MonthRow {
+  month: string;
+  income: number;
+  expense: number;
+  purchase: number;
+  net: number;
+  carryIn: number;
+  accumulated: number;
+}
+
+function MonthlyBreakdownTable({ rows }: { rows: MonthRow[] }) {
+  if (rows.length === 0) return null;
+  return (
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-2">
+        <span className="text-base">📅</span>
+        <h4 className="text-sm font-semibold text-gray-700">Resumo Mensal</h4>
+        <span className="ml-auto text-xs text-gray-400">Saldo acumulado carrega déficits para o próximo mês</span>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="bg-gray-50 border-b border-gray-200 text-left">
+              <th className="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Mês</th>
+              <th className="px-4 py-2.5 text-xs font-semibold text-emerald-600 uppercase tracking-wide text-right">Receita</th>
+              <th className="px-4 py-2.5 text-xs font-semibold text-red-500 uppercase tracking-wide text-right">Despesas</th>
+              <th className="px-4 py-2.5 text-xs font-semibold text-purple-600 uppercase tracking-wide text-right">Compras</th>
+              <th className="px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide text-right">Saldo Mês</th>
+              <th className="px-4 py-2.5 text-xs font-semibold text-gray-700 uppercase tracking-wide text-right">Acumulado</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {rows.map((row) => (
+              <tr key={row.month} className="hover:bg-gray-50 transition-colors">
+                <td className="px-4 py-3 font-medium text-gray-800 whitespace-nowrap">
+                  {formatMonthLabel(row.month)}
+                  {row.carryIn < 0 && (
+                    <span className="ml-2 text-xs text-red-500 font-normal">
+                      (inclui déficit de {formatCurrency(Math.abs(row.carryIn))})
+                    </span>
+                  )}
+                </td>
+                <td className="px-4 py-3 text-right text-emerald-600 font-semibold whitespace-nowrap">
+                  {formatCurrency(row.income)}
+                </td>
+                <td className="px-4 py-3 text-right text-red-500 font-semibold whitespace-nowrap">
+                  {row.expense > 0 ? formatCurrency(row.expense) : '—'}
+                </td>
+                <td className="px-4 py-3 text-right text-purple-600 font-semibold whitespace-nowrap">
+                  {row.purchase > 0 ? formatCurrency(row.purchase) : '—'}
+                </td>
+                <td className={`px-4 py-3 text-right font-semibold whitespace-nowrap ${
+                  row.net >= 0 ? 'text-emerald-700' : 'text-red-600'
+                }`}>
+                  {row.net >= 0 ? '+' : ''}{formatCurrency(row.net)}
+                </td>
+                <td className={`px-4 py-3 text-right font-bold whitespace-nowrap ${
+                  row.accumulated >= 0 ? 'text-gray-900' : 'text-red-600'
+                }`}>
+                  {row.accumulated < 0 && (
+                    <span className="mr-1 text-xs font-normal text-red-400">⚠️ recuperar</span>
+                  )}
+                  {row.accumulated >= 0 ? '+' : ''}{formatCurrency(row.accumulated)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            {(() => {
+              const totIncome = rows.reduce((s, r) => s + r.income, 0);
+              const totExpense = rows.reduce((s, r) => s + r.expense, 0);
+              const totPurchase = rows.reduce((s, r) => s + r.purchase, 0);
+              const totNet = totIncome - totExpense - totPurchase;
+              const lastAccumulated = rows[rows.length - 1]?.accumulated ?? 0;
+              return (
+                <tr className="bg-gray-50 border-t-2 border-gray-300">
+                  <td className="px-4 py-3 text-xs font-bold text-gray-600 uppercase tracking-wide">Total</td>
+                  <td className="px-4 py-3 text-right text-emerald-700 font-bold whitespace-nowrap">{formatCurrency(totIncome)}</td>
+                  <td className="px-4 py-3 text-right text-red-600 font-bold whitespace-nowrap">{totExpense > 0 ? formatCurrency(totExpense) : '—'}</td>
+                  <td className="px-4 py-3 text-right text-purple-700 font-bold whitespace-nowrap">{totPurchase > 0 ? formatCurrency(totPurchase) : '—'}</td>
+                  <td className={`px-4 py-3 text-right font-bold whitespace-nowrap ${totNet >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>
+                    {totNet >= 0 ? '+' : ''}{formatCurrency(totNet)}
+                  </td>
+                  <td className={`px-4 py-3 text-right font-bold whitespace-nowrap ${lastAccumulated >= 0 ? 'text-gray-900' : 'text-red-600'}`}>
+                    {lastAccumulated >= 0 ? '+' : ''}{formatCurrency(lastAccumulated)}
+                  </td>
+                </tr>
+              );
+            })()}
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 // --- Main Page ---
 
 export default function FinancePage() {
@@ -406,6 +504,27 @@ export default function FinancePage() {
     allRecords.filter((r) => r.status === 'pending').reduce((s, r) => s + r.amount, 0),
     [allRecords]
   );
+
+  const monthlyRows = useMemo<MonthRow[]>(() => {
+    const map: Record<string, { income: number; expense: number; purchase: number }> = {};
+    allRecords.forEach((r) => {
+      const m = r.date.substring(0, 7);
+      if (!map[m]) map[m] = { income: 0, expense: 0, purchase: 0 };
+      map[m][r.type] += r.amount;
+    });
+    const months = Object.keys(map).sort();
+    let carryIn = 0;
+    return months.map((month) => {
+      const { income, expense, purchase } = map[month];
+      const net = income - expense - purchase;
+      const accumulated = carryIn + net;
+      const row: MonthRow = { month, income, expense, purchase, net, carryIn, accumulated };
+      // Only negative accumulated balances are carried forward as a deficit;
+      // positive balances reset to zero (surplus stays in history, not added to next month).
+      carryIn = accumulated < 0 ? accumulated : 0;
+      return row;
+    });
+  }, [allRecords]);
 
   const handleReceiptUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -576,6 +695,9 @@ export default function FinancePage() {
         <KpiCard label="Saldo Líquido" value={summary.balance} color={summary.balance >= 0 ? 'blue' : 'red'} icon="💰" />
         <KpiCard label="Total Compras" value={summary.totalPurchase} color="purple" icon="🛒" />
       </div>
+
+      {/* Monthly Breakdown */}
+      <MonthlyBreakdownTable rows={monthlyRows} />
 
       {/* Form */}
       {showForm && (
