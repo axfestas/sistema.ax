@@ -140,7 +140,7 @@ export default function QuotesPage() {
   useEffect(() => {
     if (view !== 'form') return;
     Promise.all([
-      fetch('/api/items?catalogOnly=true').then(r => r.ok ? r.json() : []),
+      fetch('/api/items').then(r => r.ok ? r.json() : []),
       fetch('/api/kits').then(r => r.ok ? r.json() : []),
       fetch('/api/sweets?catalog=true').then(r => r.ok ? r.json() : []),
       fetch('/api/designs?catalog=true').then(r => r.ok ? r.json() : []),

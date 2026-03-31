@@ -116,17 +116,17 @@ export default function CartPage() {
             {/* Cart Items */}
             <div className="bg-white rounded-lg shadow-md p-6 mb-6">
               {items.map((item) => (
-                <div key={item.id} className="flex items-center justify-between border-b border-gray-200 py-4 last:border-0">
-                  <div className="flex-1">
-                    <h3 className="font-bold text-brand-gray">{item.name}</h3>
-                    <p className="text-sm text-gray-600">{item.description}</p>
+                <div key={item.id} className="flex items-center justify-between border-b border-gray-200 py-4 last:border-0 gap-3">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-brand-gray truncate">{item.name}</h3>
+                    <p className="text-sm text-gray-600 truncate">{item.description}</p>
                     <p className="text-brand-yellow font-bold mt-1">
                       R$ {item.price.toFixed(2)}
                     </p>
                   </div>
                   
-                  <div className="flex items-center space-x-4">
-                    <div className="flex items-center space-x-2">
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    <div className="flex items-center gap-2">
                       <button
                         onClick={() => updateQuantity(item.id, item.quantity - 1)}
                         className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center"
