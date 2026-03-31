@@ -861,7 +861,7 @@ function ProductDetail() {
                   href={`/produto?type=${item.type}&id=${item.id}`}
                   className="block bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-200 group"
                 >
-                  <div className="relative h-32 bg-gradient-to-br from-yellow-50 to-amber-50">
+                  <div className="relative aspect-square bg-gradient-to-br from-yellow-50 to-amber-50">
                     {item.image_url ? (
                       <Image
                         src={item.image_url}
