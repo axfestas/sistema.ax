@@ -44,11 +44,24 @@ export default function SplashScreen() {
 
   return (
     <div
-      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-brand-purple transition-opacity duration-500 ${
+      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-gradient-to-br from-brand-blue via-brand-blue-dark to-[#5a7a97] overflow-hidden transition-opacity duration-500 ${
         fadingOut ? 'opacity-0' : 'opacity-100'
       }`}
       aria-hidden="true"
     >
+      {/* Decorative circles – same style as the home page hero */}
+      <div className="absolute -top-20 -left-20 w-80 h-80 rounded-full bg-white/10 pointer-events-none" />
+      <div className="absolute -bottom-32 -right-20 w-[420px] h-[420px] rounded-full bg-white/10 pointer-events-none" />
+      <div className="absolute top-1/4 right-8 w-24 h-24 rounded-full bg-white/10 pointer-events-none" />
+
+      {/* Yellow accent stripes */}
+      <div className="absolute top-0 right-16 w-1.5 h-28 bg-[#FFC107]/60 pointer-events-none rounded-b-full" />
+      <div className="absolute top-20 right-28 w-1 h-16 bg-[#FFC107]/40 pointer-events-none rounded-b-full" />
+
+      {/* Purple/lilac accent stripes */}
+      <div className="absolute bottom-0 left-10 w-1.5 h-32 bg-[#C08ADC]/60 pointer-events-none rounded-t-full" />
+      <div className="absolute bottom-16 left-24 w-1 h-20 bg-[#C08ADC]/40 pointer-events-none rounded-t-full" />
+
       <div className={`flex flex-col items-center gap-6 ${fadingOut ? '' : 'animate-splash-logo'}`}>
         <div className="relative w-28 h-28 drop-shadow-2xl">
           <Image
