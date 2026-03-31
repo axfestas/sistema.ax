@@ -144,7 +144,7 @@ function ProductCard({ item }: { item: CatalogItem }) {
         </div>
 
         {/* Info */}
-        <div className="p-4 pb-6">
+        <div className="p-4 pb-14">
           <h3 className="font-semibold text-gray-800 text-sm leading-snug line-clamp-2 mb-2">
             {item.name}
           </h3>
