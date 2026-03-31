@@ -83,6 +83,15 @@ function formatCurrency(value: number) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
 }
 
+function shuffleArray<T>(arr: T[]): T[] {
+  const out = [...arr]
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[out[i], out[j]] = [out[j], out[i]]
+  }
+  return out
+}
+
 // ─── Product card ─────────────────────────────────────────────────────────────
 
 function ProductCard({ item }: { item: CatalogItem }) {
@@ -109,7 +118,7 @@ function ProductCard({ item }: { item: CatalogItem }) {
     <div className="relative bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-200 group flex flex-col">
       <Link href={`/produto?type=${item.type}&id=${item.id}`} className="block flex-1">
         {/* Image */}
-        <div className="relative h-48 bg-gradient-to-br from-yellow-50 to-amber-50">
+        <div className="relative aspect-square bg-gradient-to-br from-yellow-50 to-amber-50">
           {item.image_url ? (
             <Image
               src={item.image_url}
@@ -449,7 +458,7 @@ export default function Home() {
             })
           })
         })
-        setCatalogItems(combined)
+        setCatalogItems(shuffleArray(combined))
       })
       .finally(() => setLoadingCatalog(false))
   }, [])
