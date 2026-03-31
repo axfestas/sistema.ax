@@ -520,6 +520,14 @@ interface RelatedItem {
   name: string
   price?: number
   image_url?: string
+  type: string
+}
+
+interface ApiItem {
+  id: number
+  name: string
+  price?: number
+  image_url?: string
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -563,16 +571,6 @@ function buildApiUrl(type: string, id: string): string {
   }
 }
 
-function buildListApiUrl(type: string): string {
-  switch (type) {
-    case 'kit': return `/api/kits?activeOnly=true`
-    case 'sweet': return `/api/sweets?catalog=true`
-    case 'theme': return `/api/themes?catalog=true`
-    case 'item': return `/api/items?catalogOnly=true`
-    case 'design': return `/api/designs?catalog=true`
-    default: return ''
-  }
-}
 
 // ─── Inner component (uses useSearchParams) ───────────────────────────────────
 
@@ -610,16 +608,29 @@ function ProductDetail() {
 
   useEffect(() => { fetchProduct() }, [fetchProduct])
 
-  // Load related items of the same type
+  // Load random related items across all types except theme
   useEffect(() => {
     if (!type || !id) return
-    const listUrl = buildListApiUrl(type)
-    if (!listUrl) return
-    fetch(listUrl)
-      .then(r => r.ok ? r.json() : [])
-      .then((data: unknown) => {
-        const items = Array.isArray(data) ? (data as RelatedItem[]) : []
-        setRelatedItems(items.filter(i => String(i.id) !== id).slice(0, 6))
+    Promise.all([
+      fetch('/api/kits?activeOnly=true').then(r => r.ok ? r.json() : []),
+      fetch('/api/sweets?catalog=true').then(r => r.ok ? r.json() : []),
+      fetch('/api/items?catalogOnly=true').then(r => r.ok ? r.json() : []),
+      fetch('/api/designs?catalog=true').then(r => r.ok ? r.json() : []),
+    ])
+      .then(([kits, sweets, items, designs]) => {
+        const tagged: RelatedItem[] = [
+          ...(Array.isArray(kits) ? (kits as ApiItem[]).map(i => ({ ...i, type: 'kit' })) : []),
+          ...(Array.isArray(sweets) ? (sweets as ApiItem[]).map(i => ({ ...i, type: 'sweet' })) : []),
+          ...(Array.isArray(items) ? (items as ApiItem[]).map(i => ({ ...i, type: 'item' })) : []),
+          ...(Array.isArray(designs) ? (designs as ApiItem[]).map(i => ({ ...i, type: 'design' })) : []),
+        ].filter(i => !(i.type === type && String(i.id) === id))
+
+        // Fisher-Yates shuffle then take first 6
+        for (let currentIndex = tagged.length - 1; currentIndex > 0; currentIndex--) {
+          const randomIndex = Math.floor(Math.random() * (currentIndex + 1));
+          [tagged[currentIndex], tagged[randomIndex]] = [tagged[randomIndex], tagged[currentIndex]]
+        }
+        setRelatedItems(tagged.slice(0, 6))
       })
       .catch(() => {})
   }, [type, id])
@@ -846,8 +857,8 @@ function ProductDetail() {
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
               {relatedItems.map(item => (
                 <Link
-                  key={item.id}
-                  href={`/produto?type=${type}&id=${item.id}`}
+                  key={`${item.type}-${item.id}`}
+                  href={`/produto?type=${item.type}&id=${item.id}`}
                   className="block bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-200 group"
                 >
                   <div className="relative h-32 bg-gradient-to-br from-yellow-50 to-amber-50">
@@ -860,7 +871,7 @@ function ProductDetail() {
                       />
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center text-3xl">
-                        {TYPE_EMOJI[type] || '🎁'}
+                        {TYPE_EMOJI[item.type] || '🎁'}
                       </div>
                     )}
                   </div>
