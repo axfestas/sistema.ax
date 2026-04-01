@@ -3,7 +3,10 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
+import Image from 'next/image';
 import LogoutButton from '@/components/LogoutButton';
+
+const LOGO_FORMATS = ['/1.png', '/logotipo.png', '/logotipo.jpg', '/logotipo.svg'];
 
 interface NavItem {
   href: string;
@@ -78,12 +81,44 @@ export default function AdminLayout({
 }) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [logoIndex, setLogoIndex] = useState(0);
+  const [logoError, setLogoError] = useState(false);
+
+  const handleLogoError = () => {
+    const nextIndex = logoIndex + 1;
+    if (nextIndex < LOGO_FORMATS.length) {
+      setLogoIndex(nextIndex);
+    } else {
+      setLogoError(true);
+    }
+  };
 
   const SidebarContent = () => (
     <>
-      <div className="p-6 border-b">
-        <h1 className="text-xl font-bold text-gray-900">Ax Festas</h1>
-        <p className="text-sm text-gray-600">Painel Admin</p>
+      <div className="p-4 border-b">
+        <Link href="/" className="flex items-center gap-3">
+          {!logoError ? (
+            <div className="w-10 h-10 bg-brand-yellow rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
+              <Image
+                src={LOGO_FORMATS[logoIndex]}
+                alt="Ax Festas Logo"
+                width={40}
+                height={40}
+                className="object-cover w-full h-full"
+                onError={handleLogoError}
+                priority
+              />
+            </div>
+          ) : (
+            <div className="w-10 h-10 bg-brand-yellow rounded-full flex items-center justify-center flex-shrink-0">
+              <span className="text-xl font-bold text-brand-gray">AX</span>
+            </div>
+          )}
+          <div>
+            <p className="text-sm font-bold text-brand-gray leading-tight">Ax Festas</p>
+            <p className="text-xs text-gray-500">Painel Admin</p>
+          </div>
+        </Link>
       </div>
       <nav className="p-3 flex-1 overflow-y-auto">
         {navGroups.map((group, groupIndex) => (
