@@ -284,7 +284,7 @@ const StoryPreviewModal = ({ name, description, imageUrl, price, platform, onClo
         <div className="px-5 pb-5 pt-3 flex flex-col gap-3">
           <button
             onClick={handleShare}
-            className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl font-semibold text-white bg-gray-700 hover:bg-gray-800 transition-colors"
+            className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl text-white bg-gray-700 hover:bg-gray-800 transition-colors"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
@@ -675,7 +675,7 @@ function ProductDetail() {
         <p className="text-6xl mb-4">🔍</p>
         <h1 className="text-2xl font-bold text-gray-800 mb-2">Produto não encontrado</h1>
         <p className="text-gray-500 mb-6">O produto que você procura não existe ou foi removido.</p>
-        <Link href="/#catalogo" className="bg-brand-yellow hover:bg-yellow-400 text-brand-gray font-bold px-6 py-3 rounded-full transition">
+        <Link href="/#catalogo" className="bg-brand-yellow hover:bg-yellow-400 text-brand-gray px-6 py-3 rounded-full transition">
           ← Voltar ao catálogo
         </Link>
       </div>
@@ -826,7 +826,7 @@ function ProductDetail() {
               <div className="mt-auto flex flex-row gap-3">
                 <button
                   onClick={handleAddToCart}
-                  className="flex-1 flex items-center justify-center gap-2 bg-brand-yellow hover:bg-yellow-400 text-brand-gray font-bold py-3.5 px-6 rounded-full transition shadow-lg shadow-yellow-500/25 text-base"
+                  className="flex-1 flex items-center justify-center gap-2 bg-brand-yellow hover:bg-yellow-400 text-brand-gray py-3.5 px-6 rounded-full transition shadow-lg shadow-yellow-500/25 text-base"
                 >
                   <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -835,7 +835,7 @@ function ProductDetail() {
                 </button>
                 <button
                   onClick={handleShare}
-                  className="flex items-center justify-center gap-2 border-2 border-brand-gray text-brand-gray hover:bg-brand-gray/10 font-bold py-3.5 px-5 rounded-full transition text-base"
+                  className="flex items-center justify-center gap-2 border-2 border-brand-gray text-brand-gray hover:bg-brand-gray/10 py-3.5 px-5 rounded-full transition text-base"
                   title="Compartilhar"
                   aria-label="Compartilhar"
                 >

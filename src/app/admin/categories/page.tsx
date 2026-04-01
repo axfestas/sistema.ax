@@ -114,7 +114,7 @@ export default function CategoriesPage() {
           <div className="flex items-end">
             <button
               type="submit"
-              className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded"
+              className="bg-brand-blue hover:bg-brand-blue-dark text-white py-2 px-4 rounded"
             >
               + Adicionar
             </button>

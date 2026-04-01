@@ -347,7 +347,7 @@ export default function KitsPage() {
             setItemSearch('')
             setNewFormItem({ item_id: '', quantity: '1' })
           }}
-          className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded"
+          className="bg-brand-blue hover:bg-brand-blue-dark text-white py-2 px-4 rounded"
         >
           + Novo Kit
         </button>
@@ -478,7 +478,7 @@ export default function KitsPage() {
                   type="button"
                   onClick={handleAddFormItem}
                   disabled={!newFormItem.item_id}
-                  className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded text-sm disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  className="bg-brand-blue hover:bg-brand-blue-dark text-white py-2 px-4 rounded text-sm disabled:bg-gray-300 disabled:cursor-not-allowed"
                 >
                   + Adicionar Item
                 </button>
@@ -560,7 +560,7 @@ export default function KitsPage() {
             <div className="flex gap-2">
               <button
                 type="submit"
-                className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded"
+                className="bg-brand-blue hover:bg-brand-blue-dark text-white py-2 px-4 rounded"
               >
                 Salvar
               </button>
@@ -573,7 +573,7 @@ export default function KitsPage() {
                   setItemSearch('')
                   setNewFormItem({ item_id: '', quantity: '1' })
                 }}
-                className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
+                className="bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded"
               >
                 Cancelar
               </button>
@@ -628,19 +628,19 @@ export default function KitsPage() {
                   <div className="flex flex-wrap gap-2">
                     <button
                       onClick={() => loadKitWithItems(kit.id)}
-                      className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-1 px-3 rounded text-sm"
+                      className="bg-brand-blue hover:bg-brand-blue-dark text-white py-1 px-3 rounded text-sm"
                     >
                       📦 Itens
                     </button>
                     <button
                       onClick={() => handleEdit(kit)}
-                      className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-1 px-3 rounded text-sm"
+                      className="bg-brand-blue hover:bg-brand-blue-dark text-white py-1 px-3 rounded text-sm"
                     >
                       ✏️ Editar
                     </button>
                     <button
                       onClick={() => handleDelete(kit.id)}
-                      className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm"
+                      className="bg-red-500 hover:bg-red-700 text-white py-1 px-3 rounded text-sm"
                     >
                       🗑️ Deletar
                     </button>
@@ -688,7 +688,7 @@ export default function KitsPage() {
             <div className="mt-6 flex justify-end">
               <button
                 onClick={() => setShowItemsModal(false)}
-                className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
+                className="bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded"
               >
                 Fechar
               </button>

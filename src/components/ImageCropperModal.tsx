@@ -343,7 +343,7 @@ export default function ImageCropperModal({
           <h3 className="text-xl font-bold text-gray-900">Ajustar imagem</h3>
           <button
             onClick={onCancel}
-            className="text-gray-500 hover:text-gray-700 text-2xl font-bold leading-none"
+            className="text-gray-500 hover:text-gray-700 text-2xl leading-none"
             aria-label="Fechar"
           >
             ×

@@ -176,7 +176,7 @@ export default function MaintenancePage() {
               cost: '',
             });
           }}
-          className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded"
+          className="bg-brand-blue hover:bg-brand-blue-dark text-white py-2 px-4 rounded"
         >
           + Registrar Manutenção
         </button>
@@ -245,7 +245,7 @@ export default function MaintenancePage() {
             <div className="flex gap-2">
               <button
                 type="submit"
-                className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded"
+                className="bg-brand-blue hover:bg-brand-blue-dark text-white py-2 px-4 rounded"
               >
                 Salvar
               </button>
@@ -255,7 +255,7 @@ export default function MaintenancePage() {
                   setShowForm(false);
                   setEditingMaintenance(null);
                 }}
-                className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+                className="bg-gray-500 hover:bg-gray-700 text-white py-2 px-4 rounded"
               >
                 Cancelar
               </button>
@@ -293,13 +293,13 @@ export default function MaintenancePage() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleEdit(maintenance)}
-                      className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-1 px-3 rounded text-sm"
+                      className="bg-brand-blue hover:bg-brand-blue-dark text-white py-1 px-3 rounded text-sm"
                     >
                       Editar
                     </button>
                     <button
                       onClick={() => handleDelete(maintenance.id)}
-                      className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm"
+                      className="bg-red-500 hover:bg-red-700 text-white py-1 px-3 rounded text-sm"
                     >
                       Deletar
                     </button>

@@ -192,7 +192,7 @@ export default function InventoryPage() {
             setEditingItem(null);
             setFormData({ name: '', description: '', price: '', quantity: '', image_url: '', category: '', show_in_catalog: 1, is_featured: 0, is_promotion: 0, original_price: '' });
           }}
-          className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded"
+          className="bg-brand-blue hover:bg-brand-blue-dark text-white py-2 px-4 rounded"
         >
           + Adicionar Item
         </button>
@@ -346,7 +346,7 @@ export default function InventoryPage() {
             <div className="flex gap-2">
               <button
                 type="submit"
-                className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded"
+                className="bg-brand-blue hover:bg-brand-blue-dark text-white py-2 px-4 rounded"
               >
                 Salvar
               </button>
@@ -357,7 +357,7 @@ export default function InventoryPage() {
                   setEditingItem(null);
                   setFormData({ name: '', description: '', price: '', quantity: '', image_url: '', category: '', show_in_catalog: 1, is_featured: 0, is_promotion: 0, original_price: '' });
                 }}
-                className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+                className="bg-gray-500 hover:bg-gray-700 text-white py-2 px-4 rounded"
               >
                 Cancelar
               </button>
@@ -420,13 +420,13 @@ export default function InventoryPage() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleEdit(item)}
-                      className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-1 px-3 rounded text-sm"
+                      className="bg-brand-blue hover:bg-brand-blue-dark text-white py-1 px-3 rounded text-sm"
                     >
                       Editar
                     </button>
                     <button
                       onClick={() => handleDelete(item.id)}
-                      className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm"
+                      className="bg-red-500 hover:bg-red-700 text-white py-1 px-3 rounded text-sm"
                     >
                       Deletar
                     </button>

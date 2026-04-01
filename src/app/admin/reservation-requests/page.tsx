@@ -382,14 +382,14 @@ export default function ReservationRequestsPage() {
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleApprove(selectedRequest.id)}
-                          className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded text-sm font-semibold flex items-center gap-2"
+                          className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded text-sm flex items-center gap-2"
                           title="Itens disponíveis - email automático será enviado"
                         >
                           ✓ Aprovar Solicitação
                         </button>
                         <button
                           onClick={() => handleReject(selectedRequest.id)}
-                          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded text-sm font-semibold flex items-center gap-2"
+                          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded text-sm flex items-center gap-2"
                           title="Sem disponibilidade - email automático será enviado"
                         >
                           ✗ Sem Disponibilidade

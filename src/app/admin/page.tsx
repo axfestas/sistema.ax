@@ -46,7 +46,7 @@ export default function AdminPage() {
         <h1 className="text-3xl font-bold">Painel Administrativo</h1>
         <Link
           href="/"
-          className="px-4 py-2 bg-brand-blue hover:bg-brand-blue-dark text-white rounded font-semibold transition-colors"
+          className="px-4 py-2 bg-brand-blue hover:bg-brand-blue-dark text-white rounded transition-colors"
         >
           🏠 Início
         </Link>

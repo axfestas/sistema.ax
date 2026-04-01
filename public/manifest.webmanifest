@@ -1,11 +1,11 @@
 {
   "name": "Ax Festas",
   "short_name": "Ax Festas",
-  "description": "Aluguel de itens para festas e eventos. Qualidade e excelência no atendimento.",
+  "description": "A Ax Festas oferece aluguel de itens decorativos para festas e eventos com praticidade, qualidade e estilo.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#2d2535",
-  "theme_color": "#C08ADC",
+  "background_color": "#FFFFFF",
+  "theme_color": "#FFC107",
   "icons": [
     {
       "src": "/1.png",

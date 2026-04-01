@@ -249,7 +249,7 @@ function SuggestionModal({ onClose }: { onClose: () => void }) {
             <p className="text-4xl mb-3">💡</p>
             <h3 className="text-xl font-bold text-gray-900 mb-2">Sugestão enviada!</h3>
             <p className="text-gray-500 text-sm mb-4">Agradecemos sua sugestão. Ela foi registrada e será analisada pela nossa equipe.</p>
-            <button onClick={onClose} className="bg-brand-yellow hover:bg-yellow-400 text-brand-gray font-bold px-6 py-2 rounded-full transition">Fechar</button>
+            <button onClick={onClose} className="bg-brand-yellow hover:bg-yellow-400 text-brand-gray px-6 py-2 rounded-full transition">Fechar</button>
           </div>
         ) : (
           <>
@@ -283,7 +283,7 @@ function SuggestionModal({ onClose }: { onClose: () => void }) {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full bg-brand-yellow hover:bg-yellow-400 text-brand-gray font-bold py-3 rounded-full transition disabled:opacity-60"
+                className="w-full bg-brand-yellow hover:bg-yellow-400 text-brand-gray py-3 rounded-full transition disabled:opacity-60"
               >
                 {submitting ? 'Enviando...' : '💡 Enviar sugestão'}
               </button>
@@ -340,7 +340,7 @@ function ReviewModal({ onClose }: { onClose: () => void }) {
             <p className="text-4xl mb-3">🎉</p>
             <h3 className="text-xl font-bold text-gray-900 mb-2">Agradecemos sua avaliação!</h3>
             <p className="text-gray-500 text-sm mb-5">Sua avaliação será analisada e publicada em breve.</p>
-            <button onClick={onClose} className="bg-brand-yellow hover:bg-yellow-400 text-brand-gray font-bold px-6 py-2.5 rounded-full transition">Fechar</button>
+            <button onClick={onClose} className="bg-brand-yellow hover:bg-yellow-400 text-brand-gray px-6 py-2.5 rounded-full transition">Fechar</button>
           </div>
         ) : (
           <>
@@ -379,7 +379,7 @@ function ReviewModal({ onClose }: { onClose: () => void }) {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full bg-brand-yellow hover:bg-yellow-400 disabled:bg-gray-300 text-brand-gray font-bold py-3 rounded-full transition"
+                className="w-full bg-brand-yellow hover:bg-yellow-400 disabled:bg-gray-300 text-brand-gray py-3 rounded-full transition"
               >
                 {submitting ? 'Enviando...' : 'Enviar avaliação'}
               </button>
@@ -600,7 +600,7 @@ export default function Home() {
               { key: 'design', label: '🎨 Designs' },
             ] as const).map(tab => (
               <button key={tab.key} onClick={() => handleTabChange(tab.key)}
-                className={`px-5 py-2 rounded-full text-sm font-semibold transition-colors ${
+                className={`px-5 py-2 rounded-full text-sm transition-colors ${
                   catalogTab === tab.key
                     ? 'bg-brand-yellow text-brand-gray shadow-sm'
                     : 'bg-gray-100 text-gray-600 hover:bg-yellow-50 hover:text-brand-yellow'
@@ -631,7 +631,7 @@ export default function Home() {
                 <div className="text-center mt-10">
                   <button
                     onClick={() => setCatalogVisible(v => v + CATALOG_PAGE_SIZE)}
-                    className="inline-block bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-3 px-8 rounded-full transition shadow-md"
+                    className="inline-block bg-brand-blue hover:bg-brand-blue-dark text-white py-3 px-8 rounded-full transition shadow-md"
                   >
                     Ver mais produtos
                   </button>
@@ -678,7 +678,7 @@ export default function Home() {
               {hasMorePortfolio && (
                 <div className="text-center mt-10">
                   <button onClick={() => setPortfolioLimit(p => p + 8)}
-                    className="inline-block border-2 border-brand-yellow text-brand-yellow font-bold py-3 px-8 rounded-full hover:bg-yellow-50 transition">
+                    className="inline-block border-2 border-brand-yellow text-brand-yellow py-3 px-8 rounded-full hover:bg-yellow-50 transition">
                     Ver mais trabalhos
                   </button>
                 </div>
@@ -718,13 +718,13 @@ export default function Home() {
           <div className="text-center mt-8">
             <button
               onClick={() => setShowReviewModal(true)}
-              className="inline-block bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-3.5 px-8 rounded-full transition shadow-lg shadow-blue-300/25"
+              className="inline-block bg-brand-blue hover:bg-brand-blue-dark text-white py-3.5 px-8 rounded-full transition shadow-lg shadow-blue-300/25"
             >
               💬 Deixar avaliação
             </button>
             <button
               onClick={() => setShowSuggestionModal(true)}
-              className="inline-block bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-3.5 px-8 rounded-full transition shadow-lg shadow-blue-300/25 ml-3"
+              className="inline-block bg-brand-blue hover:bg-brand-blue-dark text-white py-3.5 px-8 rounded-full transition shadow-lg shadow-blue-300/25 ml-3"
             >
               💡 Envie sua sugestão
             </button>
