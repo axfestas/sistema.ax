@@ -144,7 +144,7 @@ export default function ArtesPage() {
         </div>
         <button
           onClick={openNew}
-          className="bg-brand-blue hover:bg-brand-blue-dark text-white py-2 px-5 rounded-full transition-colors whitespace-nowrap"
+          className="bg-brand-blue hover:bg-brand-blue-dark text-white py-2 px-5 rounded transition-colors whitespace-nowrap"
         >
           + Nova Arte
         </button>
@@ -188,7 +188,7 @@ export default function ArtesPage() {
                   type="text"
                   value={formData.title}
                   onChange={e => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
                   placeholder="Ex: Promoção de Páscoa"
                   required
                 />
@@ -201,7 +201,7 @@ export default function ArtesPage() {
                   type="date"
                   value={formData.suggested_date}
                   onChange={e => setFormData({ ...formData, suggested_date: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
                 />
               </div>
             </div>
@@ -214,7 +214,7 @@ export default function ArtesPage() {
                 value={formData.caption}
                 onChange={e => setFormData({ ...formData, caption: e.target.value })}
                 rows={4}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue resize-none"
+                className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue resize-none"
                 placeholder="Legenda completa para compartilhar junto com a arte..."
               />
             </div>
@@ -224,7 +224,7 @@ export default function ArtesPage() {
               <select
                 value={formData.status}
                 onChange={e => setFormData({ ...formData, status: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
+                className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
               >
                 <option value="rascunho">Rascunho</option>
                 <option value="pronta">Pronta</option>
@@ -244,14 +244,14 @@ export default function ArtesPage() {
             <div className="flex gap-3 pt-2">
               <button
                 type="submit"
-                className="bg-brand-blue hover:bg-brand-blue-dark text-white py-2 px-6 rounded-full transition-colors"
+                className="bg-brand-blue hover:bg-brand-blue-dark text-white py-2 px-6 rounded transition-colors"
               >
                 Salvar
               </button>
               <button
                 type="button"
                 onClick={() => { setShowForm(false); setEditingArte(null); }}
-                className="bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-6 rounded-full transition-colors"
+                className="border rounded hover:bg-gray-100 py-2 px-6 transition-colors"
               >
                 Cancelar
               </button>
@@ -321,13 +321,13 @@ export default function ArtesPage() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => openEdit(arte)}
-                    className="flex-1 bg-brand-blue hover:bg-brand-blue-dark text-white text-xs py-1.5 rounded-lg transition-colors"
+                    className="flex-1 bg-brand-blue hover:bg-brand-blue-dark text-white text-xs py-1.5 rounded transition-colors"
                   >
                     ✏️ Editar
                   </button>
                   <button
                     onClick={() => handleDelete(arte.id)}
-                    className="bg-red-100 hover:bg-red-200 text-red-600 text-xs py-1.5 px-3 rounded-lg transition-colors"
+                    className="bg-red-600 hover:bg-red-700 text-white text-xs py-1.5 px-3 rounded transition-colors"
                   >
                     🗑️
                   </button>

@@ -175,7 +175,7 @@ export default function PublicacoesPage() {
         </div>
         <button
           onClick={openNew}
-          className="bg-brand-blue hover:bg-brand-blue-dark text-white py-2 px-5 rounded-full transition-colors whitespace-nowrap"
+          className="bg-brand-blue hover:bg-brand-blue-dark text-white py-2 px-5 rounded transition-colors whitespace-nowrap"
         >
           + Nova Publicação
         </button>
@@ -235,7 +235,7 @@ export default function PublicacoesPage() {
                 <select
                   value={formData.arte_id}
                   onChange={e => setFormData({ ...formData, arte_id: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
                 >
                   <option value="">— Sem arte vinculada —</option>
                   {artes.map(a => (
@@ -250,7 +250,7 @@ export default function PublicacoesPage() {
                 <select
                   value={formData.platform}
                   onChange={e => setFormData({ ...formData, platform: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
                   required
                 >
                   <option value="instagram">📸 Instagram</option>
@@ -266,7 +266,7 @@ export default function PublicacoesPage() {
                   type="date"
                   value={formData.publish_date}
                   onChange={e => setFormData({ ...formData, publish_date: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
                 />
               </div>
               <div>
@@ -274,7 +274,7 @@ export default function PublicacoesPage() {
                 <select
                   value={formData.status}
                   onChange={e => setFormData({ ...formData, status: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
                 >
                   <option value="agendado">Agendado</option>
                   <option value="publicado">Publicado</option>
@@ -290,7 +290,7 @@ export default function PublicacoesPage() {
                 value={formData.notes}
                 onChange={e => setFormData({ ...formData, notes: e.target.value })}
                 rows={2}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue resize-none"
+                className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue resize-none"
                 placeholder="Observações sobre esta publicação..."
               />
             </div>
@@ -298,14 +298,14 @@ export default function PublicacoesPage() {
             <div className="flex gap-3 pt-2">
               <button
                 type="submit"
-                className="bg-brand-blue hover:bg-brand-blue-dark text-white py-2 px-6 rounded-full transition-colors"
+                className="bg-brand-blue hover:bg-brand-blue-dark text-white py-2 px-6 rounded transition-colors"
               >
                 Salvar
               </button>
               <button
                 type="button"
                 onClick={() => { setShowForm(false); setEditingPub(null); }}
-                className="bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-6 rounded-full transition-colors"
+                className="border rounded hover:bg-gray-100 py-2 px-6 transition-colors"
               >
                 Cancelar
               </button>
@@ -374,20 +374,20 @@ export default function PublicacoesPage() {
                 {pub.status === 'agendado' && (
                   <button
                     onClick={() => markAsPublished(pub)}
-                    className="flex-1 bg-green-500 hover:bg-green-600 text-white text-xs py-1.5 rounded-lg transition-colors"
+                    className="flex-1 bg-green-500 hover:bg-green-600 text-white text-xs py-1.5 rounded transition-colors"
                   >
                     ✅ Marcar como publicado
                   </button>
                 )}
                 <button
                   onClick={() => openEdit(pub)}
-                  className="bg-brand-blue hover:bg-brand-blue-dark text-white text-xs py-1.5 px-3 rounded-lg transition-colors"
+                  className="bg-brand-blue hover:bg-brand-blue-dark text-white text-xs py-1.5 px-3 rounded transition-colors"
                 >
                   ✏️
                 </button>
                 <button
                   onClick={() => handleDelete(pub.id)}
-                  className="bg-red-100 hover:bg-red-200 text-red-600 text-xs py-1.5 px-3 rounded-lg transition-colors"
+                  className="bg-red-600 hover:bg-red-700 text-white text-xs py-1.5 px-3 rounded transition-colors"
                 >
                   🗑️
                 </button>
