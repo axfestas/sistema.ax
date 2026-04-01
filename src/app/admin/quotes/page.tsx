@@ -400,7 +400,7 @@ export default function QuotesPage() {
                   setClientSearch(e.target.value);
                   if (!e.target.value) { setSelectedClientId(''); setSelectedClient(null); }
                 }}
-                className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-yellow"
+                className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue"
               />
               {clientSearch && !selectedClientId && (
                 <div className="absolute z-10 w-full bg-white border rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto">
@@ -442,7 +442,7 @@ export default function QuotesPage() {
                   type="date"
                   value={formEventDate}
                   onChange={(e) => setFormEventDate(e.target.value)}
-                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-yellow"
+                  className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue"
                 />
               </div>
               <div>
@@ -452,7 +452,7 @@ export default function QuotesPage() {
                   value={formEventLocation}
                   onChange={(e) => setFormEventLocation(e.target.value)}
                   placeholder="Ex: Salão do Clube, Residência..."
-                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-yellow"
+                  className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue"
                 />
               </div>
             </div>
@@ -600,7 +600,7 @@ export default function QuotesPage() {
                 <select
                   value={formStatus}
                   onChange={(e) => setFormStatus(e.target.value as QuoteStatus)}
-                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-yellow"
+                  className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue"
                 >
                   {Object.entries(STATUS_LABELS).map(([v, l]) => (
                     <option key={v} value={v}>{l}</option>
@@ -613,7 +613,7 @@ export default function QuotesPage() {
                   value={formNotes}
                   onChange={(e) => setFormNotes(e.target.value)}
                   rows={2}
-                  className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow"
+                  className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
                 />
               </div>
             </div>
@@ -621,11 +621,11 @@ export default function QuotesPage() {
 
           <div className="flex gap-3 justify-end">
             <button type="button" onClick={() => { resetForm(); setView('list'); }}
-              className="px-5 py-2 border rounded-lg hover:bg-gray-50 transition-colors">
+              className="px-5 py-2 border rounded hover:bg-gray-50 transition-colors">
               Cancelar
             </button>
             <button type="submit" disabled={saving}
-              className="px-5 py-2 bg-brand-blue hover:bg-brand-blue-dark text-white rounded-lg transition-colors disabled:opacity-50">
+              className="px-5 py-2 bg-brand-blue hover:bg-brand-blue-dark text-white rounded transition-colors disabled:opacity-50">
               {saving ? 'Salvando...' : editingQuote ? 'Salvar Alterações' : 'Criar Orçamento'}
             </button>
           </div>
@@ -650,13 +650,13 @@ export default function QuotesPage() {
           </div>
           <div className="flex gap-2">
             <button onClick={() => openEdit(detailQuote)}
-              className="px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-50">✏️ Editar</button>
+              className="px-3 py-1.5 text-sm border rounded hover:bg-gray-50">✏️ Editar</button>
             <button onClick={() => handleWhatsApp(detailQuote)}
-              className="px-3 py-1.5 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600">
+              className="px-3 py-1.5 text-sm bg-green-500 text-white rounded hover:bg-green-600">
               📱 WhatsApp
             </button>
             <button onClick={() => handleConvertToContract(detailQuote)}
-              className="px-3 py-1.5 text-sm bg-brand-blue hover:bg-brand-blue-dark text-white rounded-lg">
+              className="px-3 py-1.5 text-sm bg-brand-blue hover:bg-brand-blue-dark text-white rounded">
               📄 Converter em Contrato
             </button>
           </div>
@@ -749,7 +749,7 @@ export default function QuotesPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Orçamentos</h1>
         <button onClick={openNew}
-          className="bg-brand-blue hover:bg-brand-blue-dark text-white px-4 py-2 rounded-lg transition-colors">
+          className="bg-brand-blue hover:bg-brand-blue-dark text-white px-4 py-2 rounded transition-colors">
           + Novo Orçamento
         </button>
       </div>
@@ -761,12 +761,12 @@ export default function QuotesPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Buscar por cliente ou ID..."
-          className="border rounded-lg px-3 py-2 flex-1 focus:outline-none focus:ring-2 focus:ring-brand-yellow"
+          className="border rounded px-3 py-2 flex-1 focus:outline-none focus:ring-2 focus:ring-brand-blue"
         />
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-yellow"
+          className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue"
         >
           <option value="">Todos os status</option>
           {Object.entries(STATUS_LABELS).map(([v, l]) => (

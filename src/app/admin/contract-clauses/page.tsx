@@ -242,7 +242,7 @@ export default function ContractClausesPage() {
         {editingId === null && (
           <button
             onClick={openNew}
-            className="flex items-center gap-2 px-5 py-2.5 bg-brand-yellow hover:bg-yellow-400 text-brand-gray rounded-xl shadow transition"
+            className="flex items-center gap-2 px-5 py-2.5 bg-brand-blue hover:bg-brand-blue-dark text-white rounded transition"
           >
             <span className="text-lg">+</span> Nova Cláusula
           </button>
@@ -261,7 +261,7 @@ export default function ContractClausesPage() {
             </div>
             <button
               onClick={() => setShowLocadorEditor(!showLocadorEditor)}
-              className="text-sm text-brand-yellow hover:text-yellow-600 font-medium"
+              className="text-sm text-brand-blue hover:text-brand-blue-dark font-medium"
             >
               {showLocadorEditor ? '▲ Ocultar' : '✏️ Editar'}
             </button>
@@ -295,7 +295,7 @@ export default function ContractClausesPage() {
                     type="text"
                     value={locador.locador_name}
                     onChange={e => setLocador(l => ({ ...l, locador_name: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow"
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
                     placeholder="ALEX DOS SANTOS FRAGA"
                   />
                 </div>
@@ -307,7 +307,7 @@ export default function ContractClausesPage() {
                     type="text"
                     value={locador.locador_cpf}
                     onChange={e => setLocador(l => ({ ...l, locador_cpf: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow"
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
                     placeholder="000.000.000-00"
                   />
                 </div>
@@ -320,21 +320,21 @@ export default function ContractClausesPage() {
                   type="text"
                   value={locador.locador_address}
                   onChange={e => setLocador(l => ({ ...l, locador_address: e.target.value }))}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow"
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
                   placeholder="Rua Exemplo, nº 00, Bairro, Cidade/UF, CEP: 00000-000"
                 />
               </div>
               <div className="flex gap-3 justify-end">
                 <button
                   onClick={() => setShowLocadorEditor(false)}
-                  className="px-5 py-2 rounded-xl border border-gray-300 text-gray-600 text-sm hover:bg-gray-50 transition"
+                  className="px-5 py-2 border border-gray-300 text-gray-600 text-sm rounded hover:bg-gray-50 transition"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={handleSaveLocador}
                   disabled={savingLocador}
-                  className="px-5 py-2 rounded-xl bg-brand-yellow hover:bg-yellow-400 disabled:bg-gray-300 text-brand-gray text-sm transition"
+                  className="px-5 py-2 bg-brand-blue hover:bg-brand-blue-dark disabled:bg-gray-300 text-white text-sm rounded transition"
                 >
                   {savingLocador ? 'Salvando…' : 'Salvar Dados do Locador'}
                 </button>
@@ -346,7 +346,7 @@ export default function ContractClausesPage() {
 
       {/* Inline form (new or edit) */}
       {editingId !== null && (
-        <div className="bg-white rounded-2xl border-2 border-brand-yellow shadow-sm p-6 mb-6">
+        <div className="bg-white rounded-2xl border-2 border-brand-blue shadow-sm p-6 mb-6">
           <h2 className="text-lg font-bold text-brand-gray mb-4">
             {editingId === 0 ? '➕ Nova Cláusula' : '✏️ Editar Cláusula'}
           </h2>
@@ -359,7 +359,7 @@ export default function ContractClausesPage() {
                 min={1}
                 value={form.order_num}
                 onChange={e => setForm(f => ({ ...f, order_num: Number(e.target.value) }))}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow"
+                className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
               />
             </div>
             <div className="sm:col-span-3">
@@ -371,7 +371,7 @@ export default function ContractClausesPage() {
                 placeholder="Ex: 01. Do Objeto da Locação"
                 value={form.title}
                 onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow"
+                className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
               />
             </div>
           </div>
@@ -385,7 +385,7 @@ export default function ContractClausesPage() {
               placeholder="Texto da cláusula. Use Enter para separar parágrafos ou sub-itens."
               value={form.content}
               onChange={e => setForm(f => ({ ...f, content: e.target.value }))}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow resize-y font-mono"
+              className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue resize-y font-mono"
             />
           </div>
 
@@ -395,7 +395,7 @@ export default function ContractClausesPage() {
                 type="checkbox"
                 checked={form.is_active === 1}
                 onChange={e => setForm(f => ({ ...f, is_active: e.target.checked ? 1 : 0 }))}
-                className="w-4 h-4 accent-brand-yellow"
+                className="w-4 h-4 accent-brand-blue"
               />
               <span className="text-sm font-medium text-gray-700">Cláusula ativa</span>
             </label>
@@ -404,14 +404,14 @@ export default function ContractClausesPage() {
           <div className="flex gap-3 justify-end">
             <button
               onClick={cancelEdit}
-              className="px-5 py-2 rounded-xl border border-gray-300 text-gray-600 text-sm hover:bg-gray-50 transition"
+              className="px-5 py-2 border border-gray-300 text-gray-600 text-sm rounded hover:bg-gray-50 transition"
             >
               Cancelar
             </button>
             <button
               onClick={handleSave}
               disabled={saving}
-              className="px-5 py-2 rounded-xl bg-brand-yellow hover:bg-yellow-400 disabled:bg-gray-300 text-brand-gray text-sm transition"
+              className="px-5 py-2 bg-brand-blue hover:bg-brand-blue-dark disabled:bg-gray-300 text-white text-sm rounded transition"
             >
               {saving ? 'Salvando…' : editingId === 0 ? 'Criar Cláusula' : 'Salvar Alterações'}
             </button>
@@ -427,13 +427,13 @@ export default function ContractClausesPage() {
       {/* Clause list */}
       {loading ? (
         <div className="flex items-center justify-center min-h-48">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-yellow" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-blue" />
         </div>
       ) : clauses.length === 0 ? (
         <div className="text-center py-16 text-gray-400">
           <p className="text-5xl mb-4">📋</p>
           <p className="font-medium">Nenhuma cláusula cadastrada.</p>
-          <p className="text-sm mt-1">Clique em &quot;Nova Cláusula&quot; para começar, ou execute as migrações nas <a href="/admin/settings" className="text-brand-yellow underline">Configurações</a> para carregar as cláusulas padrão.</p>
+          <p className="text-sm mt-1">Clique em &quot;Nova Cláusula&quot; para começar, ou execute as migrações nas <a href="/admin/settings" className="text-brand-blue underline">Configurações</a> para carregar as cláusulas padrão.</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -468,21 +468,21 @@ export default function ContractClausesPage() {
                     <button
                       onClick={() => openEdit(clause)}
                       disabled={editingId !== null}
-                      className="px-3 py-1.5 bg-brand-yellow hover:bg-yellow-400 disabled:bg-gray-200 disabled:text-gray-400 text-brand-gray text-xs rounded-lg transition"
+                      className="px-3 py-1.5 bg-brand-blue hover:bg-brand-blue-dark disabled:bg-gray-200 disabled:text-gray-400 text-white text-xs rounded transition"
                     >
                       ✏️ Editar
                     </button>
                     <button
                       onClick={() => handleToggleActive(clause)}
                       disabled={editingId !== null}
-                      className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 text-gray-700 text-xs rounded-lg transition"
+                      className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 text-gray-700 text-xs rounded transition"
                     >
                       {clause.is_active ? '🔕 Desativar' : '✅ Ativar'}
                     </button>
                     <button
                       onClick={() => handleDelete(clause.id)}
                       disabled={editingId !== null}
-                      className="px-3 py-1.5 bg-red-100 hover:bg-red-200 disabled:opacity-50 text-red-700 text-xs rounded-lg transition"
+                      className="px-3 py-1.5 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-xs rounded transition"
                     >
                       🗑 Excluir
                     </button>

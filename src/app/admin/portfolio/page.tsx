@@ -217,7 +217,7 @@ export default function AdminPortfolioPage() {
                 image_size: 'feed-square' // Default to square feed format
               })
             }}
-            className="bg-brand-blue hover:bg-brand-blue-dark text-white py-2 px-6 rounded-full"
+            className="bg-brand-blue hover:bg-brand-blue-dark text-white py-2 px-6 rounded transition-colors"
           >
             {showForm ? 'Cancelar' : 'Nova Imagem'}
           </button>
@@ -295,7 +295,7 @@ export default function AdminPortfolioPage() {
               <div className="flex gap-2">
                 <button
                   type="submit"
-                  className="bg-brand-blue hover:bg-brand-blue-dark text-white py-2 px-6 rounded-full"
+                  className="bg-brand-blue hover:bg-brand-blue-dark text-white py-2 px-6 rounded transition-colors"
                 >
                   Salvar
                 </button>
@@ -305,7 +305,7 @@ export default function AdminPortfolioPage() {
                     setShowForm(false)
                     setEditingImage(null)
                   }}
-                  className="bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-6 rounded-full"
+                  className="border rounded hover:bg-gray-100 py-2 px-6 transition-colors"
                 >
                   Cancelar
                 </button>
@@ -370,7 +370,7 @@ export default function AdminPortfolioPage() {
             <p className="text-gray-600">Nenhuma imagem cadastrada ainda.</p>
             <button
               onClick={() => setShowForm(true)}
-              className="mt-4 bg-brand-blue hover:bg-brand-blue-dark text-white py-2 px-6 rounded-full"
+              className="mt-4 bg-brand-blue hover:bg-brand-blue-dark text-white py-2 px-6 rounded transition-colors"
             >
               Adicionar Primeira Imagem
             </button>

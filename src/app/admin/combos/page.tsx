@@ -667,7 +667,7 @@ export default function CombosPage() {
               <button
                 type="button"
                 onClick={closeForm}
-                className="bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded"
+                className="border rounded hover:bg-gray-100 py-2 px-4 transition-colors"
               >
                 Cancelar
               </button>

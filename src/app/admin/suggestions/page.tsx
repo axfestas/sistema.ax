@@ -156,7 +156,7 @@ export default function SuggestionsPage() {
                     <button
                       onClick={() => handleStatus(s.id, 'read')}
                       disabled={updating === s.id}
-                      className="px-3 py-1.5 bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white text-xs rounded-lg transition"
+                      className="px-3 py-1.5 bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white text-xs rounded transition"
                     >
                       ✓ Marcar como lida
                     </button>
@@ -165,14 +165,14 @@ export default function SuggestionsPage() {
                     <button
                       onClick={() => handleStatus(s.id, 'archived')}
                       disabled={updating === s.id}
-                      className="px-3 py-1.5 bg-gray-400 hover:bg-gray-500 disabled:bg-gray-300 text-white text-xs rounded-lg transition"
+                      className="px-3 py-1.5 bg-gray-400 hover:bg-gray-500 disabled:bg-gray-300 text-white text-xs rounded transition"
                     >
                       📦 Arquivar
                     </button>
                   )}
                   <button
                     onClick={() => handleDelete(s.id)}
-                    className="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs rounded-lg transition"
+                    className="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs rounded transition"
                   >
                     🗑 Excluir
                   </button>

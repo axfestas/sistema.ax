@@ -683,7 +683,7 @@ export default function ContractsPage() {
                   setClientSearch(e.target.value);
                   if (!e.target.value) { setSelectedClientId(''); setSelectedClient(null); }
                 }}
-                className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-yellow"
+                className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue"
               />
               {clientSearch && !selectedClientId && (
                 <div className="absolute z-10 w-full bg-white border rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto">
@@ -723,23 +723,23 @@ export default function ContractsPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">Data do Evento</label>
                 <input type="date" value={formEventDate} onChange={(e) => setFormEventDate(e.target.value)}
-                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-yellow" />
+                  className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">Local do Evento</label>
                 <input type="text" value={formEventLocation} onChange={(e) => setFormEventLocation(e.target.value)}
                   placeholder="Salão, endereço..."
-                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-yellow" />
+                  className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">Data de Retirada</label>
                 <input type="date" value={formPickupDate} onChange={(e) => setFormPickupDate(e.target.value)}
-                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-yellow" />
+                  className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">Data de Devolução</label>
                 <input type="date" value={formReturnDate} onChange={(e) => setFormReturnDate(e.target.value)}
-                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-yellow" />
+                  className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue" />
               </div>
             </div>
           </div>
@@ -860,7 +860,7 @@ export default function ContractsPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">Forma de Pagamento</label>
                 <select value={formPaymentMethod} onChange={(e) => setFormPaymentMethod(e.target.value)}
-                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-yellow">
+                  className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue">
                   {PAYMENT_METHODS.map((p) => (
                     <option key={p.value} value={p.value}>{p.label}</option>
                   ))}
@@ -869,7 +869,7 @@ export default function ContractsPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">Status</label>
                 <select value={formStatus} onChange={(e) => setFormStatus(e.target.value as ContractStatus)}
-                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-yellow">
+                  className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue">
                   {Object.entries(STATUS_LABELS).map(([v, l]) => (
                     <option key={v} value={v}>{l}</option>
                   ))}
@@ -879,7 +879,7 @@ export default function ContractsPage() {
                 <label className="block text-sm font-medium text-gray-600 mb-1">Observações</label>
                 <textarea value={formNotes} onChange={(e) => setFormNotes(e.target.value)}
                   rows={3}
-                  className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow" />
+                  className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue" />
               </div>
             </div>
           </div>
@@ -903,7 +903,7 @@ export default function ContractsPage() {
                       value={clause.content}
                       onChange={(e) => updateClause(idx, e.target.value)}
                       rows={clause.id === '01' ? 3 : 6}
-                      className="w-full border rounded-lg px-3 py-2 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-yellow font-mono"
+                      className="w-full border rounded px-3 py-2 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-blue font-mono"
                     />
                   </div>
                 ))}
@@ -917,9 +917,9 @@ export default function ContractsPage() {
 
           <div className="flex gap-3 justify-end">
             <button type="button" onClick={() => { resetForm(); setView('list'); }}
-              className="px-5 py-2 border rounded-lg hover:bg-gray-50 transition-colors">Cancelar</button>
+              className="px-5 py-2 border rounded hover:bg-gray-50 transition-colors">Cancelar</button>
             <button type="submit" disabled={saving}
-              className="px-5 py-2 bg-brand-blue hover:bg-brand-blue-dark text-white rounded-lg transition-colors disabled:opacity-50">
+              className="px-5 py-2 bg-brand-blue hover:bg-brand-blue-dark text-white rounded transition-colors disabled:opacity-50">
               {saving ? 'Salvando...' : editingContract ? 'Salvar Alterações' : 'Criar Contrato'}
             </button>
           </div>
@@ -944,13 +944,13 @@ export default function ContractsPage() {
           </div>
           <div className="flex gap-2 flex-wrap">
             <button onClick={() => openEdit(detailContract)}
-              className="px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-50">✏️ Editar</button>
+              className="px-3 py-1.5 text-sm border rounded hover:bg-gray-50">✏️ Editar</button>
             <button onClick={() => handleWhatsApp(detailContract)}
-              className="px-3 py-1.5 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600">
+              className="px-3 py-1.5 text-sm bg-green-500 text-white rounded hover:bg-green-600">
               📱 WhatsApp
             </button>
             <button onClick={() => printContract(detailContract, editClauses, locadorSettings)}
-              className="px-3 py-1.5 text-sm bg-brand-blue hover:bg-brand-blue-dark text-white rounded-lg">
+              className="px-3 py-1.5 text-sm bg-brand-blue hover:bg-brand-blue-dark text-white rounded">
               🖨️ Imprimir / PDF
             </button>
           </div>
@@ -1056,7 +1056,7 @@ export default function ContractsPage() {
                     value={clause.content}
                     onChange={(e) => updateClause(idx, e.target.value)}
                     rows={clause.id === '01' ? 3 : 6}
-                    className="w-full border rounded-lg px-3 py-2 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-yellow font-mono"
+                    className="w-full border rounded px-3 py-2 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-blue font-mono"
                   />
                 </div>
               ))}
@@ -1083,7 +1083,7 @@ export default function ContractsPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Contratos</h1>
         <button onClick={openNew}
-          className="bg-brand-blue hover:bg-brand-blue-dark text-white px-4 py-2 rounded-lg transition-colors">
+          className="bg-brand-blue hover:bg-brand-blue-dark text-white px-4 py-2 rounded transition-colors">
           + Novo Contrato
         </button>
       </div>
@@ -1091,9 +1091,9 @@ export default function ContractsPage() {
       <div className="flex gap-3 mb-5">
         <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
           placeholder="Buscar por cliente ou ID..."
-          className="border rounded-lg px-3 py-2 flex-1 focus:outline-none focus:ring-2 focus:ring-brand-yellow" />
+          className="border rounded px-3 py-2 flex-1 focus:outline-none focus:ring-2 focus:ring-brand-blue" />
         <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}
-          className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-yellow">
+          className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue">
           <option value="">Todos os status</option>
           {Object.entries(STATUS_LABELS).map(([v, l]) => (
             <option key={v} value={v}>{l}</option>

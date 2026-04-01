@@ -190,7 +190,7 @@ export default function AdminTestimonialsPage() {
                     <button
                       onClick={() => handleStatus(t.id, 'approved')}
                       disabled={updating === t.id}
-                      className="px-3 py-1.5 bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white text-xs rounded-lg transition"
+                      className="px-3 py-1.5 bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white text-xs rounded transition"
                     >
                       ✓ Aprovar
                     </button>
@@ -199,14 +199,14 @@ export default function AdminTestimonialsPage() {
                     <button
                       onClick={() => handleStatus(t.id, 'rejected')}
                       disabled={updating === t.id}
-                      className="px-3 py-1.5 bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-300 text-white text-xs rounded-lg transition"
+                      className="px-3 py-1.5 bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-300 text-white text-xs rounded transition"
                     >
                       ✗ Rejeitar
                     </button>
                   )}
                   <button
                     onClick={() => handleDelete(t.id)}
-                    className="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs rounded-lg transition"
+                    className="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs rounded transition"
                   >
                     🗑 Excluir
                   </button>
