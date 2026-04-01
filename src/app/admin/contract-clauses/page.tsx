@@ -242,7 +242,7 @@ export default function ContractClausesPage() {
         {editingId === null && (
           <button
             onClick={openNew}
-            className="flex items-center gap-2 px-5 py-2.5 bg-brand-yellow hover:bg-yellow-400 text-brand-gray font-semibold rounded-xl shadow transition"
+            className="flex items-center gap-2 px-5 py-2.5 bg-brand-yellow hover:bg-yellow-400 text-brand-gray rounded-xl shadow transition"
           >
             <span className="text-lg">+</span> Nova Cláusula
           </button>
@@ -327,14 +327,14 @@ export default function ContractClausesPage() {
               <div className="flex gap-3 justify-end">
                 <button
                   onClick={() => setShowLocadorEditor(false)}
-                  className="px-5 py-2 rounded-xl border border-gray-300 text-gray-600 text-sm font-semibold hover:bg-gray-50 transition"
+                  className="px-5 py-2 rounded-xl border border-gray-300 text-gray-600 text-sm hover:bg-gray-50 transition"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={handleSaveLocador}
                   disabled={savingLocador}
-                  className="px-5 py-2 rounded-xl bg-brand-yellow hover:bg-yellow-400 disabled:bg-gray-300 text-brand-gray text-sm font-semibold transition"
+                  className="px-5 py-2 rounded-xl bg-brand-yellow hover:bg-yellow-400 disabled:bg-gray-300 text-brand-gray text-sm transition"
                 >
                   {savingLocador ? 'Salvando…' : 'Salvar Dados do Locador'}
                 </button>
@@ -404,14 +404,14 @@ export default function ContractClausesPage() {
           <div className="flex gap-3 justify-end">
             <button
               onClick={cancelEdit}
-              className="px-5 py-2 rounded-xl border border-gray-300 text-gray-600 text-sm font-semibold hover:bg-gray-50 transition"
+              className="px-5 py-2 rounded-xl border border-gray-300 text-gray-600 text-sm hover:bg-gray-50 transition"
             >
               Cancelar
             </button>
             <button
               onClick={handleSave}
               disabled={saving}
-              className="px-5 py-2 rounded-xl bg-brand-yellow hover:bg-yellow-400 disabled:bg-gray-300 text-brand-gray text-sm font-semibold transition"
+              className="px-5 py-2 rounded-xl bg-brand-yellow hover:bg-yellow-400 disabled:bg-gray-300 text-brand-gray text-sm transition"
             >
               {saving ? 'Salvando…' : editingId === 0 ? 'Criar Cláusula' : 'Salvar Alterações'}
             </button>
@@ -468,21 +468,21 @@ export default function ContractClausesPage() {
                     <button
                       onClick={() => openEdit(clause)}
                       disabled={editingId !== null}
-                      className="px-3 py-1.5 bg-brand-yellow hover:bg-yellow-400 disabled:bg-gray-200 disabled:text-gray-400 text-brand-gray text-xs font-semibold rounded-lg transition"
+                      className="px-3 py-1.5 bg-brand-yellow hover:bg-yellow-400 disabled:bg-gray-200 disabled:text-gray-400 text-brand-gray text-xs rounded-lg transition"
                     >
                       ✏️ Editar
                     </button>
                     <button
                       onClick={() => handleToggleActive(clause)}
                       disabled={editingId !== null}
-                      className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 text-gray-700 text-xs font-semibold rounded-lg transition"
+                      className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 text-gray-700 text-xs rounded-lg transition"
                     >
                       {clause.is_active ? '🔕 Desativar' : '✅ Ativar'}
                     </button>
                     <button
                       onClick={() => handleDelete(clause.id)}
                       disabled={editingId !== null}
-                      className="px-3 py-1.5 bg-red-100 hover:bg-red-200 disabled:opacity-50 text-red-700 text-xs font-semibold rounded-lg transition"
+                      className="px-3 py-1.5 bg-red-100 hover:bg-red-200 disabled:opacity-50 text-red-700 text-xs rounded-lg transition"
                     >
                       🗑 Excluir
                     </button>

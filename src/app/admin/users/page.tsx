@@ -177,7 +177,7 @@ export default function UsersPage() {
             setEditingUser(null)
             setFormData({ email: '', name: '', password: '', role: 'user', active: 1, phone: '' })
           }}
-          className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded"
+          className="bg-brand-blue hover:bg-brand-blue-dark text-white py-2 px-4 rounded"
         >
           + Nove Usuárie
         </button>
@@ -267,7 +267,7 @@ export default function UsersPage() {
             <div className="flex gap-2">
               <button
                 type="submit"
-                className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded"
+                className="bg-brand-blue hover:bg-brand-blue-dark text-white py-2 px-4 rounded"
               >
                 Salvar
               </button>
@@ -277,7 +277,7 @@ export default function UsersPage() {
                   setShowForm(false)
                   setEditingUser(null)
                 }}
-                className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
+                className="bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded"
               >
                 Cancelar
               </button>
@@ -327,20 +327,20 @@ export default function UsersPage() {
                         user.active === 1 
                           ? 'bg-amber-500 hover:bg-amber-600' 
                           : 'bg-green-500 hover:bg-green-700'
-                      } text-white font-bold py-1 px-3 rounded text-sm`}
+                      } text-white py-1 px-3 rounded text-sm`}
                       title={user.active === 1 ? 'Desativar' : 'Ativar'}
                     >
                       {user.active === 1 ? '🔒 Desativar' : '✓ Ativar'}
                     </button>
                     <button
                       onClick={() => handleEdit(user)}
-                      className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-1 px-3 rounded text-sm"
+                      className="bg-brand-blue hover:bg-brand-blue-dark text-white py-1 px-3 rounded text-sm"
                     >
                       ✏️ Editar
                     </button>
                     <button
                       onClick={() => handleDelete(user.id, user.name)}
-                      className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm"
+                      className="bg-red-500 hover:bg-red-700 text-white py-1 px-3 rounded text-sm"
                     >
                       🗑️ Deletar
                     </button>

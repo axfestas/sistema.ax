@@ -63,7 +63,7 @@ const Toast = ({ id, message, type, onClose, duration = 3000 }: ToastProps) => {
       </div>
       <button
         onClick={() => onClose(id)}
-        className="text-white hover:text-gray-200 text-xl font-bold leading-none"
+        className="text-white hover:text-gray-200 text-xl leading-none"
         aria-label="Fechar notificação"
       >
         ×

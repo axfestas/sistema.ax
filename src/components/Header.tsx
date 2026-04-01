@@ -134,7 +134,7 @@ export default function Header() {
               <hr className="border-gray-200" />
               <Link
                 href="/admin"
-                className="px-4 py-2 bg-brand-purple/10 hover:bg-brand-purple/20 rounded-md transition text-brand-purple font-semibold"
+                className="px-4 py-2 bg-brand-purple/10 hover:bg-brand-purple/20 rounded-md transition text-brand-purple"
                 onClick={() => setIsMenuOpen(false)}
               >
                 🔒 Sistema Ax

@@ -205,13 +205,13 @@ export default function CartPage() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <button
                   onClick={clearCart}
-                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-brand-gray font-bold py-3 px-6 rounded-full transition-colors"
+                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-brand-gray py-3 px-6 rounded-full transition-colors"
                 >
                   Limpar Carrinho
                 </button>
                 <button
                   onClick={() => setShowQuoteForm(true)}
-                  className="flex-1 bg-brand-yellow hover:bg-brand-yellow/90 text-white font-bold py-3 px-6 rounded-full transition-colors"
+                  className="flex-1 bg-brand-yellow hover:bg-brand-yellow/90 text-white py-3 px-6 rounded-full transition-colors"
                 >
                   Solicitar Reserva
                 </button>
@@ -295,14 +295,14 @@ export default function CartPage() {
                 <button
                   type="button"
                   onClick={() => setShowQuoteForm(false)}
-                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-brand-gray font-bold py-3 px-6 rounded-full transition-colors"
+                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-brand-gray py-3 px-6 rounded-full transition-colors"
                 >
                   Voltar ao Carrinho
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1 bg-brand-yellow hover:bg-brand-yellow/90 text-white font-bold py-3 px-6 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 bg-brand-yellow hover:bg-brand-yellow/90 text-white py-3 px-6 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? 'Enviando...' : 'Enviar Solicitação'}
                 </button>

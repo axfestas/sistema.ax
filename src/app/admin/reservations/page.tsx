@@ -442,7 +442,7 @@ export default function ReservationsPage() {
         <h2 className="text-2xl font-bold">Gerenciamento de Reservas</h2>
         <button
           onClick={() => { setShowForm(true); setEditingReservation(null); setFormData({ ...emptyForm }); setSelectedItems([]); setNewItemToAdd({ itemKey: '', quantity: '1' }); setItemSearch(''); }}
-          className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded"
+          className="bg-brand-blue hover:bg-brand-blue-dark text-white py-2 px-4 rounded"
         >
           + Nova Reserva
         </button>
@@ -482,7 +482,7 @@ export default function ReservationsPage() {
                       <button
                         type="button"
                         onClick={() => handleRemoveItem(entry.itemKey)}
-                        className="text-red-500 hover:text-red-700 text-sm font-bold px-2"
+                        className="text-red-500 hover:text-red-700 text-sm px-2"
                       >
                         ✕
                       </button>
@@ -531,7 +531,7 @@ export default function ReservationsPage() {
                   type="button"
                   onClick={handleAddItem}
                   disabled={!newItemToAdd.itemKey}
-                  className="px-3 py-2 bg-brand-blue hover:bg-brand-blue-dark text-white text-sm font-bold rounded disabled:bg-gray-300 disabled:cursor-not-allowed whitespace-nowrap"
+                  className="px-3 py-2 bg-brand-blue hover:bg-brand-blue-dark text-white text-sm rounded disabled:bg-gray-300 disabled:cursor-not-allowed whitespace-nowrap"
                 >
                   + Adicionar
                 </button>
@@ -628,8 +628,8 @@ export default function ReservationsPage() {
             </div>
 
             <div className="flex gap-2 pt-2">
-              <button type="submit" className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded">Salvar</button>
-              <button type="button" onClick={() => { setShowForm(false); setEditingReservation(null); setSelectedItems([]); setItemSearch(''); }} className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">Cancelar</button>
+              <button type="submit" className="bg-brand-blue hover:bg-brand-blue-dark text-white py-2 px-4 rounded">Salvar</button>
+              <button type="button" onClick={() => { setShowForm(false); setEditingReservation(null); setSelectedItems([]); setItemSearch(''); }} className="bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded">Cancelar</button>
             </div>
           </form>
         </div>
@@ -758,8 +758,8 @@ export default function ReservationsPage() {
                             </div>
                           </div>
                           <div className="flex gap-2">
-                            <button onClick={() => handleEdit(reservation)} className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-1 px-3 rounded text-sm">Editar</button>
-                            <button onClick={() => handleDelete(reservation.id)} className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm">Deletar</button>
+                            <button onClick={() => handleEdit(reservation)} className="bg-brand-blue hover:bg-brand-blue-dark text-white py-1 px-3 rounded text-sm">Editar</button>
+                            <button onClick={() => handleDelete(reservation.id)} className="bg-red-500 hover:bg-red-700 text-white py-1 px-3 rounded text-sm">Deletar</button>
                           </div>
                         </div>
                       </li>
@@ -777,14 +777,14 @@ export default function ReservationsPage() {
               <div className="flex items-center justify-between mb-4">
                 <button
                   onClick={() => { setCalendarDate(new Date(calYear, calMonth - 1, 1)); setSelectedCalendarDay(null); }}
-                  className="p-2 hover:bg-gray-100 rounded-lg font-bold text-xl leading-none"
+                  className="p-2 hover:bg-gray-100 rounded-lg text-xl leading-none"
                 >
                   ‹
                 </button>
                 <span className="text-base font-bold">{MONTH_NAMES[calMonth]} {calYear}</span>
                 <button
                   onClick={() => { setCalendarDate(new Date(calYear, calMonth + 1, 1)); setSelectedCalendarDay(null); }}
-                  className="p-2 hover:bg-gray-100 rounded-lg font-bold text-xl leading-none"
+                  className="p-2 hover:bg-gray-100 rounded-lg text-xl leading-none"
                 >
                   ›
                 </button>
@@ -813,7 +813,7 @@ export default function ReservationsPage() {
                         isSelected
                           ? 'bg-brand-blue text-white border-brand-blue'
                           : isToday
-                          ? 'bg-yellow-50 border-yellow-300 font-bold'
+                          ? 'bg-yellow-50 border-yellow-300'
                           : dayRes.length > 0
                           ? 'bg-blue-50 border-blue-200 hover:bg-blue-100'
                           : 'border-transparent hover:bg-gray-50'

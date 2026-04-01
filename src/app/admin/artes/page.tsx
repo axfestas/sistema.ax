@@ -144,7 +144,7 @@ export default function ArtesPage() {
         </div>
         <button
           onClick={openNew}
-          className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-5 rounded-full transition-colors whitespace-nowrap"
+          className="bg-brand-blue hover:bg-brand-blue-dark text-white py-2 px-5 rounded-full transition-colors whitespace-nowrap"
         >
           + Nova Arte
         </button>
@@ -161,7 +161,7 @@ export default function ArtesPage() {
           <button
             key={f.value}
             onClick={() => setFilterStatus(f.value)}
-            className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors ${
+            className={`px-4 py-1.5 rounded-full text-sm transition-colors ${
               filterStatus === f.value
                 ? 'bg-brand-blue text-white'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -244,14 +244,14 @@ export default function ArtesPage() {
             <div className="flex gap-3 pt-2">
               <button
                 type="submit"
-                className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-6 rounded-full transition-colors"
+                className="bg-brand-blue hover:bg-brand-blue-dark text-white py-2 px-6 rounded-full transition-colors"
               >
                 Salvar
               </button>
               <button
                 type="button"
                 onClick={() => { setShowForm(false); setEditingArte(null); }}
-                className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-6 rounded-full transition-colors"
+                className="bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-6 rounded-full transition-colors"
               >
                 Cancelar
               </button>
@@ -306,7 +306,7 @@ export default function ArtesPage() {
                       key={s}
                       onClick={() => setStatus(arte, s)}
                       disabled={arte.status === s}
-                      className={`text-xs px-2.5 py-1 rounded-full font-semibold transition-colors ${
+                      className={`text-xs px-2.5 py-1 rounded-full transition-colors ${
                         arte.status === s
                           ? `${STATUS_COLORS[s]} cursor-default`
                           : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
@@ -321,13 +321,13 @@ export default function ArtesPage() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => openEdit(arte)}
-                    className="flex-1 bg-brand-blue hover:bg-brand-blue-dark text-white text-xs font-bold py-1.5 rounded-lg transition-colors"
+                    className="flex-1 bg-brand-blue hover:bg-brand-blue-dark text-white text-xs py-1.5 rounded-lg transition-colors"
                   >
                     ✏️ Editar
                   </button>
                   <button
                     onClick={() => handleDelete(arte.id)}
-                    className="bg-red-100 hover:bg-red-200 text-red-600 text-xs font-bold py-1.5 px-3 rounded-lg transition-colors"
+                    className="bg-red-100 hover:bg-red-200 text-red-600 text-xs py-1.5 px-3 rounded-lg transition-colors"
                   >
                     🗑️
                   </button>

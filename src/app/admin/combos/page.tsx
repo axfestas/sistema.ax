@@ -391,7 +391,7 @@ export default function CombosPage() {
         </div>
         <button
           onClick={openCreate}
-          className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded"
+          className="bg-brand-blue hover:bg-brand-blue-dark text-white py-2 px-4 rounded"
         >
           + Novo Combo
         </button>
@@ -660,14 +660,14 @@ export default function CombosPage() {
               <button
                 type="submit"
                 disabled={saving}
-                className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-2 px-4 rounded disabled:opacity-50"
+                className="bg-brand-blue hover:bg-brand-blue-dark text-white py-2 px-4 rounded disabled:opacity-50"
               >
                 {saving ? 'Salvando...' : editingCombo ? 'Salvar alterações' : 'Criar combo'}
               </button>
               <button
                 type="button"
                 onClick={closeForm}
-                className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
+                className="bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded"
               >
                 Cancelar
               </button>
@@ -744,7 +744,7 @@ export default function CombosPage() {
                   <div className="flex flex-wrap gap-2 flex-shrink-0">
                     <button
                       onClick={() => toggleActive(combo)}
-                      className={`font-bold py-1 px-3 rounded text-sm ${
+                      className={`py-1 px-3 rounded text-sm ${
                         combo.is_active
                           ? 'bg-gray-300 hover:bg-gray-400 text-gray-800'
                           : 'bg-green-500 hover:bg-green-600 text-white'
@@ -754,13 +754,13 @@ export default function CombosPage() {
                     </button>
                     <button
                       onClick={() => openEdit(combo)}
-                      className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-1 px-3 rounded text-sm"
+                      className="bg-brand-blue hover:bg-brand-blue-dark text-white py-1 px-3 rounded text-sm"
                     >
                       ✏️ Editar
                     </button>
                     <button
                       onClick={() => handleDelete(combo)}
-                      className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm"
+                      className="bg-red-500 hover:bg-red-700 text-white py-1 px-3 rounded text-sm"
                     >
                       🗑️ Deletar
                     </button>

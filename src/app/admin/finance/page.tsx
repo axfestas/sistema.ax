@@ -655,20 +655,20 @@ export default function FinancePage() {
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => { setShowForm(!showForm); setEditingRecord(null); setFormData(defaultForm()); }}
-            className="inline-flex items-center gap-1.5 bg-brand-blue hover:bg-brand-blue-dark text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors"
+            className="inline-flex items-center gap-1.5 bg-brand-blue hover:bg-brand-blue-dark text-white py-2 px-4 rounded-lg text-sm transition-colors"
           >
             <span className="text-base leading-none">＋</span> Novo Registro
           </button>
           <button
             onClick={handleExportCSV}
             disabled={filteredRecords.length === 0}
-            className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-4 rounded-lg text-sm transition-colors disabled:opacity-50"
           >
             📥 Excel / CSV
           </button>
           <button
             onClick={() => window.print()}
-            className="inline-flex items-center gap-1.5 bg-gray-700 hover:bg-gray-800 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors"
+            className="inline-flex items-center gap-1.5 bg-gray-700 hover:bg-gray-800 text-white py-2 px-4 rounded-lg text-sm transition-colors"
           >
             🖨️ PDF
           </button>
@@ -802,11 +802,11 @@ export default function FinancePage() {
             </div>
             <div className="flex gap-2 mt-6">
               <button type="submit"
-                className="bg-brand-blue hover:bg-brand-blue-dark text-white font-semibold py-2 px-5 rounded-lg text-sm transition-colors">
+                className="bg-brand-blue hover:bg-brand-blue-dark text-white py-2 px-5 rounded-lg text-sm transition-colors">
                 {editingRecord ? 'Atualizar' : 'Salvar'}
               </button>
               <button type="button" onClick={() => { setShowForm(false); setEditingRecord(null); }}
-                className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-5 rounded-lg text-sm transition-colors">
+                className="bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-5 rounded-lg text-sm transition-colors">
                 Cancelar
               </button>
             </div>
@@ -867,7 +867,7 @@ export default function FinancePage() {
       <div className="flex items-center gap-1">
         {(['list', 'charts'] as const).map((tab) => (
           <button key={tab} onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+            className={`px-4 py-2 rounded-lg text-sm transition-colors ${
               activeTab === tab ? 'bg-brand-blue text-white' : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
             }`}>
             {tab === 'list' ? '📋 Registros' : '📊 Gráficos'}
