@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /login
+Disallow: /register
+Disallow: /cart
+
+Sitemap: https://www.axfestas.com.br/sitemap.xml
