@@ -482,6 +482,22 @@ export default function Home() {
       .catch(() => {/* ignore */})
   }, [])
 
+  // Track page view
+  useEffect(() => {
+    try {
+      let sid = sessionStorage.getItem('_ax_sid')
+      if (!sid) {
+        sid = Math.random().toString(36).slice(2) + Date.now().toString(36)
+        sessionStorage.setItem('_ax_sid', sid)
+      }
+      fetch('/api/analytics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: '/', referrer: document.referrer || null, session_id: sid }),
+      }).catch(() => {/* ignore */})
+    } catch {/* ignore */}
+  }, [])
+
   const filteredCatalog = catalogItems
     .filter(i => catalogTab === 'all' || i.type === catalogTab)
     .filter(i => !catalogSearch || i.name.toLowerCase().includes(catalogSearch.toLowerCase()))
