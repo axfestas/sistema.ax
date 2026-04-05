@@ -480,6 +480,24 @@ const MIGRATIONS: { desc: string; sql: string }[] = [
     desc: '034: site_settings.locador_address',
     sql: `ALTER TABLE site_settings ADD COLUMN locador_address TEXT DEFAULT 'Rua Jacintha de Paulo Ferreira, nº 12, Bairro André Carloni, Serra/ES, CEP: 29161-820'`,
   },
+  // 035 – client_name and client_phone on quotes (allows quotes without a registered client)
+  {
+    desc: '035: quotes.client_name',
+    sql: `ALTER TABLE quotes ADD COLUMN client_name TEXT`,
+  },
+  {
+    desc: '035: quotes.client_phone',
+    sql: `ALTER TABLE quotes ADD COLUMN client_phone TEXT`,
+  },
+  {
+    desc: '035: backfill quotes client_name and client_phone from clients table',
+    sql: `UPDATE quotes SET client_name = (SELECT name FROM clients WHERE clients.id = quotes.client_id), client_phone = (SELECT phone FROM clients WHERE clients.id = quotes.client_id) WHERE client_id IS NOT NULL`,
+  },
+  // 035 – caption on publicacoes
+  {
+    desc: '035: publicacoes.caption',
+    sql: `ALTER TABLE publicacoes ADD COLUMN caption TEXT`,
+  },
 ];
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
