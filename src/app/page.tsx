@@ -115,7 +115,7 @@ function ProductCard({ item }: { item: CatalogItem }) {
   }
 
   return (
-    <div className="relative bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-200 group flex flex-col">
+    <div className="relative bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-200 group flex flex-col h-full">
       <Link href={`/produto?type=${item.type}&id=${item.id}`} className="block flex-1">
         {/* Image */}
         <div className="relative aspect-square bg-gradient-to-br from-yellow-50 to-amber-50">
@@ -509,7 +509,7 @@ export default function Home() {
     <div className="min-h-screen bg-white">
 
       {/* ── Hero ─────────────────────────────────────────────────────── */}
-      <section className={`relative overflow-hidden py-24 px-4 ${heroImageUrl
+      <section className={`relative overflow-hidden py-12 px-4 ${heroImageUrl
         ? 'bg-gradient-to-br from-brand-gray via-[#5a5a5a] to-[#383838]'
         : 'bg-gradient-to-br from-brand-blue via-brand-blue-dark to-[#5a7a97]'
       }`}>
@@ -522,10 +522,7 @@ export default function Home() {
         <div className="absolute -top-20 -left-20 w-96 h-96 rounded-full bg-white/10 pointer-events-none" />
         <div className="absolute -bottom-32 -right-20 w-[500px] h-[500px] rounded-full bg-white/10 pointer-events-none" />
         <div className="relative max-w-5xl mx-auto text-center">
-          <span className="inline-block bg-white/20 backdrop-blur text-white text-sm font-semibold px-4 py-1 rounded-full mb-6">
-            🎉 Kits personalizados para toda ocasião
-          </span>
-          <h1 className="text-4xl md:text-6xl text-white mb-10 drop-shadow-sm leading-tight">
+          <h1 className="text-4xl md:text-6xl text-white mb-6 drop-shadow-sm leading-tight">
             Aqui seu sonho<br className="hidden md:block" /> vira realidade
           </h1>
         </div>
@@ -575,7 +572,7 @@ export default function Home() {
                   style={{ scrollbarWidth: 'none' }}
                 >
                   {featuredItems.map(item => (
-                    <div key={`f-${item.type}-${item.id}`} className="snap-start flex-shrink-0 w-48 sm:w-56">
+                    <div key={`f-${item.type}-${item.id}`} className="snap-start flex-shrink-0 w-48 sm:w-56 self-stretch">
                       <ProductCard item={item} />
                     </div>
                   ))}
