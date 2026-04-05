@@ -498,6 +498,45 @@ const MIGRATIONS: { desc: string; sql: string }[] = [
     desc: '036: publicacoes.caption',
     sql: `ALTER TABLE publicacoes ADD COLUMN caption TEXT`,
   },
+  // 037 – make quotes.client_id nullable (was NOT NULL, preventing freeform quotes)
+  {
+    desc: '037a: quotes - rename to quotes_v1 (prepare nullable client_id)',
+    sql: `ALTER TABLE quotes RENAME TO quotes_v1`,
+  },
+  {
+    desc: '037b: quotes - recreate table with nullable client_id',
+    sql: `CREATE TABLE IF NOT EXISTS quotes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      client_id INTEGER,
+      client_name TEXT,
+      client_phone TEXT,
+      event_date TEXT,
+      event_location TEXT,
+      items_json TEXT NOT NULL DEFAULT '[]',
+      discount REAL NOT NULL DEFAULT 0,
+      total REAL NOT NULL DEFAULT 0,
+      status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','sent','approved','rejected')),
+      notes TEXT,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+      FOREIGN KEY (client_id) REFERENCES clients(id)
+    )`,
+  },
+  {
+    desc: '037c: quotes - copy data from quotes_v1',
+    sql: `INSERT INTO quotes (id, client_id, client_name, client_phone, event_date, event_location, items_json, discount, total, status, notes, created_at) SELECT id, client_id, client_name, client_phone, event_date, event_location, items_json, discount, total, status, notes, created_at FROM quotes_v1`,
+  },
+  {
+    desc: '037d: quotes - drop old table quotes_v1',
+    sql: `DROP TABLE IF EXISTS quotes_v1`,
+  },
+  {
+    desc: '037e: quotes - recreate idx_quotes_client_id',
+    sql: `CREATE INDEX IF NOT EXISTS idx_quotes_client_id ON quotes(client_id)`,
+  },
+  {
+    desc: '037f: quotes - recreate idx_quotes_status',
+    sql: `CREATE INDEX IF NOT EXISTS idx_quotes_status ON quotes(status)`,
+  },
 ];
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
@@ -530,10 +569,12 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       // "duplicate column name" → ADD COLUMN already applied
       // "already exists"       → CREATE TABLE/INDEX already applied
       // "no such column"       → DROP COLUMN already applied (column gone)
+      // "no such table"        → RENAME/DROP already applied (table gone/renamed)
       const isAlreadyApplied =
         msg.includes('duplicate column') ||
         msg.includes('already exists') ||
-        msg.includes('no such column');
+        msg.includes('no such column') ||
+        msg.includes('no such table');
       results.push({
         desc: migration.desc,
         status: isAlreadyApplied ? 'skipped' : 'error',
