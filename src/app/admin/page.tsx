@@ -62,7 +62,7 @@ export default function AdminPage() {
       </div>
 
       {/* Atalhos de administração */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-6">
         <a
           href="/admin/users"
           className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow flex items-center gap-4"
@@ -71,6 +71,16 @@ export default function AdminPage() {
           <div>
             <h2 className="text-lg font-bold text-gray-800">Usuáries</h2>
             <p className="text-sm text-gray-500">Gerenciar usuáries do sistema</p>
+          </div>
+        </a>
+        <a
+          href="/admin/analytics"
+          className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow flex items-center gap-4"
+        >
+          <span className="text-4xl">📈</span>
+          <div>
+            <h2 className="text-lg font-bold text-gray-800">Mapa de Acessos</h2>
+            <p className="text-sm text-gray-500">Tráfego e visitas ao site</p>
           </div>
         </a>
         <a

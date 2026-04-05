@@ -68,6 +68,7 @@ const navGroups: NavGroup[] = [
     items: [
       { href: '/admin/clients', label: 'Clientes', icon: '👥' },
       { href: '/admin/finance', label: 'Financeiro', icon: '💰' },
+      { href: '/admin/analytics', label: 'Mapa de Acessos', icon: '📈' },
     ],
   },
 ];

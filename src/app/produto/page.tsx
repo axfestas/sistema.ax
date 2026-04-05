@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { Suspense } from 'react'
 import { useCart } from '@/components/CartContext'
 import { useToast } from '@/hooks/useToast'
+import { trackPageView } from '@/lib/analytics'
 
 // ─── Share components ─────────────────────────────────────────────────────────
 
@@ -15,11 +16,12 @@ interface StoryPreviewModalProps {
   description?: string
   imageUrl?: string
   price?: number
+  items?: Array<{ id: number; item_id: number; item_name: string; quantity: number }>
   platform: 'instagram' | 'whatsapp'
   onClose: () => void
 }
 
-const StoryPreviewModal = ({ name, description, imageUrl, price, platform, onClose }: StoryPreviewModalProps) => {
+const StoryPreviewModal = ({ name, description, imageUrl, price, items, platform, onClose }: StoryPreviewModalProps) => {
   const { showInfo } = useToast()
   const isInstagram = platform === 'instagram'
   const platformLabel = isInstagram ? 'Instagram Stories' : 'Status do WhatsApp'
@@ -123,7 +125,9 @@ const StoryPreviewModal = ({ name, description, imageUrl, price, platform, onClo
     ctx.font = 'bold 72px Arial, sans-serif'
     const maxWidth = 860
     const MAX_PRICE_Y = 1820
-    const MAX_DESC_Y_WITH_PRICE = 1760
+    // When kit items are present, reserve space below the description for them
+    const MAX_DESC_Y_WITH_ITEMS = 1600
+    const MAX_DESC_Y_WITH_PRICE = items && items.length > 0 ? MAX_DESC_Y_WITH_ITEMS : 1760
     const words = name.split(' ')
     let line = ''
     let ty = textStartY
@@ -164,6 +168,22 @@ const StoryPreviewModal = ({ name, description, imageUrl, price, platform, onClo
       }
     }
 
+    if (items && items.length > 0) {
+      ty += 20
+      ctx.font = 'bold 40px Arial, sans-serif'
+      ctx.fillStyle = '#FFC107'
+      ctx.textAlign = 'left'
+      const itemsX = 130
+      const MAX_ITEMS_Y = price !== undefined && price > 0 ? 1640 : MAX_PRICE_Y - 60
+      for (const kitItem of items) {
+        if (ty > MAX_ITEMS_Y) break
+        ctx.fillText(`✓ ${kitItem.quantity}× ${kitItem.item_name}`, itemsX, ty)
+        ty += 52
+      }
+      ctx.textAlign = 'center'
+      ty += 10
+    }
+
     if (price !== undefined && price > 0) {
       ctx.font = 'bold 64px Arial, sans-serif'
       ctx.fillStyle = '#FFC107'
@@ -175,7 +195,10 @@ const StoryPreviewModal = ({ name, description, imageUrl, price, platform, onClo
       const svgResponse = await fetch('/logotipo.svg')
       if (!svgResponse.ok) throw new Error()
       const svgText = await svgResponse.text()
-      const whiteSvg = svgText.replace(/fill="(#000(000)?|black|rgb\(0,\s*0,\s*0\))"/gi, 'fill="#ffffff"')
+      // Replace all non-transparent fill attributes with white so the logo is visible on
+      // the dark gradient background. The logo SVG uses fill for all shapes (stroke="none"),
+      // so replacing every fill is safe and ensures full visibility regardless of logo color.
+      const whiteSvg = svgText.replace(/fill="(?!none|transparent)[^"]+"/gi, 'fill="#ffffff"')
       const svgBlob = new Blob([whiteSvg], { type: 'image/svg+xml' })
       const svgUrl = URL.createObjectURL(svgBlob)
       const logoImg = new window.Image()
@@ -271,6 +294,18 @@ const StoryPreviewModal = ({ name, description, imageUrl, price, platform, onClo
               <div className="w-full px-3 pb-3 text-center">
                 <p className="text-white font-bold text-sm leading-tight mb-1 line-clamp-2">{name}</p>
                 {description && <p className="text-white/80 text-xs line-clamp-2">{description}</p>}
+                {items && items.length > 0 && (
+                  <ul className="mt-1.5 text-left space-y-0.5">
+                    {items.slice(0, 5).map(kitItem => (
+                      <li key={kitItem.id} className="text-[#FFC107] text-xs font-medium">
+                        ✓ {kitItem.quantity}× {kitItem.item_name}
+                      </li>
+                    ))}
+                    {items.length > 5 && (
+                      <li className="text-white/60 text-xs">+{items.length - 5} itens</li>
+                    )}
+                  </ul>
+                )}
                 {price !== undefined && price > 0 && (
                   <p className="text-[#FFC107] font-bold text-sm mt-1">R$ {price.toFixed(2)}</p>
                 )}
@@ -306,10 +341,11 @@ interface ShareModalProps {
   description?: string
   imageUrl?: string
   price?: number
+  items?: Array<{ id: number; item_id: number; item_name: string; quantity: number }>
   onClose: () => void
 }
 
-const ShareModal = ({ url, name, text, description, imageUrl, price, onClose }: ShareModalProps) => {
+const ShareModal = ({ url, name, text, description, imageUrl, price, items, onClose }: ShareModalProps) => {
   const { showSuccess } = useToast()
   const [storyPlatform, setStoryPlatform] = useState<'instagram' | 'whatsapp' | null>(null)
 
@@ -369,6 +405,7 @@ const ShareModal = ({ url, name, text, description, imageUrl, price, onClose }: 
         description={description}
         imageUrl={imageUrl}
         price={price}
+        items={items}
         platform={storyPlatform}
         onClose={() => setStoryPlatform(null)}
       />
@@ -584,7 +621,7 @@ function ProductDetail() {
   const [relatedItems, setRelatedItems] = useState<RelatedItem[]>([])
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
-  const [shareModal, setShareModal] = useState<{ url: string; name: string; text: string; description?: string; imageUrl?: string; price?: number } | null>(null)
+  const [shareModal, setShareModal] = useState<{ url: string; name: string; text: string; description?: string; imageUrl?: string; price?: number; items?: Array<{ id: number; item_id: number; item_name: string; quantity: number }> } | null>(null)
   const { addItem } = useCart()
   const { showSuccess } = useToast()
 
@@ -607,6 +644,12 @@ function ProductDetail() {
   }, [type, id])
 
   useEffect(() => { fetchProduct() }, [fetchProduct])
+
+  // Track product page view
+  useEffect(() => {
+    if (!type || !id) return
+    trackPageView(`/produto?type=${encodeURIComponent(type)}&id=${encodeURIComponent(id)}`)
+  }, [type, id])
 
   // Load random related items across all types except theme
   useEffect(() => {
@@ -658,6 +701,7 @@ function ProductDetail() {
       description: product.description,
       imageUrl: product.image_url,
       price: product.price,
+      items: type === 'kit' ? product.items : undefined,
     })
   }
 
@@ -897,6 +941,7 @@ function ProductDetail() {
           description={shareModal.description}
           imageUrl={shareModal.imageUrl}
           price={shareModal.price}
+          items={shareModal.items}
           onClose={() => setShareModal(null)}
         />
       )}
