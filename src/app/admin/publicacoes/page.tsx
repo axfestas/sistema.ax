@@ -150,6 +150,7 @@ export default function PublicacoesPage() {
           platform: pub.platform,
           publish_date: pub.publish_date || new Date().toISOString().split('T')[0],
           status: 'publicado',
+          caption: pub.caption,
           notes: pub.notes,
         }),
       });
