@@ -137,6 +137,7 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
 
   try {
     const body = await context.request.json() as QuoteBody;
+    if (!body.client_name?.trim()) return jsonErr('client_name is required');
     const itemsStr = JSON.stringify(body.items_json ?? []);
 
     await db
