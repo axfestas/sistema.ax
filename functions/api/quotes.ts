@@ -21,7 +21,9 @@ interface QuoteItem {
 
 interface QuoteBody {
   id?: number;
-  client_id: number;
+  client_id?: number;
+  client_name?: string;
+  client_phone?: string;
   event_date?: string;
   event_location?: string;
   items_json: QuoteItem[];
@@ -48,9 +50,12 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     if (id) {
       const { results } = await db
         .prepare(
-          `SELECT q.*, c.name AS client_name, c.phone AS client_phone, c.email AS client_email
+          `SELECT q.*,
+                  COALESCE(q.client_name, c.name) AS client_name,
+                  COALESCE(q.client_phone, c.phone) AS client_phone,
+                  c.email AS client_email
            FROM quotes q
-           JOIN clients c ON c.id = q.client_id
+           LEFT JOIN clients c ON c.id = q.client_id
            WHERE q.id = ?`
         )
         .bind(id)
@@ -60,9 +65,12 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     }
 
     let stmt = db.prepare(
-      `SELECT q.*, c.name AS client_name, c.phone AS client_phone, c.email AS client_email
+      `SELECT q.*,
+              COALESCE(q.client_name, c.name) AS client_name,
+              COALESCE(q.client_phone, c.phone) AS client_phone,
+              c.email AS client_email
        FROM quotes q
-       JOIN clients c ON c.id = q.client_id
+       LEFT JOIN clients c ON c.id = q.client_id
        ${clientId ? 'WHERE q.client_id = ?' : ''}
        ORDER BY q.created_at DESC`
     );
@@ -80,16 +88,18 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   const db = context.env.DB;
   try {
     const body = await context.request.json() as QuoteBody;
-    if (!body.client_id) return jsonErr('client_id is required');
+    if (!body.client_name?.trim()) return jsonErr('client_name is required');
 
     const itemsStr = JSON.stringify(body.items_json ?? []);
     const result = await db
       .prepare(
-        `INSERT INTO quotes (client_id, event_date, event_location, items_json, discount, total, status, notes)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+        `INSERT INTO quotes (client_id, client_name, client_phone, event_date, event_location, items_json, discount, total, status, notes)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
       .bind(
-        body.client_id,
+        body.client_id || null,
+        body.client_name.trim(),
+        body.client_phone?.trim() || null,
         body.event_date || null,
         body.event_location || null,
         itemsStr,
@@ -102,8 +112,11 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
     const { results } = await db
       .prepare(
-        `SELECT q.*, c.name AS client_name, c.phone AS client_phone, c.email AS client_email
-         FROM quotes q JOIN clients c ON c.id = q.client_id WHERE q.id = ?`
+        `SELECT q.*,
+                COALESCE(q.client_name, c.name) AS client_name,
+                COALESCE(q.client_phone, c.phone) AS client_phone,
+                c.email AS client_email
+         FROM quotes q LEFT JOIN clients c ON c.id = q.client_id WHERE q.id = ?`
       )
       .bind(result.meta.last_row_id)
       .all();
@@ -124,15 +137,18 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
 
   try {
     const body = await context.request.json() as QuoteBody;
+    if (!body.client_name?.trim()) return jsonErr('client_name is required');
     const itemsStr = JSON.stringify(body.items_json ?? []);
 
     await db
       .prepare(
-        `UPDATE quotes SET client_id=?, event_date=?, event_location=?, items_json=?,
+        `UPDATE quotes SET client_id=?, client_name=?, client_phone=?, event_date=?, event_location=?, items_json=?,
          discount=?, total=?, status=?, notes=? WHERE id=?`
       )
       .bind(
-        body.client_id,
+        body.client_id || null,
+        body.client_name?.trim() || null,
+        body.client_phone?.trim() || null,
         body.event_date || null,
         body.event_location || null,
         itemsStr,
@@ -146,8 +162,11 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
 
     const { results } = await db
       .prepare(
-        `SELECT q.*, c.name AS client_name, c.phone AS client_phone, c.email AS client_email
-         FROM quotes q JOIN clients c ON c.id = q.client_id WHERE q.id = ?`
+        `SELECT q.*,
+                COALESCE(q.client_name, c.name) AS client_name,
+                COALESCE(q.client_phone, c.phone) AS client_phone,
+                c.email AS client_email
+         FROM quotes q LEFT JOIN clients c ON c.id = q.client_id WHERE q.id = ?`
       )
       .bind(id)
       .all();

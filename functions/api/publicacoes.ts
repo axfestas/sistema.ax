@@ -22,6 +22,7 @@ export interface Publicacao {
   platform: 'instagram' | 'whatsapp' | 'outros';
   publish_date?: string;
   status: 'agendado' | 'publicado';
+  caption?: string;
   notes?: string;
   created_at: number;
 }
@@ -31,6 +32,7 @@ export interface PublicacaoInput {
   platform: string;
   publish_date?: string;
   status?: string;
+  caption?: string;
   notes?: string;
 }
 
@@ -109,8 +111,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     }
 
     const result = await db.prepare(
-      `INSERT INTO publicacoes (arte_id, platform, publish_date, status, notes)
-       VALUES (?, ?, ?, ?, ?)
+      `INSERT INTO publicacoes (arte_id, platform, publish_date, status, caption, notes)
+       VALUES (?, ?, ?, ?, ?, ?)
        RETURNING *`
     )
       .bind(
@@ -118,6 +120,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         body.platform,
         body.publish_date || null,
         body.status || 'agendado',
+        body.caption || null,
         body.notes || null
       )
       .first();
@@ -154,7 +157,7 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
 
     const result = await db.prepare(
       `UPDATE publicacoes
-       SET arte_id = ?, platform = ?, publish_date = ?, status = ?, notes = ?
+       SET arte_id = ?, platform = ?, publish_date = ?, status = ?, caption = ?, notes = ?
        WHERE id = ?
        RETURNING *`
     )
@@ -163,6 +166,7 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
         body.platform,
         body.publish_date || null,
         body.status || 'agendado',
+        body.caption || null,
         body.notes || null,
         pubId
       )
