@@ -124,7 +124,9 @@ const StoryPreviewModal = ({ name, description, imageUrl, price, items, platform
     ctx.font = 'bold 72px Arial, sans-serif'
     const maxWidth = 860
     const MAX_PRICE_Y = 1820
-    const MAX_DESC_Y_WITH_PRICE = items && items.length > 0 ? 1600 : 1760
+    // When kit items are present, reserve space below the description for them
+    const MAX_DESC_Y_WITH_ITEMS = 1600
+    const MAX_DESC_Y_WITH_PRICE = items && items.length > 0 ? MAX_DESC_Y_WITH_ITEMS : 1760
     const words = name.split(' ')
     let line = ''
     let ty = textStartY
@@ -192,6 +194,9 @@ const StoryPreviewModal = ({ name, description, imageUrl, price, items, platform
       const svgResponse = await fetch('/logotipo.svg')
       if (!svgResponse.ok) throw new Error()
       const svgText = await svgResponse.text()
+      // Replace all non-transparent fill attributes with white so the logo is visible on
+      // the dark gradient background. The logo SVG uses fill for all shapes (stroke="none"),
+      // so replacing every fill is safe and ensures full visibility regardless of logo color.
       const whiteSvg = svgText.replace(/fill="(?!none|transparent)[^"]+"/gi, 'fill="#ffffff"')
       const svgBlob = new Blob([whiteSvg], { type: 'image/svg+xml' })
       const svgUrl = URL.createObjectURL(svgBlob)
