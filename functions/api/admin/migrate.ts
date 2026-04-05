@@ -523,7 +523,7 @@ const MIGRATIONS: { desc: string; sql: string }[] = [
   },
   {
     desc: '037c: quotes - copy data from quotes_v1',
-    sql: `INSERT INTO quotes SELECT id, client_id, client_name, client_phone, event_date, event_location, items_json, discount, total, status, notes, created_at FROM quotes_v1`,
+    sql: `INSERT INTO quotes (id, client_id, client_name, client_phone, event_date, event_location, items_json, discount, total, status, notes, created_at) SELECT id, client_id, client_name, client_phone, event_date, event_location, items_json, discount, total, status, notes, created_at FROM quotes_v1`,
   },
   {
     desc: '037d: quotes - drop old table quotes_v1',
