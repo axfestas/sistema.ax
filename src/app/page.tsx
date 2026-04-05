@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useCart } from '@/components/CartContext'
 import { useToast } from '@/hooks/useToast'
+import { trackPageView } from '@/lib/analytics'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -484,18 +485,7 @@ export default function Home() {
 
   // Track page view
   useEffect(() => {
-    try {
-      let sid = sessionStorage.getItem('_ax_sid')
-      if (!sid) {
-        sid = Math.random().toString(36).slice(2) + Date.now().toString(36)
-        sessionStorage.setItem('_ax_sid', sid)
-      }
-      fetch('/api/analytics', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ path: '/', referrer: document.referrer || null, session_id: sid }),
-      }).catch(() => {/* ignore */})
-    } catch {/* ignore */}
+    trackPageView('/')
   }, [])
 
   const filteredCatalog = catalogItems

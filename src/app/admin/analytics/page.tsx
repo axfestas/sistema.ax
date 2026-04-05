@@ -210,7 +210,7 @@ function SessoesTab({ days }: { days: number }) {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard icon="🔁" label={`Total de acessos (${days} dias)`} value={data.total_views.toLocaleString('pt-BR')} />
         <StatCard icon="👤" label="Sessões únicas" value={data.unique_sessions.toLocaleString('pt-BR')} />
-        <StatCard icon="📄" label="Páginas / sessão (média)" value={data.avg_pages_per_session} />
+        <StatCard icon="📄" label="Páginas / sessão (média)" value={data.avg_pages_per_session.toLocaleString('pt-BR')} />
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">

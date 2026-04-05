@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { Suspense } from 'react'
 import { useCart } from '@/components/CartContext'
 import { useToast } from '@/hooks/useToast'
+import { trackPageView } from '@/lib/analytics'
 
 // ─── Share components ─────────────────────────────────────────────────────────
 
@@ -647,19 +648,7 @@ function ProductDetail() {
   // Track product page view
   useEffect(() => {
     if (!type || !id) return
-    try {
-      let sid = sessionStorage.getItem('_ax_sid')
-      if (!sid) {
-        sid = Math.random().toString(36).slice(2) + Date.now().toString(36)
-        sessionStorage.setItem('_ax_sid', sid)
-      }
-      const path = `/produto?type=${encodeURIComponent(type)}&id=${encodeURIComponent(id)}`
-      fetch('/api/analytics', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ path, referrer: document.referrer || null, session_id: sid }),
-      }).catch(() => {/* ignore */})
-    } catch {/* ignore */}
+    trackPageView(`/produto?type=${encodeURIComponent(type)}&id=${encodeURIComponent(id)}`)
   }, [type, id])
 
   // Load random related items across all types except theme

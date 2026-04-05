@@ -183,7 +183,8 @@ export async function onRequestGet(context: {
         JSON.stringify({
           total_views: totalViews?.count ?? 0,
           unique_sessions: uniqueSessions?.count ?? 0,
-          avg_pages_per_session: Math.round((avgPerSession?.avg ?? 0) * 10) / 10,
+          // Round to 1 decimal place for a readable "pages per session" metric
+        avg_pages_per_session: Math.round((avgPerSession?.avg ?? 0) * 10) / 10,
           by_hour: byHour.results ?? [],
           days,
         }),
