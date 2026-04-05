@@ -525,9 +525,57 @@ const MIGRATIONS: { desc: string; sql: string }[] = [
     desc: '037c: quotes - copy data from quotes_v1',
     sql: `INSERT INTO quotes (id, client_id, client_name, client_phone, event_date, event_location, items_json, discount, total, status, notes, created_at) SELECT id, client_id, client_name, client_phone, event_date, event_location, items_json, discount, total, status, notes, created_at FROM quotes_v1`,
   },
+  // 037d – contracts has a FK to quotes (which was renamed to quotes_v1 in 037a by SQLite's
+  // auto-update of FK references). We must drop contracts first, then drop quotes_v1, then
+  // recreate contracts pointing at the new quotes table and restore its data.
   {
-    desc: '037d: quotes - drop old table quotes_v1',
+    desc: '037d: contracts - backup before quotes_v1 drop',
+    sql: `CREATE TABLE IF NOT EXISTS contracts_bak AS SELECT * FROM contracts`,
+  },
+  {
+    desc: '037d2: contracts - drop to remove FK dependency on quotes_v1',
+    sql: `DROP TABLE IF EXISTS contracts`,
+  },
+  {
+    desc: '037d3: quotes - drop old table quotes_v1',
     sql: `DROP TABLE IF EXISTS quotes_v1`,
+  },
+  {
+    desc: '037d4: contracts - recreate with FK to new quotes',
+    sql: `CREATE TABLE IF NOT EXISTS contracts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      client_id INTEGER NOT NULL,
+      quote_id INTEGER,
+      event_date TEXT,
+      event_location TEXT,
+      pickup_date TEXT,
+      return_date TEXT,
+      items_json TEXT NOT NULL DEFAULT '[]',
+      discount REAL NOT NULL DEFAULT 0,
+      total REAL NOT NULL DEFAULT 0,
+      payment_method TEXT,
+      status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','sent','signed','completed')),
+      notes TEXT,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+      FOREIGN KEY (client_id) REFERENCES clients(id),
+      FOREIGN KEY (quote_id) REFERENCES quotes(id)
+    )`,
+  },
+  {
+    desc: '037d5: contracts - restore data from backup',
+    sql: `INSERT OR IGNORE INTO contracts (id, client_id, quote_id, event_date, event_location, pickup_date, return_date, items_json, discount, total, payment_method, status, notes, created_at) SELECT id, client_id, quote_id, event_date, event_location, pickup_date, return_date, items_json, discount, total, payment_method, status, notes, created_at FROM contracts_bak`,
+  },
+  {
+    desc: '037d6: contracts - drop backup table',
+    sql: `DROP TABLE IF EXISTS contracts_bak`,
+  },
+  {
+    desc: '037d7: contracts - recreate idx_contracts_client_id',
+    sql: `CREATE INDEX IF NOT EXISTS idx_contracts_client_id ON contracts(client_id)`,
+  },
+  {
+    desc: '037d8: contracts - recreate idx_contracts_status',
+    sql: `CREATE INDEX IF NOT EXISTS idx_contracts_status ON contracts(status)`,
   },
   {
     desc: '037e: quotes - recreate idx_quotes_client_id',
