@@ -493,9 +493,9 @@ const MIGRATIONS: { desc: string; sql: string }[] = [
     desc: '035: backfill quotes client_name and client_phone from clients table',
     sql: `UPDATE quotes SET client_name = (SELECT name FROM clients WHERE clients.id = quotes.client_id), client_phone = (SELECT phone FROM clients WHERE clients.id = quotes.client_id) WHERE client_id IS NOT NULL`,
   },
-  // 035 – caption on publicacoes
+  // 036 – caption on publicacoes
   {
-    desc: '035: publicacoes.caption',
+    desc: '036: publicacoes.caption',
     sql: `ALTER TABLE publicacoes ADD COLUMN caption TEXT`,
   },
 ];
