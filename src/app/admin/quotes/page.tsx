@@ -7,18 +7,6 @@ import { useToast } from '@/components/ToastProvider';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-interface Client {
-  id: number;
-  name: string;
-  email?: string;
-  phone: string;
-  cpf?: string;
-  address?: string;
-  city?: string;
-  state?: string;
-  zip_code?: string;
-}
-
 interface QuoteItem {
   description: string;
   quantity: number;
@@ -87,18 +75,16 @@ export default function QuotesPage() {
   const { showSuccess, showError } = useToast();
 
   const [quotes, setQuotes] = useState<Quote[]>([]);
-  const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'list' | 'form' | 'detail'>('list');
   const [editingQuote, setEditingQuote] = useState<Quote | null>(null);
   const [detailQuote, setDetailQuote] = useState<Quote | null>(null);
   const [filterStatus, setFilterStatus] = useState('');
   const [search, setSearch] = useState('');
-  const [clientSearch, setClientSearch] = useState('');
 
   // Form state
-  const [selectedClientId, setSelectedClientId] = useState('');
-  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [formClientName, setFormClientName] = useState('');
+  const [formClientPhone, setFormClientPhone] = useState('');
   const [formEventDate, setFormEventDate] = useState('');
   const [formEventLocation, setFormEventLocation] = useState('');
   const [formItems, setFormItems] = useState<QuoteItem[]>([{ ...EMPTY_ITEM }]);
@@ -123,19 +109,10 @@ export default function QuotesPage() {
     }
   }, []);
 
-  const loadClients = useCallback(async () => {
-    try {
-      const res = await fetch('/api/clients');
-      if (res.ok) setClients(await res.json() as Client[]);
-    } catch (err) {
-      console.error('Error loading clients:', err);
-    }
-  }, []);
 
   useEffect(() => {
     loadQuotes();
-    loadClients();
-  }, [loadQuotes, loadClients]);
+  }, [loadQuotes]);
 
   useEffect(() => {
     if (view !== 'form') return;
@@ -159,12 +136,6 @@ export default function QuotesPage() {
 
   // ── Derived values ─────────────────────────────────────────────────────────
 
-  const filteredClients = clients.filter((c) => {
-    if (!clientSearch.trim()) return true;
-    const q = clientSearch.toLowerCase();
-    return c.name.toLowerCase().includes(q) || c.phone.includes(q);
-  });
-
   const itemsSubtotal = formItems.reduce((s, it) => s + it.total, 0);
   const formTotal = Math.max(0, itemsSubtotal - formDiscount);
 
@@ -181,9 +152,8 @@ export default function QuotesPage() {
   // ── Form helpers ───────────────────────────────────────────────────────────
 
   function resetForm() {
-    setSelectedClientId('');
-    setSelectedClient(null);
-    setClientSearch('');
+    setFormClientName('');
+    setFormClientPhone('');
     setFormEventDate('');
     setFormEventLocation('');
     setFormItems([{ ...EMPTY_ITEM }]);
@@ -202,10 +172,8 @@ export default function QuotesPage() {
 
   function openEdit(q: Quote) {
     setEditingQuote(q);
-    const client = clients.find((c) => c.id === q.client_id) || null;
-    setSelectedClientId(String(q.client_id));
-    setSelectedClient(client);
-    setClientSearch(q.client_name);
+    setFormClientName(q.client_name);
+    setFormClientPhone(q.client_phone);
     setFormEventDate(q.event_date || '');
     setFormEventLocation(q.event_location || '');
     try {
@@ -224,14 +192,6 @@ export default function QuotesPage() {
   function openDetail(q: Quote) {
     setDetailQuote(q);
     setView('detail');
-  }
-
-  // ── Client selection ───────────────────────────────────────────────────────
-
-  function handleClientSelect(client: Client) {
-    setSelectedClientId(String(client.id));
-    setSelectedClient(client);
-    setClientSearch(client.name);
   }
 
   // ── Item management ────────────────────────────────────────────────────────
@@ -272,14 +232,15 @@ export default function QuotesPage() {
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
-    if (!selectedClientId) {
-      showError('Selecione um cliente');
+    if (!formClientName.trim()) {
+      showError('Informe o nome do cliente');
       return;
     }
     setSaving(true);
     try {
       const payload = {
-        client_id: Number(selectedClientId),
+        client_name: formClientName.trim(),
+        client_phone: formClientPhone.trim() || undefined,
         event_date: formEventDate || undefined,
         event_location: formEventLocation || undefined,
         items_json: formItems,
@@ -388,48 +349,32 @@ export default function QuotesPage() {
         </div>
 
         <form onSubmit={handleSave} className="space-y-6">
-          {/* Client selector */}
+          {/* Client info */}
           <div className="bg-white rounded-lg shadow p-5">
             <h3 className="font-semibold text-gray-700 mb-4">Cliente</h3>
-            <div className="relative mb-3">
-              <input
-                type="text"
-                placeholder="Buscar cliente pelo nome ou telefone..."
-                value={clientSearch}
-                onChange={(e) => {
-                  setClientSearch(e.target.value);
-                  if (!e.target.value) { setSelectedClientId(''); setSelectedClient(null); }
-                }}
-                className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue"
-              />
-              {clientSearch && !selectedClientId && (
-                <div className="absolute z-10 w-full bg-white border rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto">
-                  {filteredClients.length === 0 ? (
-                    <div className="p-3 text-gray-400 text-sm">Nenhum cliente encontrado</div>
-                  ) : filteredClients.slice(0, 8).map((c) => (
-                    <button
-                      key={c.id}
-                      type="button"
-                      onClick={() => handleClientSelect(c)}
-                      className="w-full text-left px-4 py-2 hover:bg-yellow-50 text-sm"
-                    >
-                      <span className="font-medium">{c.name}</span>
-                      <span className="text-gray-400 ml-2">{c.phone}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {selectedClient && (
-              <div className="bg-yellow-50 rounded-lg p-4 grid grid-cols-2 gap-3 text-sm">
-                <div><span className="text-gray-500">Nome:</span> <strong>{selectedClient.name}</strong></div>
-                <div><span className="text-gray-500">Telefone:</span> {selectedClient.phone}</div>
-                {selectedClient.email && <div><span className="text-gray-500">Email:</span> {selectedClient.email}</div>}
-                {selectedClient.cpf && <div><span className="text-gray-500">CPF:</span> {selectedClient.cpf}</div>}
-                {selectedClient.address && <div className="col-span-2"><span className="text-gray-500">Endereço:</span> {selectedClient.address}{selectedClient.city ? `, ${selectedClient.city}` : ''}</div>}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">Nome</label>
+                <input
+                  type="text"
+                  placeholder="Nome do cliente"
+                  value={formClientName}
+                  onChange={(e) => setFormClientName(e.target.value)}
+                  required
+                  className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue"
+                />
               </div>
-            )}
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">Telefone</label>
+                <input
+                  type="text"
+                  placeholder="Telefone do cliente"
+                  value={formClientPhone}
+                  onChange={(e) => setFormClientPhone(e.target.value)}
+                  className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue"
+                />
+              </div>
+            </div>
           </div>
 
           {/* Event info */}
@@ -483,7 +428,7 @@ export default function QuotesPage() {
                     <input
                       className="w-full border rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-brand-yellow"
                       placeholder="Buscar ou digitar produto..."
-                      value={productSearches[idx] !== undefined ? productSearches[idx] : item.description}
+                      value={productSearches[idx] ? productSearches[idx] : item.description}
                       onFocus={() => {
                         const s = [...productSearches];
                         s[idx] = item.description;
