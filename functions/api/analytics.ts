@@ -74,8 +74,7 @@ export async function onRequestGet(context: {
   env: Env;
 }) {
   try {
-    const adminCheck = await requireAdmin(context.request, context.env.DB);
-    if (adminCheck) return adminCheck;
+    await requireAdmin(context.env.DB, context.request);
 
     const db = context.env.DB;
     const url = new URL(context.request.url);
