@@ -30,32 +30,6 @@ interface Quote {
   created_at: number;
 }
 
-type QuoteStatus = 'pending' | 'sent' | 'approved' | 'rejected';
-
-const STATUS_LABELS: Record<QuoteStatus, string> = {
-  pending: 'Pendente',
-  sent: 'Enviado',
-  approved: 'Aprovado',
-  rejected: 'Recusado',
-};
-
-const STATUS_COLORS: Record<QuoteStatus, string> = {
-  pending: 'bg-yellow-100 text-yellow-800',
-  sent: 'bg-blue-100 text-blue-800',
-  approved: 'bg-green-100 text-green-800',
-  rejected: 'bg-red-100 text-red-800',
-};
-
-const PAYMENT_TYPES = [
-  { value: '', label: 'Selecione...' },
-  { value: 'pix', label: 'Pix' },
-  { value: 'cartao_credito', label: 'Cartão de Crédito' },
-  { value: 'cartao_debito', label: 'Cartão de Débito' },
-  { value: 'dinheiro', label: 'Dinheiro' },
-  { value: 'transferencia', label: 'Transferência Bancária' },
-  { value: 'boleto', label: 'Boleto' },
-];
-
 const EMPTY_ITEM: QuoteItem = { description: '', quantity: 1, unit_price: 0, total: 0 };
 
 interface CatalogProduct {
@@ -79,7 +53,6 @@ export default function QuotesPage() {
   const [view, setView] = useState<'list' | 'form' | 'detail'>('list');
   const [editingQuote, setEditingQuote] = useState<Quote | null>(null);
   const [detailQuote, setDetailQuote] = useState<Quote | null>(null);
-  const [filterStatus, setFilterStatus] = useState('');
   const [search, setSearch] = useState('');
 
   // Form state
@@ -89,7 +62,6 @@ export default function QuotesPage() {
   const [formEventLocation, setFormEventLocation] = useState('');
   const [formItems, setFormItems] = useState<QuoteItem[]>([{ ...EMPTY_ITEM }]);
   const [formDiscount, setFormDiscount] = useState(0);
-  const [formStatus, setFormStatus] = useState<QuoteStatus>('pending');
   const [formNotes, setFormNotes] = useState('');
   const [saving, setSaving] = useState(false);
   const [catalogProducts, setCatalogProducts] = useState<CatalogProduct[]>([]);
@@ -140,7 +112,6 @@ export default function QuotesPage() {
   const formTotal = Math.max(0, itemsSubtotal - formDiscount);
 
   const filteredQuotes = quotes.filter((q) => {
-    if (filterStatus && q.status !== filterStatus) return false;
     if (!search.trim()) return true;
     const s = search.toLowerCase();
     return (
@@ -158,7 +129,6 @@ export default function QuotesPage() {
     setFormEventLocation('');
     setFormItems([{ ...EMPTY_ITEM }]);
     setFormDiscount(0);
-    setFormStatus('pending');
     setFormNotes('');
     setEditingQuote(null);
     setProductSearches([]);
@@ -182,7 +152,6 @@ export default function QuotesPage() {
       setFormItems([{ ...EMPTY_ITEM }]);
     }
     setFormDiscount(q.discount);
-    setFormStatus(q.status);
     setFormNotes(q.notes || '');
     setProductSearches([]);
     setProductDropdowns([]);
@@ -246,7 +215,6 @@ export default function QuotesPage() {
         items_json: formItems,
         discount: formDiscount,
         total: formTotal,
-        status: formStatus,
         notes: formNotes || undefined,
       };
 
@@ -312,8 +280,6 @@ export default function QuotesPage() {
       ``,
       q.discount > 0 ? `🏷️ Desconto: ${BRL(q.discount)}` : null,
       `💰 *Total: ${BRL(q.total)}*`,
-      ``,
-      `Status: ${STATUS_LABELS[q.status]}`,
       ``,
       `Entre em contato para confirmar! 🎉`,
     ].filter(Boolean).join('\n');
@@ -537,31 +503,15 @@ export default function QuotesPage() {
             </div>
           </div>
 
-          {/* Status & notes */}
+          {/* Notes */}
           <div className="bg-white rounded-lg shadow p-5">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">Status</label>
-                <select
-                  value={formStatus}
-                  onChange={(e) => setFormStatus(e.target.value as QuoteStatus)}
-                  className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue"
-                >
-                  {Object.entries(STATUS_LABELS).map(([v, l]) => (
-                    <option key={v} value={v}>{l}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">Observações</label>
-                <textarea
-                  value={formNotes}
-                  onChange={(e) => setFormNotes(e.target.value)}
-                  rows={2}
-                  className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
-                />
-              </div>
-            </div>
+            <label className="block text-sm font-medium text-gray-600 mb-1">Observações</label>
+            <textarea
+              value={formNotes}
+              onChange={(e) => setFormNotes(e.target.value)}
+              rows={2}
+              className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
+            />
           </div>
 
           <div className="flex gap-3 justify-end">
@@ -589,9 +539,6 @@ export default function QuotesPage() {
           <div className="flex items-center gap-3">
             <button onClick={() => setView('list')} className="text-gray-500 hover:text-gray-800">← Voltar</button>
             <h2 className="text-xl font-bold">{formatQuoteId(detailQuote.id)}</h2>
-            <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${STATUS_COLORS[detailQuote.status]}`}>
-              {STATUS_LABELS[detailQuote.status]}
-            </span>
           </div>
           <div className="flex gap-2">
             <button onClick={() => openEdit(detailQuote)}
@@ -708,16 +655,6 @@ export default function QuotesPage() {
           placeholder="Buscar por cliente ou ID..."
           className="border rounded px-3 py-2 flex-1 focus:outline-none focus:ring-2 focus:ring-brand-blue"
         />
-        <select
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-          className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue"
-        >
-          <option value="">Todos os status</option>
-          {Object.entries(STATUS_LABELS).map(([v, l]) => (
-            <option key={v} value={v}>{l}</option>
-          ))}
-        </select>
       </div>
 
       {loading ? (
@@ -734,14 +671,13 @@ export default function QuotesPage() {
                   <th className="p-3 text-left text-xs font-semibold text-gray-500 uppercase">Cliente</th>
                   <th className="p-3 text-left text-xs font-semibold text-gray-500 uppercase">Evento</th>
                   <th className="p-3 text-left text-xs font-semibold text-gray-500 uppercase">Total</th>
-                  <th className="p-3 text-left text-xs font-semibold text-gray-500 uppercase">Status</th>
                   <th className="p-3 text-left text-xs font-semibold text-gray-500 uppercase">Ações</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredQuotes.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="p-8 text-center text-gray-400">
+                    <td colSpan={5} className="p-8 text-center text-gray-400">
                       {quotes.length === 0 ? 'Nenhum orçamento ainda. Crie o primeiro!' : 'Nenhum resultado encontrado.'}
                     </td>
                   </tr>
@@ -758,11 +694,6 @@ export default function QuotesPage() {
                         : <span className="text-gray-300">-</span>}
                     </td>
                     <td className="p-3 font-semibold text-sm text-brand-yellow">{BRL(q.total)}</td>
-                    <td className="p-3">
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${STATUS_COLORS[q.status]}`}>
-                        {STATUS_LABELS[q.status]}
-                      </span>
-                    </td>
                     <td className="p-3">
                       <div className="flex gap-1 flex-wrap">
                         <button onClick={() => openDetail(q)}

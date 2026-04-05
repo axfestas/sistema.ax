@@ -19,6 +19,7 @@ interface Publicacao {
   platform: 'instagram' | 'whatsapp' | 'outros';
   publish_date?: string;
   status: 'agendado' | 'publicado';
+  caption?: string;
   notes?: string;
   created_at: number;
 }
@@ -47,6 +48,7 @@ export default function PublicacoesPage() {
     platform: 'instagram',
     publish_date: '',
     status: 'agendado',
+    caption: '',
     notes: '',
   });
 
@@ -85,7 +87,7 @@ export default function PublicacoesPage() {
 
   function openNew() {
     setEditingPub(null);
-    setFormData({ arte_id: '', platform: 'instagram', publish_date: '', status: 'agendado', notes: '' });
+    setFormData({ arte_id: '', platform: 'instagram', publish_date: '', status: 'agendado', caption: '', notes: '' });
     setShowForm(true);
   }
 
@@ -96,6 +98,7 @@ export default function PublicacoesPage() {
       platform: pub.platform,
       publish_date: pub.publish_date || '',
       status: pub.status,
+      caption: pub.caption || '',
       notes: pub.notes || '',
     });
     setShowForm(true);
@@ -284,6 +287,19 @@ export default function PublicacoesPage() {
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">
+                Legenda / Texto para publicação
+              </label>
+              <textarea
+                value={formData.caption}
+                onChange={e => setFormData({ ...formData, caption: e.target.value })}
+                rows={4}
+                className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue resize-none"
+                placeholder="Legenda completa para compartilhar junto com a arte..."
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
                 Observações
               </label>
               <textarea
@@ -362,6 +378,9 @@ export default function PublicacoesPage() {
                         ? '📌 Hoje'
                         : new Date(pub.publish_date + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}
                     </p>
+                  )}
+                  {pub.caption && (
+                    <p className="text-xs text-gray-600 mt-1 line-clamp-2">{pub.caption}</p>
                   )}
                   {pub.notes && (
                     <p className="text-xs text-gray-400 mt-1 line-clamp-1">{pub.notes}</p>

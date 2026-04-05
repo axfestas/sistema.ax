@@ -8,24 +8,9 @@ import { useToast } from '@/hooks/useToast';
 interface Arte {
   id: number;
   title: string;
-  caption?: string;
   image_url?: string;
-  suggested_date?: string;
-  status: 'rascunho' | 'pronta' | 'publicada';
   created_at: number;
 }
-
-const STATUS_LABELS: Record<string, string> = {
-  rascunho: 'Rascunho',
-  pronta: 'Pronta',
-  publicada: 'Publicada',
-};
-
-const STATUS_COLORS: Record<string, string> = {
-  rascunho: 'bg-gray-100 text-gray-600',
-  pronta: 'bg-yellow-100 text-yellow-700',
-  publicada: 'bg-green-100 text-green-700',
-};
 
 export default function ArtesPage() {
   const { showSuccess, showError } = useToast();
@@ -33,24 +18,16 @@ export default function ArtesPage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingArte, setEditingArte] = useState<Arte | null>(null);
-  const [filterStatus, setFilterStatus] = useState('');
-  const [formData, setFormData] = useState({
-    title: '',
-    caption: '',
-    image_url: '',
-    suggested_date: '',
-    status: 'rascunho',
-  });
+  const [formData, setFormData] = useState({ title: '', image_url: '' });
 
   useEffect(() => {
     loadArtes();
-  }, [filterStatus]);
+  }, []);
 
   async function loadArtes() {
     setLoading(true);
     try {
-      const params = filterStatus ? `?status=${filterStatus}` : '';
-      const res = await fetch(`/api/artes${params}`);
+      const res = await fetch('/api/artes');
       if (res.ok) {
         const data = await res.json() as Arte[];
         setArtes(data);
@@ -62,23 +39,15 @@ export default function ArtesPage() {
     }
   }
 
-  const emptyForm = { title: '', caption: '', image_url: '', suggested_date: '', status: 'rascunho' };
-
   function openNew() {
     setEditingArte(null);
-    setFormData(emptyForm);
+    setFormData({ title: '', image_url: '' });
     setShowForm(true);
   }
 
   function openEdit(arte: Arte) {
     setEditingArte(arte);
-    setFormData({
-      title: arte.title,
-      caption: arte.caption || '',
-      image_url: arte.image_url || '',
-      suggested_date: arte.suggested_date || '',
-      status: arte.status,
-    });
+    setFormData({ title: arte.title, image_url: arte.image_url || '' });
     setShowForm(true);
   }
 
@@ -90,10 +59,7 @@ export default function ArtesPage() {
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          id: editingArte?.id,
-        }),
+        body: JSON.stringify({ ...formData, id: editingArte?.id }),
       });
       if (!res.ok) throw new Error();
       showSuccess(editingArte ? 'Arte atualizada!' : 'Arte criada!');
@@ -117,21 +83,6 @@ export default function ArtesPage() {
     }
   }
 
-  async function setStatus(arte: Arte, status: Arte['status']) {
-    try {
-      const res = await fetch(`/api/artes?id=${arte.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...arte, status }),
-      });
-      if (!res.ok) throw new Error();
-      showSuccess(`Status atualizado para "${STATUS_LABELS[status]}"`);
-      loadArtes();
-    } catch {
-      showError('Erro ao atualizar status');
-    }
-  }
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -150,28 +101,6 @@ export default function ArtesPage() {
         </button>
       </div>
 
-      {/* Filter */}
-      <div className="flex gap-2 flex-wrap">
-        {[
-          { value: '', label: 'Todas' },
-          { value: 'rascunho', label: 'Rascunho' },
-          { value: 'pronta', label: 'Pronta' },
-          { value: 'publicada', label: 'Publicada' },
-        ].map(f => (
-          <button
-            key={f.value}
-            onClick={() => setFilterStatus(f.value)}
-            className={`px-4 py-1.5 rounded-full text-sm transition-colors ${
-              filterStatus === f.value
-                ? 'bg-brand-blue text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-          >
-            {f.label}
-          </button>
-        ))}
-      </div>
-
       {/* Form */}
       {showForm && (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -179,57 +108,18 @@ export default function ArtesPage() {
             {editingArte ? 'Editar Arte' : 'Nova Arte'}
           </h3>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  Título *
-                </label>
-                <input
-                  type="text"
-                  value={formData.title}
-                  onChange={e => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
-                  placeholder="Ex: Promoção de Páscoa"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  Data sugerida de postagem
-                </label>
-                <input
-                  type="date"
-                  value={formData.suggested_date}
-                  onChange={e => setFormData({ ...formData, suggested_date: e.target.value })}
-                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
-                />
-              </div>
-            </div>
-
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Legenda / Texto para publicação
+                Título *
               </label>
-              <textarea
-                value={formData.caption}
-                onChange={e => setFormData({ ...formData, caption: e.target.value })}
-                rows={4}
-                className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue resize-none"
-                placeholder="Legenda completa para compartilhar junto com a arte..."
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Status</label>
-              <select
-                value={formData.status}
-                onChange={e => setFormData({ ...formData, status: e.target.value })}
+              <input
+                type="text"
+                value={formData.title}
+                onChange={e => setFormData({ ...formData, title: e.target.value })}
                 className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
-              >
-                <option value="rascunho">Rascunho</option>
-                <option value="pronta">Pronta</option>
-                <option value="publicada">Publicada</option>
-              </select>
+                placeholder="Ex: Promoção de Páscoa"
+                required
+              />
             </div>
 
             <div>
@@ -282,40 +172,11 @@ export default function ArtesPage() {
                 ) : (
                   <span className="text-5xl">🖼️</span>
                 )}
-                <span className={`absolute top-2 right-2 text-xs font-bold px-2 py-0.5 rounded-full ${STATUS_COLORS[arte.status]}`}>
-                  {STATUS_LABELS[arte.status]}
-                </span>
               </div>
 
               {/* Info */}
               <div className="p-4">
-                <h3 className="font-bold text-brand-gray mb-1 line-clamp-1">{arte.title}</h3>
-                {arte.suggested_date && (
-                  <p className="text-xs text-gray-400 mb-1">
-                    📅 {new Date(arte.suggested_date + 'T00:00:00').toLocaleDateString('pt-BR')}
-                  </p>
-                )}
-                {arte.caption && (
-                  <p className="text-xs text-gray-500 line-clamp-2 mb-3">{arte.caption}</p>
-                )}
-
-                {/* Status actions */}
-                <div className="flex gap-1.5 mb-3 flex-wrap">
-                  {(['rascunho', 'pronta', 'publicada'] as const).map(s => (
-                    <button
-                      key={s}
-                      onClick={() => setStatus(arte, s)}
-                      disabled={arte.status === s}
-                      className={`text-xs px-2.5 py-1 rounded-full transition-colors ${
-                        arte.status === s
-                          ? `${STATUS_COLORS[s]} cursor-default`
-                          : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                      }`}
-                    >
-                      {STATUS_LABELS[s]}
-                    </button>
-                  ))}
-                </div>
+                <h3 className="font-bold text-brand-gray mb-3 line-clamp-1">{arte.title}</h3>
 
                 {/* Actions */}
                 <div className="flex gap-2">
