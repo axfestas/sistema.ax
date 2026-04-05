@@ -563,7 +563,7 @@ const MIGRATIONS: { desc: string; sql: string }[] = [
   },
   {
     desc: '037d5: contracts - restore data from backup',
-    sql: `INSERT OR IGNORE INTO contracts (id, client_id, quote_id, event_date, event_location, pickup_date, return_date, items_json, discount, total, payment_method, status, notes, created_at) SELECT id, client_id, quote_id, event_date, event_location, pickup_date, return_date, items_json, discount, total, payment_method, status, notes, created_at FROM contracts_bak`,
+    sql: `INSERT OR IGNORE INTO contracts SELECT * FROM contracts_bak`,
   },
   {
     desc: '037d6: contracts - drop backup table',
