@@ -312,7 +312,7 @@ export default function AnalyticsPage() {
     <div>
       <div className="flex flex-wrap justify-between items-start gap-4 mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Mapa de Acessos</h2>
+          <h2 className="text-2xl font-bold text-gray-900">Analytics</h2>
           <p className="text-gray-500 text-sm mt-1">Visualize o tráfego e comportamento de visitantes no site</p>
         </div>
         <div className="flex items-center gap-2">
