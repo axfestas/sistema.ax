@@ -11,10 +11,11 @@ export const metadata: Metadata = {
   manifest: '/manifest.webmanifest',
   icons: {
     icon: [
-      { url: '/1.png', type: 'image/png', sizes: 'any' },
+      { url: '/favicon.ico', type: 'image/x-icon', sizes: 'any' },
+      { url: '/1.png', type: 'image/png', sizes: '500x500' },
       { url: '/favicon.svg', type: 'image/svg+xml' },
     ],
-    shortcut: '/1.png',
+    shortcut: '/favicon.ico',
     apple: '/1.png',
   },
   openGraph: {
