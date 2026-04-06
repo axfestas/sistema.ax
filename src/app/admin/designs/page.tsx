@@ -96,8 +96,8 @@ export default function DesignsPage() {
     try {
       const method = editingDesign ? 'PUT' : 'POST';
       const body = editingDesign 
-        ? { ...formData, id: editingDesign.id, price: parseFloat(formData.price), quantidade_cartela: parseInt(formData.quantidade_cartela) || 0, show_in_catalog: formData.show_in_catalog ? 1 : 0, original_price: formData.original_price ? parseFloat(formData.original_price) : null }
-        : { ...formData, price: parseFloat(formData.price), quantidade_cartela: parseInt(formData.quantidade_cartela) || 0, show_in_catalog: formData.show_in_catalog ? 1 : 0, original_price: formData.original_price ? parseFloat(formData.original_price) : null };
+        ? { ...formData, id: editingDesign.id, price: parseFloat(formData.price), quantidade_cartela: parseInt(formData.quantidade_cartela) || 0, show_in_catalog: formData.show_in_catalog ? 1 : 0, is_featured: formData.is_featured, is_promotion: formData.is_promotion, original_price: formData.original_price ? parseFloat(formData.original_price) : null }
+        : { ...formData, price: parseFloat(formData.price), quantidade_cartela: parseInt(formData.quantidade_cartela) || 0, show_in_catalog: formData.show_in_catalog ? 1 : 0, is_featured: formData.is_featured, is_promotion: formData.is_promotion, original_price: formData.original_price ? parseFloat(formData.original_price) : null };
 
       const res = await fetch('/api/designs', {
         method,

@@ -80,8 +80,8 @@ export default function ThemesPage() {
     try {
       const method = editingTheme ? 'PUT' : 'POST';
       const body = editingTheme
-        ? { ...formData, id: editingTheme.id, show_in_catalog: formData.show_in_catalog ? 1 : 0 }
-        : { ...formData, show_in_catalog: formData.show_in_catalog ? 1 : 0 };
+        ? { ...formData, id: editingTheme.id, show_in_catalog: formData.show_in_catalog ? 1 : 0, is_featured: formData.is_featured }
+        : { ...formData, show_in_catalog: formData.show_in_catalog ? 1 : 0, is_featured: formData.is_featured };
       const res = await fetch('/api/themes', {
         method,
         headers: { 'Content-Type': 'application/json' },

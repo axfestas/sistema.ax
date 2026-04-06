@@ -96,8 +96,8 @@ export default function SweetsPage() {
     try {
       const method = editingSweet ? 'PUT' : 'POST';
       const body = editingSweet 
-        ? { ...formData, id: editingSweet.id, price: parseFloat(formData.price), quantity: parseInt(formData.quantity), show_in_catalog: formData.show_in_catalog ? 1 : 0, original_price: formData.original_price ? parseFloat(formData.original_price) : null }
-        : { ...formData, price: parseFloat(formData.price), quantity: parseInt(formData.quantity), show_in_catalog: formData.show_in_catalog ? 1 : 0, original_price: formData.original_price ? parseFloat(formData.original_price) : null };
+        ? { ...formData, id: editingSweet.id, price: parseFloat(formData.price), quantity: parseInt(formData.quantity), show_in_catalog: formData.show_in_catalog ? 1 : 0, is_featured: formData.is_featured, is_promotion: formData.is_promotion, original_price: formData.original_price ? parseFloat(formData.original_price) : null }
+        : { ...formData, price: parseFloat(formData.price), quantity: parseInt(formData.quantity), show_in_catalog: formData.show_in_catalog ? 1 : 0, is_featured: formData.is_featured, is_promotion: formData.is_promotion, original_price: formData.original_price ? parseFloat(formData.original_price) : null };
 
       const res = await fetch('/api/sweets', {
         method,
