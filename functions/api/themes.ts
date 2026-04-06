@@ -21,6 +21,7 @@ export interface Theme {
   category?: string;
   is_active: number;
   show_in_catalog: number;
+  is_featured?: number;
   created_at: number;
 }
 
@@ -30,6 +31,7 @@ export interface ThemeInput {
   image_url?: string;
   category?: string;
   show_in_catalog?: number;
+  is_featured?: number;
 }
 
 // GET: List all themes
@@ -83,15 +85,16 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
     const result = await db
       .prepare(`
-        INSERT INTO themes (name, description, image_url, category, show_in_catalog)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO themes (name, description, image_url, category, show_in_catalog, is_featured)
+        VALUES (?, ?, ?, ?, ?, ?)
       `)
       .bind(
         body.name,
         body.description || null,
         body.image_url || null,
         body.category || null,
-        body.show_in_catalog !== undefined ? body.show_in_catalog : 1
+        body.show_in_catalog !== undefined ? body.show_in_catalog : 1,
+        body.is_featured !== undefined ? body.is_featured : 0
       )
       .run();
 
@@ -140,7 +143,7 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
       .prepare(`
         UPDATE themes
         SET name = ?, description = ?,
-            image_url = ?, category = ?, show_in_catalog = ?
+            image_url = ?, category = ?, show_in_catalog = ?, is_featured = ?
         WHERE id = ?
       `)
       .bind(
@@ -149,6 +152,7 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
         body.image_url || null,
         body.category || null,
         body.show_in_catalog,
+        body.is_featured !== undefined ? body.is_featured : 0,
         body.id
       )
       .run();
