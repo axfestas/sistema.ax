@@ -502,6 +502,23 @@ export default function Home() {
     featuredCarouselRef.current?.scrollBy({ left: dir === 'right' ? 300 : -300, behavior: 'smooth' })
   }
 
+  // Tab-specific featured/promo carousels (Doces, Design, Temas)
+  const tabFeaturedRef = useRef<HTMLDivElement>(null)
+  const tabPromoRef = useRef<HTMLDivElement>(null)
+
+  const showTabSubSections = (catalogTab === 'sweet' || catalogTab === 'design' || catalogTab === 'theme') && !catalogSearch
+  const tabFeaturedItems = showTabSubSections ? catalogItems.filter(i => i.type === catalogTab && i.is_featured === 1) : []
+  const tabPromoItems = (catalogTab === 'sweet' || catalogTab === 'design') && !catalogSearch
+    ? catalogItems.filter(i => i.type === catalogTab && i.is_promotion === 1 && i.original_price != null && i.original_price > i.price)
+    : []
+
+  const scrollTabFeatured = (dir: 'left' | 'right') => {
+    tabFeaturedRef.current?.scrollBy({ left: dir === 'right' ? 300 : -300, behavior: 'smooth' })
+  }
+  const scrollTabPromo = (dir: 'left' | 'right') => {
+    tabPromoRef.current?.scrollBy({ left: dir === 'right' ? 300 : -300, behavior: 'smooth' })
+  }
+
   const displayedPortfolio = portfolioImages.slice(0, portfolioLimit)
   const hasMorePortfolio = portfolioImages.length > portfolioLimit
 
@@ -613,13 +630,74 @@ export default function Home() {
             ))}
           </div>
 
+          {/* ── Tab-specific sub-sections (Doces, Design, Temas) ─────── */}
+          {!loadingCatalog && showTabSubSections && tabFeaturedItems.length > 0 && (
+            <div className="mb-10">
+              <div className="flex items-center gap-2 mb-5">
+                <h3 className="text-xl font-extrabold text-gray-900">⭐ Em destaque</h3>
+              </div>
+              <div className="relative">
+                <button onClick={() => scrollTabFeatured('left')}
+                  className="hidden md:flex absolute -left-4 top-1/2 -translate-y-1/2 z-10 w-9 h-9 bg-white rounded-full shadow-md items-center justify-center hover:bg-gray-50 transition text-lg leading-none">
+                  ‹
+                </button>
+                <div
+                  ref={tabFeaturedRef}
+                  className="flex gap-4 overflow-x-auto pb-2 scroll-smooth snap-x snap-mandatory"
+                  style={{ scrollbarWidth: 'none' }}
+                >
+                  {tabFeaturedItems.map(item => (
+                    <div key={`tf-${item.type}-${item.id}`} className="snap-start flex-shrink-0 w-48 sm:w-56 self-stretch">
+                      <ProductCard item={item} />
+                    </div>
+                  ))}
+                </div>
+                <button onClick={() => scrollTabFeatured('right')}
+                  className="hidden md:flex absolute -right-4 top-1/2 -translate-y-1/2 z-10 w-9 h-9 bg-white rounded-full shadow-md items-center justify-center hover:bg-gray-50 transition text-lg leading-none">
+                  ›
+                </button>
+              </div>
+              <hr className="mt-8 border-gray-100" />
+            </div>
+          )}
+
+          {!loadingCatalog && tabPromoItems.length > 0 && (
+            <div className="mb-10">
+              <div className="flex items-center gap-2 mb-5">
+                <h3 className="text-xl font-extrabold text-gray-900">🏷️ Em promoção</h3>
+              </div>
+              <div className="relative">
+                <button onClick={() => scrollTabPromo('left')}
+                  className="hidden md:flex absolute -left-4 top-1/2 -translate-y-1/2 z-10 w-9 h-9 bg-white rounded-full shadow-md items-center justify-center hover:bg-gray-50 transition text-lg leading-none">
+                  ‹
+                </button>
+                <div
+                  ref={tabPromoRef}
+                  className="flex gap-4 overflow-x-auto pb-2 scroll-smooth snap-x snap-mandatory"
+                  style={{ scrollbarWidth: 'none' }}
+                >
+                  {tabPromoItems.map(item => (
+                    <div key={`tp-${item.type}-${item.id}`} className="snap-start flex-shrink-0 w-48 sm:w-56 self-stretch">
+                      <ProductCard item={item} />
+                    </div>
+                  ))}
+                </div>
+                <button onClick={() => scrollTabPromo('right')}
+                  className="hidden md:flex absolute -right-4 top-1/2 -translate-y-1/2 z-10 w-9 h-9 bg-white rounded-full shadow-md items-center justify-center hover:bg-gray-50 transition text-lg leading-none">
+                  ›
+                </button>
+              </div>
+              <hr className="mt-8 border-gray-100" />
+            </div>
+          )}
+
           {loadingCatalog ? (
             <div className="text-center py-12">
               <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-brand-yellow" />
             </div>
           ) : filteredCatalog.length === 0 ? (
             <div className="text-center py-12 text-gray-400">
-              <p className="text-5xl mb-4">��</p>
+              <p className="text-5xl mb-4">😕</p>
               <p>Nenhum produto encontrado nesta categoria</p>
             </div>
           ) : (
