@@ -23,6 +23,9 @@ export interface Design {
   quantidade_cartela?: number;
   is_active: number;
   show_in_catalog: number;
+  is_featured?: number;
+  is_promotion?: number;
+  original_price?: number;
   created_at: number;
 }
 
@@ -34,6 +37,9 @@ export interface DesignInput {
   category?: string;
   quantidade_cartela?: number;
   show_in_catalog?: number;
+  is_featured?: number;
+  is_promotion?: number;
+  original_price?: number;
 }
 
 // GET: List all designs
@@ -103,8 +109,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     // Insert new design
     const result = await db
       .prepare(`
-        INSERT INTO designs (name, description, price, image_url, category, quantidade_cartela, show_in_catalog)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO designs (name, description, price, image_url, category, quantidade_cartela, show_in_catalog, is_featured, is_promotion, original_price)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `)
       .bind(
         body.name,
@@ -113,7 +119,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         body.image_url || null,
         body.category || null,
         body.quantidade_cartela !== undefined ? body.quantidade_cartela : 0,
-        body.show_in_catalog !== undefined ? body.show_in_catalog : 1
+        body.show_in_catalog !== undefined ? body.show_in_catalog : 1,
+        body.is_featured !== undefined ? body.is_featured : 0,
+        body.is_promotion !== undefined ? body.is_promotion : 0,
+        body.original_price ?? null
       )
       .run();
 
@@ -164,7 +173,8 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
       .prepare(`
         UPDATE designs 
         SET name = ?, description = ?, price = ?, image_url = ?, 
-            category = ?, quantidade_cartela = ?, show_in_catalog = ?
+            category = ?, quantidade_cartela = ?, show_in_catalog = ?,
+            is_featured = ?, is_promotion = ?, original_price = ?
         WHERE id = ?
       `)
       .bind(
@@ -175,6 +185,9 @@ export const onRequestPut: PagesFunction<Env> = async (context) => {
         body.category || null,
         body.quantidade_cartela !== undefined ? body.quantidade_cartela : 0,
         body.show_in_catalog,
+        body.is_featured !== undefined ? body.is_featured : 0,
+        body.is_promotion !== undefined ? body.is_promotion : 0,
+        body.original_price ?? null,
         body.id
       )
       .run();

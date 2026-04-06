@@ -13,6 +13,7 @@ interface Theme {
   category?: string;
   is_active: number;
   show_in_catalog: number;
+  is_featured?: number;
   created_at: number;
 }
 
@@ -22,6 +23,7 @@ interface FormData {
   image_url: string;
   category: string;
   show_in_catalog: boolean;
+  is_featured: number;
 }
 
 export default function ThemesPage() {
@@ -38,6 +40,7 @@ export default function ThemesPage() {
     image_url: '',
     category: '',
     show_in_catalog: true,
+    is_featured: 0,
   });
 
   useEffect(() => {
@@ -77,9 +80,8 @@ export default function ThemesPage() {
     try {
       const method = editingTheme ? 'PUT' : 'POST';
       const body = editingTheme
-        ? { ...formData, id: editingTheme.id, show_in_catalog: formData.show_in_catalog ? 1 : 0 }
-        : { ...formData, show_in_catalog: formData.show_in_catalog ? 1 : 0 };
-
+        ? { ...formData, id: editingTheme.id, show_in_catalog: formData.show_in_catalog ? 1 : 0, is_featured: formData.is_featured }
+        : { ...formData, show_in_catalog: formData.show_in_catalog ? 1 : 0, is_featured: formData.is_featured };
       const res = await fetch('/api/themes', {
         method,
         headers: { 'Content-Type': 'application/json' },
@@ -104,6 +106,7 @@ export default function ThemesPage() {
       image_url: '',
       category: '',
       show_in_catalog: true,
+      is_featured: 0,
     });
   }
 
@@ -115,6 +118,7 @@ export default function ThemesPage() {
       image_url: theme.image_url || '',
       category: theme.category || '',
       show_in_catalog: theme.show_in_catalog === 1,
+      is_featured: theme.is_featured ?? 0,
     });
     setShowForm(true);
   }
@@ -313,6 +317,18 @@ export default function ThemesPage() {
                       className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
                     <span className="text-sm font-medium">Exibir no Catálogo</span>
+                  </label>
+                </div>
+                <div className="flex items-center p-3 bg-yellow-50 rounded">
+                  <input
+                    type="checkbox"
+                    id="theme_is_featured"
+                    checked={formData.is_featured === 1}
+                    onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked ? 1 : 0 })}
+                    className="mr-3 w-4 h-4"
+                  />
+                  <label htmlFor="theme_is_featured" className="text-sm font-semibold text-yellow-900 cursor-pointer">
+                    ⭐ Em destaque
                   </label>
                 </div>
               </div>

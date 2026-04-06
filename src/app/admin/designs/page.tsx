@@ -15,6 +15,9 @@ interface Design {
   quantidade_cartela?: number;
   is_active: number;
   show_in_catalog: number;
+  is_featured?: number;
+  is_promotion?: number;
+  original_price?: number;
   created_at: number;
 }
 
@@ -26,6 +29,9 @@ interface FormData {
   category: string;
   quantidade_cartela: string;
   show_in_catalog: boolean;
+  is_featured: number;
+  is_promotion: number;
+  original_price: string;
 }
 
 export default function DesignsPage() {
@@ -44,6 +50,9 @@ export default function DesignsPage() {
     category: '',
     quantidade_cartela: '',
     show_in_catalog: true,
+    is_featured: 0,
+    is_promotion: 0,
+    original_price: '',
   });
 
   useEffect(() => {
@@ -87,8 +96,8 @@ export default function DesignsPage() {
     try {
       const method = editingDesign ? 'PUT' : 'POST';
       const body = editingDesign 
-        ? { ...formData, id: editingDesign.id, price: parseFloat(formData.price), quantidade_cartela: parseInt(formData.quantidade_cartela) || 0, show_in_catalog: formData.show_in_catalog ? 1 : 0 }
-        : { ...formData, price: parseFloat(formData.price), quantidade_cartela: parseInt(formData.quantidade_cartela) || 0, show_in_catalog: formData.show_in_catalog ? 1 : 0 };
+        ? { ...formData, id: editingDesign.id, price: parseFloat(formData.price), quantidade_cartela: parseInt(formData.quantidade_cartela) || 0, show_in_catalog: formData.show_in_catalog ? 1 : 0, is_featured: formData.is_featured, is_promotion: formData.is_promotion, original_price: formData.original_price ? parseFloat(formData.original_price) : null }
+        : { ...formData, price: parseFloat(formData.price), quantidade_cartela: parseInt(formData.quantidade_cartela) || 0, show_in_catalog: formData.show_in_catalog ? 1 : 0, is_featured: formData.is_featured, is_promotion: formData.is_promotion, original_price: formData.original_price ? parseFloat(formData.original_price) : null };
 
       const res = await fetch('/api/designs', {
         method,
@@ -120,6 +129,9 @@ export default function DesignsPage() {
       category: '',
       quantidade_cartela: '',
       show_in_catalog: true,
+      is_featured: 0,
+      is_promotion: 0,
+      original_price: '',
     });
   }
 
@@ -133,6 +145,9 @@ export default function DesignsPage() {
       category: design.category || '',
       quantidade_cartela: (design.quantidade_cartela || 0).toString(),
       show_in_catalog: design.show_in_catalog === 1,
+      is_featured: design.is_featured ?? 0,
+      is_promotion: design.is_promotion ?? 0,
+      original_price: design.original_price ? design.original_price.toString() : '',
     });
     setShowForm(true);
   }
@@ -369,6 +384,43 @@ export default function DesignsPage() {
                     />
                     <span className="text-sm font-medium">Exibir no Catálogo</span>
                   </label>
+                </div>
+                <div className="col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="flex items-center p-3 bg-yellow-50 rounded">
+                    <input
+                      type="checkbox"
+                      id="design_is_featured"
+                      checked={formData.is_featured === 1}
+                      onChange={(e) => setFormData({...formData, is_featured: e.target.checked ? 1 : 0})}
+                      className="mr-3 w-4 h-4"
+                    />
+                    <label htmlFor="design_is_featured" className="text-sm font-semibold text-yellow-900 cursor-pointer">
+                      ⭐ Em destaque
+                    </label>
+                  </div>
+                  <div className="flex items-center p-3 bg-blue-50 rounded">
+                    <input
+                      type="checkbox"
+                      id="design_is_promotion"
+                      checked={formData.is_promotion === 1}
+                      onChange={(e) => setFormData({...formData, is_promotion: e.target.checked ? 1 : 0})}
+                      className="mr-3 w-4 h-4"
+                    />
+                    <label htmlFor="design_is_promotion" className="text-sm font-semibold text-blue-900 cursor-pointer">
+                      🏷️ Em promoção
+                    </label>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Preço original (antes da promoção)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={formData.original_price}
+                      onChange={(e) => setFormData({...formData, original_price: e.target.value})}
+                      className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Ex: 150.00"
+                    />
+                  </div>
                 </div>
               </div>
               <div className="flex gap-3 justify-end pt-4">
