@@ -94,10 +94,12 @@ function GeralTab({ days }: { days: number }) {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const [ov, dy] = await Promise.all([
-        fetch(`/api/analytics?type=overview&days=${days}`).then(r => r.json()),
-        fetch(`/api/analytics?type=daily&days=${days}`).then(r => r.json()),
+      const [ovRes, dyRes] = await Promise.all([
+        fetch(`/api/analytics?type=overview&days=${days}`),
+        fetch(`/api/analytics?type=daily&days=${days}`),
       ])
+      if (!ovRes.ok || !dyRes.ok) throw new Error('API error')
+      const [ov, dy] = await Promise.all([ovRes.json(), dyRes.json()])
       setOverview(ov as OverviewData)
       setDaily(Array.isArray(dy) ? (dy as DailyEntry[]) : [])
     } catch {
@@ -179,6 +181,7 @@ function SessoesTab({ days }: { days: number }) {
     setLoading(true)
     try {
       const res = await fetch(`/api/analytics?type=sessions&days=${days}`)
+      if (!res.ok) throw new Error('API error')
       const json = await res.json()
       setData(json as SessionsData)
     } catch {
@@ -243,6 +246,7 @@ function ProdutosTab({ days }: { days: number }) {
     setLoading(true)
     try {
       const res = await fetch(`/api/analytics?type=products&days=${days}`)
+      if (!res.ok) throw new Error('API error')
       const json = await res.json()
       setData(Array.isArray(json) ? (json as ProductEntry[]) : [])
     } catch {
