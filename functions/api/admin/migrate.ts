@@ -585,6 +585,29 @@ const MIGRATIONS: { desc: string; sql: string }[] = [
     desc: '037f: quotes - recreate idx_quotes_status',
     sql: `CREATE INDEX IF NOT EXISTS idx_quotes_status ON quotes(status)`,
   },
+  // 038 – analytics / page_views table
+  {
+    desc: '038: page_views table',
+    sql: `CREATE TABLE IF NOT EXISTS page_views (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      path TEXT NOT NULL,
+      referrer TEXT,
+      session_id TEXT,
+      created_at INTEGER DEFAULT (strftime('%s', 'now'))
+    )`,
+  },
+  {
+    desc: '038: idx_page_views_path',
+    sql: `CREATE INDEX IF NOT EXISTS idx_page_views_path ON page_views(path)`,
+  },
+  {
+    desc: '038: idx_page_views_created_at',
+    sql: `CREATE INDEX IF NOT EXISTS idx_page_views_created_at ON page_views(created_at)`,
+  },
+  {
+    desc: '038: idx_page_views_session_id',
+    sql: `CREATE INDEX IF NOT EXISTS idx_page_views_session_id ON page_views(session_id)`,
+  },
 ];
 
 export const onRequestPost: PagesFunction<Env> = async (context) => {
