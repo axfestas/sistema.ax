@@ -385,7 +385,7 @@ async function uploadToOneDrive(
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       },
-      body: docxBytes.buffer as ArrayBuffer,
+      body: docxBytes.buffer.slice(docxBytes.byteOffset, docxBytes.byteOffset + docxBytes.byteLength) as ArrayBuffer,
     },
   );
 
@@ -456,7 +456,14 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   try {
     const docxBytes = buildDocx(row);
     const token = await getMsToken(MS_CLIENT_ID, MS_CLIENT_SECRET, MS_TENANT_ID);
-    const filename = `Contrato-${String(row.id).padStart(5, '0')}-${row.client_name.replace(/[^a-zA-Z0-9]/g, '_')}.docx`;
+    const safeName = row.client_name
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9\s-]/g, '')
+      .trim()
+      .replace(/\s+/g, '_')
+      .slice(0, 40);
+    const filename = `Contrato-${String(row.id).padStart(5, '0')}-${safeName || 'cliente'}.docx`;
     const item = await uploadToOneDrive(token, MS_ONEDRIVE_USER, filename, docxBytes);
     const url = await createEditLink(token, MS_ONEDRIVE_USER, item.id);
 

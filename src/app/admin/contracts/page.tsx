@@ -151,7 +151,7 @@ function fmtDate(iso?: string) {
 /*
 function printContract_DISABLED(ct: Contract, clauses: ContractClause[] = DEFAULT_CLAUSES, locador: LocadorSettings = DEFAULT_LOCADOR) {
   let items: ContractItem[] = [];
-  try { items = JSON.parse(ct.items_json) as ContractItem[]; } catch { }
+  try { items = JSON.parse(ct.items_json) as ContractItem[]; } catch (_e) { items = []; }
 
   const paymentLabel = PAYMENT_METHODS.find((p) => p.value === ct.payment_method)?.label ?? ct.payment_method ?? '';
   const logoUrl = `${window.location.origin}/1.png`;
