@@ -385,7 +385,7 @@ function printContract(ct: Contract, clauses: ContractClause[] = DEFAULT_CLAUSES
     <div class="tb-sub">${formatContractId(ct.id)}${ct.event_date ? ' · Evento: ' + fmtDate(ct.event_date) : ''}</div>
   </div>
   <button class="btn-print" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
-  <button class="btn-close" onclick="window.close()">✕ Fechar</button>
+  <button class="btn-close" onclick="window.close()" aria-label="Fechar janela">✕ Fechar</button>
 </div>
 
 <div id="page-area">
@@ -455,7 +455,7 @@ function printContract(ct: Contract, clauses: ContractClause[] = DEFAULT_CLAUSES
     <div class="totals-block">
       ${ct.discount > 0 ? `
       <div class="trow"><span>Subtotal:</span><span class="tval">${BRL(subtotal)}</span></div>
-      <div class="trow"><span>Desconto:</span><span class="tval">&#8722;&nbsp;${BRL(ct.discount)}</span></div>` : ''}
+      <div class="trow"><span>Desconto:</span><span class="tval">-&nbsp;${BRL(ct.discount)}</span></div>` : ''}
       <div class="trow grand"><span>TOTAL:</span><span class="tval">${BRL(ct.total)}</span></div>
     </div>
   </div>
