@@ -165,6 +165,7 @@ function printContract(ct: Contract, clauses: ContractClause[] = DEFAULT_CLAUSES
 
   const paymentLabel = PAYMENT_METHODS.find((p) => p.value === ct.payment_method)?.label ?? ct.payment_method ?? '';
   const logoUrl = `${window.location.origin}/1.png`;
+  const subtotal = items.reduce((s, i) => s + i.total, 0);
 
   const clauseParagraphs = (content: string) =>
     content.split('\n').map(p => p.trim()).filter(Boolean).map(p => `<p>${p}</p>`).join('');
@@ -172,119 +173,326 @@ function printContract(ct: Contract, clauses: ContractClause[] = DEFAULT_CLAUSES
   const clause01 = clauses.find(c => c.id === '01') ?? DEFAULT_CLAUSES[0];
   const otherClauses = clauses.filter(c => c.id !== '01');
 
-  const html = `<!DOCTYPE html><html lang="pt-BR"><head>
+  const hasEventInfo = ct.event_date || ct.event_location || ct.pickup_date || ct.return_date || paymentLabel;
+
+  const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
 <meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Contrato ${formatContractId(ct.id)}</title>
 <style>
-  * { box-sizing: border-box; }
-  body { font-family: Arial, sans-serif; font-size: 12px; margin: 0; padding: 30px 35px; color: #1a1a1a; }
-  .logo-block { text-align: center; margin-bottom: 8px; }
-  .logo-block img { height: 60px; width: auto; }
-  h1 { text-align: center; font-size: 16px; font-weight: bold; text-transform: uppercase; margin: 0 0 6px; letter-spacing: 1px; }
-  .contract-id { text-align: center; font-size: 11px; color: #555; margin-bottom: 20px; }
-  .party-block { margin-bottom: 16px; border: 1px solid #ccc; border-radius: 4px; }
-  .party-block .party-title { background: #f0f0f0; font-weight: bold; font-size: 12px; padding: 5px 10px; border-bottom: 1px solid #ccc; text-transform: uppercase; border-radius: 4px 4px 0 0; }
-  .party-grid { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; padding: 8px 10px; font-size: 11.5px; }
-  .party-grid .label { font-weight: bold; color: #333; white-space: nowrap; }
-  .clause { margin-bottom: 14px; }
-  .clause-title { font-weight: bold; font-size: 12px; text-transform: uppercase; margin-bottom: 6px; border-bottom: 1px solid #bbb; padding-bottom: 3px; }
-  .clause p { margin: 4px 0; font-size: 11.5px; line-height: 1.6; }
-  table.items { width: 100%; border-collapse: collapse; font-size: 11.5px; margin-bottom: 6px; }
-  table.items th { background: #f0f0f0; padding: 5px 8px; text-align: left; border: 1px solid #ccc; font-size: 11px; font-weight: bold; }
-  table.items td { padding: 5px 8px; border: 1px solid #ddd; vertical-align: top; }
-  table.items .center { text-align: center; }
-  table.items .right { text-align: right; }
-  .totals-row { display: flex; justify-content: flex-end; gap: 30px; font-size: 12px; margin-top: 6px; }
-  .totals-row .total-final { font-weight: bold; font-size: 13px; }
-  .signature-block { margin-top: 50px; display: grid; grid-template-columns: 1fr 1fr; gap: 50px; }
-  .sign-box { text-align: center; }
-  .sign-box .sign-line { border-top: 1px solid #333; margin-bottom: 5px; }
-  .sign-box .sign-label { font-size: 11px; }
+  /* ── Reset ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ── App shell — Google Docs style ── */
+  body {
+    background: #525659;
+    font-family: Arial, Helvetica, sans-serif;
+    padding-top: 56px;
+    min-height: 100vh;
+  }
+
+  /* ── Top toolbar ── */
+  #toolbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 56px;
+    background: #404040;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 14px;
+    z-index: 9999;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  }
+  #toolbar .tb-icon { font-size: 22px; line-height: 1; }
+  #toolbar .tb-info { flex: 1; overflow: hidden; }
+  #toolbar .tb-title { color: #fff; font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #toolbar .tb-sub { color: #aaa; font-size: 11px; margin-top: 1px; }
+  #toolbar .btn-print {
+    background: #1a73e8;
+    color: #fff;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.15s;
+  }
+  #toolbar .btn-print:hover { background: #1558b0; }
+  #toolbar .btn-close {
+    background: transparent;
+    color: #bbb;
+    border: 1px solid #666;
+    padding: 7px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background 0.15s, color 0.15s;
+  }
+  #toolbar .btn-close:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+  /* ── Page area ── */
+  #page-area {
+    padding: 32px 24px 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* ── White A4 paper ── */
+  .page {
+    width: 794px;
+    min-height: 1122px;
+    background: #fff;
+    padding: 68px 80px 72px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.25);
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 11pt;
+    color: #111;
+    line-height: 1.5;
+  }
+
+  /* ── Document header ── */
+  .doc-header {
+    text-align: center;
+    padding-bottom: 16px;
+    margin-bottom: 22px;
+    border-bottom: 2px solid #111;
+  }
+  .doc-header img { height: 64px; width: auto; display: block; margin: 0 auto 10px; }
+  .doc-header .doc-title {
+    font-size: 15pt;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    margin-bottom: 4px;
+  }
+  .doc-header .doc-id { font-size: 10pt; color: #555; }
+
+  /* ── Party boxes ── */
+  .parties { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .party-box { border: 1px solid #999; }
+  .party-box.full { grid-column: 1 / -1; }
+  .party-header {
+    background: #e6e6e6;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: bold;
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding: 5px 10px;
+    border-bottom: 1px solid #999;
+    color: #333;
+  }
+  .party-body { padding: 7px 10px; }
+  .prow { display: flex; gap: 6px; margin-bottom: 3px; font-size: 9.5pt; line-height: 1.4; }
+  .prow:last-child { margin-bottom: 0; }
+  .plabel { font-weight: bold; white-space: nowrap; min-width: 120px; color: #333; }
+  .event-grid { display: grid; grid-template-columns: 1fr 1fr; }
+
+  /* ── Section spacer ── */
+  .spacer { margin-bottom: 20px; }
+
+  /* ── Clauses ── */
+  .clause { margin-bottom: 18px; page-break-inside: avoid; }
+  .clause-title {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10pt;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 7px;
+    padding-bottom: 3px;
+    border-bottom: 1px solid #ccc;
+    color: #111;
+  }
+  .clause p { font-size: 10.5pt; line-height: 1.65; margin-bottom: 4px; text-align: justify; }
+
+  /* ── Items table ── */
+  table.items {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 8px;
+    font-size: 10pt;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  table.items thead tr { background: #e6e6e6; }
+  table.items th {
+    padding: 6px 9px;
+    border: 1px solid #999;
+    font-weight: bold;
+    font-size: 9pt;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  table.items td { padding: 6px 9px; border: 1px solid #ccc; vertical-align: top; }
+  table.items tbody tr:nth-child(even) td { background: #f7f7f7; }
+  .tc { text-align: center; }
+  .tr { text-align: right; }
+
+  /* ── Totals ── */
+  .totals-block {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 3px;
+    margin-top: 6px;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  .trow { display: flex; gap: 24px; font-size: 10pt; color: #444; }
+  .tval { min-width: 110px; text-align: right; }
+  .trow.grand {
+    font-weight: bold;
+    font-size: 11.5pt;
+    color: #111;
+    border-top: 2px solid #333;
+    padding-top: 4px;
+    margin-top: 3px;
+  }
+
+  /* ── Signature ── */
+  .sig-section { margin-top: 56px; page-break-inside: avoid; }
+  .sig-date { font-size: 10pt; margin-bottom: 44px; }
+  .sig-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; }
+  .sig-box { text-align: center; }
+  .sig-line { border-top: 1px solid #111; margin-bottom: 6px; }
+  .sig-name { font-size: 10.5pt; font-weight: bold; }
+  .sig-role { font-size: 9.5pt; color: #555; }
+  .sig-cpf { font-size: 9pt; color: #666; margin-top: 1px; }
+
+  /* ── Print overrides ── */
   @media print {
-    body { padding: 15px 20px; }
-    button { display: none !important; }
+    body { background: #fff; padding-top: 0; }
+    #toolbar { display: none !important; }
+    #page-area { padding: 0; }
+    .page { width: 100%; min-height: auto; box-shadow: none; padding: 18mm 22mm; }
   }
 </style>
-</head><body>
+</head>
+<body>
 
-<div class="logo-block">
-  <img src="${logoUrl}" onerror="this.style.display='none'" alt="Ax Festas" />
-</div>
-<h1>Contrato de Locação</h1>
-<div class="contract-id">Contrato Nº ${formatContractId(ct.id)}</div>
-
-<div class="party-block">
-  <div class="party-title">Locador(a/e)</div>
-  <div class="party-grid">
-    <span class="label">Nome</span><span>${locador.locador_name}</span>
-    <span class="label">CNPJ/CPF</span><span>${locador.locador_cpf}</span>
-    <span class="label">Endereço</span><span>${locador.locador_address}</span>
+<div id="toolbar">
+  <span class="tb-icon">📄</span>
+  <div class="tb-info">
+    <div class="tb-title">Contrato de Locação — ${ct.client_name}</div>
+    <div class="tb-sub">${formatContractId(ct.id)}${ct.event_date ? ' · Evento: ' + fmtDate(ct.event_date) : ''}</div>
   </div>
+  <button class="btn-print" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
+  <button class="btn-close" onclick="window.close()">✕ Fechar</button>
 </div>
 
-<div class="party-block">
-  <div class="party-title">Locatário(a/e)</div>
-  <div class="party-grid">
-    <span class="label">Nome</span><span>${ct.client_name}</span>
-    ${ct.client_cpf ? `<span class="label">CNPJ/CPF</span><span>${ct.client_cpf}</span>` : ''}
-    <span class="label">Telefone</span><span>${ct.client_phone}</span>
-    ${ct.client_email ? `<span class="label">E-mail</span><span>${ct.client_email}</span>` : ''}
-    ${ct.client_address ? `<span class="label">Endereço</span><span>${ct.client_address}${ct.client_city ? ', ' + ct.client_city : ''}${ct.client_state ? ' - ' + ct.client_state : ''}</span>` : ''}
-    ${ct.event_location ? `<span class="label">Local</span><span>${ct.event_location}</span>` : ''}
-    ${ct.pickup_date ? `<span class="label">Data Retirada</span><span>${fmtDate(ct.pickup_date)}</span>` : ''}
-    ${ct.return_date ? `<span class="label">Data Entrega</span><span>${fmtDate(ct.return_date)}</span>` : ''}
-    ${paymentLabel ? `<span class="label">Forma de Pagamento</span><span>${paymentLabel}</span>` : ''}
+<div id="page-area">
+<div class="page">
+
+  <div class="doc-header">
+    <img src="${logoUrl}" onerror="this.style.display='none'" alt="Ax Festas"/>
+    <div class="doc-title">Contrato de Locação</div>
+    <div class="doc-id">Nº ${formatContractId(ct.id)}</div>
   </div>
+
+  <div class="parties">
+    <div class="party-box">
+      <div class="party-header">Locador(a/e)</div>
+      <div class="party-body">
+        <div class="prow"><span class="plabel">Nome:</span><span>${locador.locador_name}</span></div>
+        <div class="prow"><span class="plabel">CNPJ/CPF:</span><span>${locador.locador_cpf}</span></div>
+        <div class="prow"><span class="plabel">Endereço:</span><span>${locador.locador_address}</span></div>
+      </div>
+    </div>
+    <div class="party-box">
+      <div class="party-header">Locatário(a/e)</div>
+      <div class="party-body">
+        <div class="prow"><span class="plabel">Nome:</span><span>${ct.client_name}</span></div>
+        ${ct.client_cpf ? `<div class="prow"><span class="plabel">CNPJ/CPF:</span><span>${ct.client_cpf}</span></div>` : ''}
+        <div class="prow"><span class="plabel">Telefone:</span><span>${ct.client_phone}</span></div>
+        ${ct.client_email ? `<div class="prow"><span class="plabel">E-mail:</span><span>${ct.client_email}</span></div>` : ''}
+        ${ct.client_address ? `<div class="prow"><span class="plabel">Endereço:</span><span>${ct.client_address}${ct.client_city ? ', ' + ct.client_city : ''}${ct.client_state ? ' - ' + ct.client_state : ''}</span></div>` : ''}
+      </div>
+    </div>
+  </div>
+
+  ${hasEventInfo ? `
+  <div class="party-box full spacer">
+    <div class="party-header">Dados do Evento</div>
+    <div class="party-body event-grid">
+      ${ct.event_date ? `<div class="prow"><span class="plabel">Data do Evento:</span><span>${fmtDate(ct.event_date)}</span></div>` : ''}
+      ${ct.event_location ? `<div class="prow"><span class="plabel">Local do Evento:</span><span>${ct.event_location}</span></div>` : ''}
+      ${ct.pickup_date ? `<div class="prow"><span class="plabel">Data de Retirada:</span><span>${fmtDate(ct.pickup_date)}</span></div>` : ''}
+      ${ct.return_date ? `<div class="prow"><span class="plabel">Data de Devolução:</span><span>${fmtDate(ct.return_date)}</span></div>` : ''}
+      ${paymentLabel ? `<div class="prow"><span class="plabel">Forma de Pagamento:</span><span>${paymentLabel}</span></div>` : ''}
+    </div>
+  </div>` : '<div class="spacer"></div>'}
+
+  <div class="clause">
+    <div class="clause-title">${clause01.title}</div>
+    ${clauseParagraphs(clause01.content)}
+    <table class="items">
+      <thead>
+        <tr>
+          <th class="tc" style="width:56px">Qtd.</th>
+          <th style="width:60px">Cód.</th>
+          <th>Descrição</th>
+          <th class="tr" style="width:110px">Valor Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${items.map((it, idx) => `
+        <tr>
+          <td class="tc">${it.quantity}</td>
+          <td>${String(idx + 1).padStart(3, '0')}</td>
+          <td>${it.description}</td>
+          <td class="tr">${BRL(it.total)}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    <div class="totals-block">
+      ${ct.discount > 0 ? `
+      <div class="trow"><span>Subtotal:</span><span class="tval">${BRL(subtotal)}</span></div>
+      <div class="trow"><span>Desconto:</span><span class="tval">&#8722;&nbsp;${BRL(ct.discount)}</span></div>` : ''}
+      <div class="trow grand"><span>TOTAL:</span><span class="tval">${BRL(ct.total)}</span></div>
+    </div>
+  </div>
+
+  ${ct.notes ? `
+  <div class="clause">
+    <div class="clause-title">Observações</div>
+    <p>${ct.notes}</p>
+  </div>` : ''}
+
+  ${otherClauses.map(c => `
+  <div class="clause">
+    <div class="clause-title">${c.title}</div>
+    ${clauseParagraphs(c.content)}
+  </div>`).join('')}
+
+  <div class="sig-section">
+    <div class="sig-date">Serra/ES, _____ de ________________________ de _________.</div>
+    <div class="sig-grid">
+      <div class="sig-box">
+        <div class="sig-line"></div>
+        <div class="sig-name">${locador.locador_name}</div>
+        <div class="sig-role">Locador(a/e)</div>
+        <div class="sig-cpf">CPF: ${locador.locador_cpf}</div>
+      </div>
+      <div class="sig-box">
+        <div class="sig-line"></div>
+        <div class="sig-name">${ct.client_name}</div>
+        <div class="sig-role">Locatário(a/e)</div>
+        ${ct.client_cpf ? `<div class="sig-cpf">CPF: ${ct.client_cpf}</div>` : ''}
+      </div>
+    </div>
+  </div>
+
+</div>
 </div>
 
-<div class="clause">
-  <div class="clause-title">${clause01.title}</div>
-  ${clauseParagraphs(clause01.content)}
-  <table class="items">
-    <thead>
-      <tr>
-        <th class="center" style="width:60px">Quant.</th>
-        <th style="width:80px">Cód.</th>
-        <th>Detalhes</th>
-        <th class="right" style="width:100px">Valor</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${items.map((it, idx) => `
-      <tr>
-        <td class="center">${it.quantity}</td>
-        <td>${String(idx + 1).padStart(3, '0')}</td>
-        <td>${it.description}</td>
-        <td class="right">${BRL(it.total)}</td>
-      </tr>`).join('')}
-    </tbody>
-  </table>
-  <div class="totals-row">
-    ${ct.discount > 0 ? `<span>Desconto: <strong>- ${BRL(ct.discount)}</strong></span>` : ''}
-    <span class="total-final">Total: ${BRL(ct.total)}</span>
-  </div>
-</div>
-
-${ct.notes ? `<div class="clause"><div class="clause-title">Observações</div><p>${ct.notes}</p></div>` : ''}
-
-${otherClauses.map(c => `
-<div class="clause">
-  <div class="clause-title">${c.title}</div>
-  ${clauseParagraphs(c.content)}
-</div>`).join('')}
-
-<div class="signature-block">
-  <div class="sign-box">
-    <div class="sign-line"></div>
-    <div class="sign-label">Locador(a/e): ${locador.locador_name}</div>
-  </div>
-  <div class="sign-box">
-    <div class="sign-line"></div>
-    <div class="sign-label">Locatário(a/e): ${ct.client_name}</div>
-  </div>
-</div>
-
-<script>window.onload=function(){window.print();}</script>
 </body></html>`;
 
   const w = window.open('', '_blank');
