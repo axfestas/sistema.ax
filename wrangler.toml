@@ -23,8 +23,3 @@ bucket_name = "sistema-ax-festas"
 NODE_VERSION = "18"
 SITE_URL = "https://axfestas.com.br"
 # Email settings (optional - set RESEND_API_KEY in Cloudflare dashboard as secret)
-# Microsoft Graph API — Word Online integration (set as secrets in Cloudflare Dashboard)
-# MS_CLIENT_ID      = "your-azure-app-client-id"
-# MS_CLIENT_SECRET  = "your-azure-app-client-secret"   ← set as encrypted secret
-# MS_TENANT_ID      = "your-azure-tenant-id"
-# MS_ONEDRIVE_USER  = "admin@yourcompany.com"          ← OneDrive user for contract storage

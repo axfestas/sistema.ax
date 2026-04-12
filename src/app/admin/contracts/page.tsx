@@ -145,13 +145,23 @@ function fmtDate(iso?: string) {
   try { return new Date(iso + 'T00:00:00').toLocaleDateString('pt-BR'); } catch { return iso; }
 }
 
-// ─── EDITOR DESATIVADO — mantido para uso futuro ──────────────────────────────
-// A função printContract foi substituída pela integração com o Word Online.
-// Caso queira reativar o editor de impressão HTML, descomente o bloco abaixo.
-/*
-function printContract_DISABLED(ct: Contract, clauses: ContractClause[] = DEFAULT_CLAUSES, locador: LocadorSettings = DEFAULT_LOCADOR) {
+// ─── Print contract in a new window ───────────────────────────────────────────
+
+interface LocadorSettings {
+  locador_name: string;
+  locador_cpf: string;
+  locador_address: string;
+}
+
+const DEFAULT_LOCADOR: LocadorSettings = {
+  locador_name: 'ALEX DOS SANTOS FRAGA',
+  locador_cpf: '142.612.667-09',
+  locador_address: 'Rua Jacintha de Paulo Ferreira, nº 12, Bairro André Carloni, Serra/ES, CEP: 29161-820',
+};
+
+function printContract(ct: Contract, clauses: ContractClause[] = DEFAULT_CLAUSES, locador: LocadorSettings = DEFAULT_LOCADOR) {
   let items: ContractItem[] = [];
-  try { items = JSON.parse(ct.items_json) as ContractItem[]; } catch (_e) { items = []; }
+  try { items = JSON.parse(ct.items_json) as ContractItem[]; } catch { /* ignore */ }
 
   const paymentLabel = PAYMENT_METHODS.find((p) => p.value === ct.payment_method)?.label ?? ct.payment_method ?? '';
   const logoUrl = `${window.location.origin}/1.png`;
@@ -280,22 +290,6 @@ ${otherClauses.map(c => `
   const w = window.open('', '_blank');
   if (w) { w.document.write(html); w.document.close(); }
 }
-*/
-// ─────────────────────────────────────────────────────────────────────────────
-
-// ─── Locador settings (used by the disabled editor above and for display) ──────
-
-interface LocadorSettings {
-  locador_name: string;
-  locador_cpf: string;
-  locador_address: string;
-}
-
-const DEFAULT_LOCADOR: LocadorSettings = {
-  locador_name: 'ALEX DOS SANTOS FRAGA',
-  locador_cpf: '142.612.667-09',
-  locador_address: 'Rua Jacintha de Paulo Ferreira, nº 12, Bairro André Carloni, Serra/ES, CEP: 29161-820',
-};
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
@@ -333,7 +327,7 @@ export default function ContractsPage() {
   const [editClauses, setEditClauses] = useState<ContractClause[]>(DEFAULT_CLAUSES.map(c => ({ ...c })));
   const [showClausesEditor, setShowClausesEditor] = useState(false);
   const [baseClauses, setBaseClauses] = useState<ContractClause[]>(DEFAULT_CLAUSES.map(c => ({ ...c })));
-  const [openingWord, setOpeningWord] = useState<number | null>(null);
+  const [locadorSettings, setLocadorSettings] = useState<LocadorSettings>({ ...DEFAULT_LOCADOR });
 
   // ── Load data ──────────────────────────────────────────────────────────────
 
@@ -375,11 +369,28 @@ export default function ContractsPage() {
     }
   }, []);
 
+  const loadLocadorSettings = useCallback(async () => {
+    try {
+      const res = await fetch('/api/settings');
+      if (res.ok) {
+        const data = await res.json() as Partial<LocadorSettings>;
+        setLocadorSettings({
+          locador_name: data.locador_name || DEFAULT_LOCADOR.locador_name,
+          locador_cpf: data.locador_cpf || DEFAULT_LOCADOR.locador_cpf,
+          locador_address: data.locador_address || DEFAULT_LOCADOR.locador_address,
+        });
+      }
+    } catch {
+      /* use defaults */
+    }
+  }, []);
+
   useEffect(() => {
     loadContracts();
     loadClients();
     loadClauses();
-  }, [loadContracts, loadClients, loadClauses]);
+    loadLocadorSettings();
+  }, [loadContracts, loadClients, loadClauses, loadLocadorSettings]);
 
   useEffect(() => {
     if (view !== 'form') return;
@@ -637,25 +648,6 @@ export default function ContractsPage() {
     const phone = c.client_phone.replace(/\D/g, '');
     const url = `https://wa.me/55${phone}?text=${encodeURIComponent(msg)}`;
     window.open(url, '_blank');
-  }
-
-  async function handleOpenWord(contractId: number) {
-    setOpeningWord(contractId);
-    try {
-      const res = await fetch('/api/contracts/open-word', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contractId }),
-      });
-      const data = await res.json() as { url?: string; error?: string };
-      if (!res.ok) throw new Error(data.error || 'Erro ao abrir no Word');
-      if (data.url) window.open(data.url, '_blank');
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      showError(msg);
-    } finally {
-      setOpeningWord(null);
-    }
   }
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -957,11 +949,9 @@ export default function ContractsPage() {
               className="px-3 py-1.5 text-sm bg-green-500 text-white rounded hover:bg-green-600">
               📱 WhatsApp
             </button>
-            <button
-              onClick={() => handleOpenWord(detailContract.id)}
-              disabled={openingWord === detailContract.id}
-              className="px-3 py-1.5 text-sm bg-brand-blue hover:bg-brand-blue-dark text-white rounded disabled:opacity-50">
-              {openingWord === detailContract.id ? '⏳ Abrindo...' : '📄 Abrir no Word'}
+            <button onClick={() => printContract(detailContract, editClauses, locadorSettings)}
+              className="px-3 py-1.5 text-sm bg-brand-blue hover:bg-brand-blue-dark text-white rounded">
+              🖨️ Imprimir / PDF
             </button>
           </div>
         </div>
@@ -1156,7 +1146,7 @@ export default function ContractsPage() {
                       <div className="flex gap-1 flex-wrap">
                         <button onClick={() => openDetail(c)} className="text-xs bg-brand-blue hover:bg-brand-blue-dark text-white py-1 px-2 rounded">👁️ Ver</button>
                         <button onClick={() => openEdit(c)} className="text-xs bg-brand-blue hover:bg-brand-blue-dark text-white py-1 px-2 rounded">✏️ Editar</button>
-                        <button onClick={() => handleOpenWord(c.id)} disabled={openingWord === c.id} className="text-xs bg-brand-blue hover:bg-brand-blue-dark text-white py-1 px-2 rounded disabled:opacity-50">{openingWord === c.id ? '⏳' : '📄 Word'}</button>
+                        <button onClick={() => printContract(c, DEFAULT_CLAUSES, locadorSettings)} className="text-xs bg-brand-blue hover:bg-brand-blue-dark text-white py-1 px-2 rounded">🖨️ PDF</button>
                         <button onClick={() => handleWhatsApp(c)} className="text-xs bg-green-500 hover:bg-green-600 text-white py-1 px-2 rounded">📱 WA</button>
                         <button onClick={() => handleDelete(c.id)} className="text-xs bg-red-500 hover:bg-red-700 text-white py-1 px-2 rounded">🗑️</button>
                       </div>
